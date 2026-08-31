@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Financeiro WM">
+    <meta name="theme-color" content="#064E3B">
+    <title>Gestão Financeira & DRE • Fazenda WM de Jesus</title>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Google Fonts & FontAwesome 6 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Toastify & Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e'
+                        },
+                        stone: {
+                            50: '#fbfbfa',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F7F6F2;
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .agro-card {
+            background: #ffffff;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(231, 229, 228, 0.85);
+            box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #059669 100%);
+        }
+
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.9);
+        }
+
+        .tab-btn.active {
+            background-color: #064e3b;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.25);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .safe-bottom {
+            padding-bottom: max(env(safe-area-inset-bottom, 16px), 72px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F7F6F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 999px;
+        }
+    </style>
+    <script src="firebase-config.js"></script>
+</head>
+
+<body class="min-h-full flex flex-col antialiased selection:bg-emerald-200">
+
+    <!-- ═══════════════════════════════════════════════════════
+         TELA DE LOGIN UNIFICADA
+         ═══════════════════════════════════════════════════════ -->
+    <div id="tela-login" class="fixed inset-0 z-50 bg-[#F7F6F2] flex items-center justify-center p-4">
+        <div class="agro-card p-6 max-w-sm w-full text-center space-y-5 shadow-2xl border border-stone-200">
+            <div class="w-16 h-16 rounded-2xl hero-gradient mx-auto flex items-center justify-center text-white text-3xl shadow-lg shadow-emerald-900/20">
+                <i class="fas fa-scale-balanced"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold text-stone-900">Gestão Financeira & DRE</h1>
+                <p class="text-xs text-stone-500 mt-1">Balanço Geral • Receitas vs Despesas</p>
+            </div>
+            <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 text-left text-xs text-stone-600 space-y-1">
+                <p class="flex items-center gap-2"><i class="fas fa-shield-halved text-emerald-700"></i> Acesso seguro e unificado</p>
+                <p class="flex items-center gap-2"><i class="fas fa-chart-line text-emerald-700"></i> DRE consolidado em tempo real</p>
+            </div>
+            <button id="btn-login-google" onclick="fazerLoginGoogle()" class="w-full py-3.5 px-4 bg-white hover:bg-stone-50 text-stone-700 font-bold text-sm rounded-xl border border-stone-300 shadow-sm flex items-center justify-center gap-3 transition active:scale-95">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Entrar com Google</span>
+            </button>
+            <p id="login-error" class="text-xs text-rose-600 font-bold hidden"></p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER SUPERIOR MOBILE-FIRST
+         ═══════════════════════════════════════════════════════ -->
+    <header class="bg-white border-b border-stone-200/80 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="w-9 h-9 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition active:scale-95">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                </a>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                        <h1 class="text-sm font-extrabold text-stone-900 leading-tight">Gestão Financeira & DRE</h1>
+                    </div>
+                    <p class="text-[10px] text-stone-500 font-medium">Balanço Consolidado da Fazenda</p>
+                </div>
+            </div>
+
+            <!-- Ações Direita (Sincronizar + Perfil) -->
+            <div class="flex items-center gap-2">
+                <button onclick="carregarFinanceiroCompleto(true)" class="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 hover:text-emerald-800 hover:bg-emerald-50 flex items-center justify-center transition" title="Sincronizar">
+                    <i id="icon-sync" class="fas fa-arrows-rotate text-sm"></i>
+                </button>
+                <div class="flex items-center gap-2 pl-1 border-l border-stone-200">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=WM&background=064E3B&color=fff" class="w-8 h-8 rounded-xl object-cover border border-emerald-900/10 shadow-sm" alt="User">
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Abas / Segmentos de Navegação -->
+        <div class="max-w-4xl mx-auto px-3 pb-2 pt-1">
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-stone-100 rounded-xl text-xs font-semibold">
+                <button id="tab-nav-balanco" onclick="nav('balanco')" class="tab-btn active py-2 rounded-lg text-center transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-scale-balanced text-[11px]"></i> <span>Balanço & DRE</span>
+                </button>
+                <button id="tab-nav-receitas" onclick="nav('receitas')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-arrow-trend-up text-[11px]"></i> <span>Receitas</span>
+                </button>
+                <button id="tab-nav-dre" onclick="nav('dre')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-file-invoice-dollar text-[11px]"></i> <span>Relatório DRE</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTEÚDO PRINCIPAL
+         ═══════════════════════════════════════════════════════ -->
+    <main class="max-w-4xl w-full mx-auto p-4 space-y-4 flex-1 safe-bottom">
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 1: BALANÇO GERAL & COCKPIT CONSOLIDADO
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-balanco" class="space-y-4 fade-in">
+            <!-- Barra de Seleção de Período -->
+            <div class="agro-card p-3 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-calendar-days text-emerald-800 text-sm"></i>
+                    <span class="text-xs font-bold text-stone-700">Mês de Referência:</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="mudarMesRelatorio(-1)" class="w-7 h-7 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-xs">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="lbl-mes-ano-selecionado" class="font-extrabold text-xs text-stone-900 min-w-[110px] text-center font-mono">--</span>
+                    <button onclick="mudarMesRelatorio(1)" class="w-7 h-7 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-xs">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Hero: Resultado Líquido & Saldo -->
+            <div class="agro-card p-5 hero-gradient text-white space-y-4 shadow-xl">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="text-emerald-100 text-xs font-bold uppercase tracking-wider">Resultado Líquido do Mês</span>
+                        <h2 id="hero-saldo-mes" class="text-3xl sm:text-4xl font-black font-mono tracking-tight mt-0.5">R$ 0,00</h2>
+                    </div>
+                    <div id="badge-margem-lucro" class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-extrabold flex items-center gap-1 border border-white/20">
+                        <i class="fas fa-chart-line"></i> <span id="txt-margem">0% margem</span>
+                    </div>
+                </div>
+
+                <!-- Barra de Progresso Receita vs Despesa -->
+                <div class="space-y-1.5 pt-1 border-t border-white/20">
+                    <div class="flex justify-between text-[11px] font-bold text-emerald-100">
+                        <span>Entradas: <strong id="lbl-prog-receita" class="text-white">R$ 0,00</strong></span>
+                        <span>Saídas: <strong id="lbl-prog-despesa" class="text-white">R$ 0,00</strong></span>
+                    </div>
+                    <div class="h-3 w-full bg-black/20 rounded-full overflow-hidden flex p-0.5">
+                        <div id="bar-receita" class="h-full bg-emerald-300 rounded-l-full transition-all duration-500" style="width: 50%;"></div>
+                        <div id="bar-despesa" class="h-full bg-rose-400 rounded-r-full transition-all duration-500" style="width: 50%;"></div>
+                    </div>
+                </div>
+
+                <!-- Detalhes Rápidos -->
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                    <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                        <span class="text-[10px] text-emerald-200 uppercase font-bold block">🥛 Faturamento Leite</span>
+                        <span id="card-fat-leite" class="font-black text-sm font-mono">R$ 0,00</span>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                        <span class="text-[10px] text-emerald-200 uppercase font-bold block">💰 Custos Operacionais</span>
+                        <span id="card-total-custos" class="font-black text-sm font-mono">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos Responsivos de Desempenho -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Gráfico 1: Evolução Comparativa Mensal -->
+                <div class="agro-card p-4 space-y-2">
+                    <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                        <h3 class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                            <i class="fas fa-chart-column text-emerald-800"></i> Receitas vs Despesas (Ano Todo)
+                        </h3>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="chartEvolucaoMensal"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico 2: Composição das Receitas -->
+                <div class="agro-card p-4 space-y-2">
+                    <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                        <h3 class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                            <i class="fas fa-pie-chart text-amber-600"></i> Fontes de Receita
+                        </h3>
+                    </div>
+                    <div class="relative h-56 w-full flex items-center justify-center">
+                        <canvas id="chartFontesReceita"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 2: RECEITAS DA FAZENDA
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-receitas" class="hidden space-y-4 fade-in">
+            <!-- Formulário de Lançamento de Receita Avulsa -->
+            <div class="agro-card p-4 space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <h3 class="text-xs font-extrabold text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-plus-circle text-emerald-700"></i> Lançar Nova Receita (Gado, Queijo, Serviços)
+                    </h3>
+                </div>
+                <form id="formReceita" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div>
+                            <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Data *</label>
+                            <input type="date" id="rec-data" required class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs font-bold text-stone-800 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Categoria *</label>
+                            <select id="rec-categoria" required class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs font-bold text-stone-800 focus:outline-none">
+                                <option value="Venda de Animais / Gado">Venda de Animais / Gado</option>
+                                <option value="Venda de Queijo / Derivados">Venda de Queijo / Derivados</option>
+                                <option value="Serviços / Aluguel">Serviços / Aluguel de Pasto</option>
+                                <option value="Venda de Esterco / Insumos">Venda de Esterco / Insumos</option>
+                                <option value="Outras Receitas">Outras Receitas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Valor (R$) *</label>
+                            <input type="number" step="0.01" id="rec-valor" required placeholder="0,00" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs font-bold font-mono text-emerald-800 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Descrição / Comprador *</label>
+                        <input type="text" id="rec-descricao" required placeholder="Ex: Venda de 2 novilhas para vizinho João" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs font-medium text-stone-800 focus:outline-none">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition">
+                        <i class="fas fa-check"></i> Registrar Receita
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista de Receitas Registradas -->
+            <div class="agro-card p-4 space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <h3 class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                        <i class="fas fa-list-check text-emerald-700"></i> Histórico de Receitas Lançadas
+                    </h3>
+                    <span id="lbl-total-rec-avulsas" class="text-xs font-black text-emerald-800 font-mono">R$ 0,00</span>
+                </div>
+                <div id="lista-receitas-avulsas" class="space-y-2">
+                    <!-- Preenchido via JS -->
+                </div>
+                <div id="msg-sem-receitas" class="hidden py-8 text-center text-stone-400 text-xs">
+                    Nenhuma receita avulsa lançada neste período.
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 3: RELATÓRIO DRE CONSOLIDADO
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-dre" class="hidden space-y-4 fade-in">
+            <div class="agro-card p-4 sm:p-6 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-stone-200">
+                    <div>
+                        <h2 class="text-base font-black text-stone-900">Demonstrativo de Resultado (DRE)</h2>
+                        <p class="text-xs text-stone-500 font-medium" id="dre-periodo-lbl">Período: Mês Selecionado</p>
+                    </div>
+                    <button onclick="imprimirDRE()" class="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+
+                <!-- Tabela Estruturada DRE -->
+                <div class="space-y-3 text-xs">
+                    <!-- 1. RECEITA OPERACIONAL BRUTA -->
+                    <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-2">
+                        <div class="flex justify-between items-center font-black text-emerald-900 text-sm">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-plus text-emerald-600 text-xs"></i> 1. RECEITA OPERACIONAL BRUTA</span>
+                            <span id="dre-rec-bruta" class="font-mono text-base">R$ 0,00</span>
+                        </div>
+                        <div class="pl-4 space-y-1 text-stone-600 font-medium">
+                            <div class="flex justify-between">
+                                <span>(+) Faturamento da Produção de Leite:</span>
+                                <strong id="dre-rec-leite" class="font-mono text-stone-800">R$ 0,00</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>(+) Venda de Animais / Gado:</span>
+                                <strong id="dre-rec-animais" class="font-mono text-stone-800">R$ 0,00</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>(+) Venda de Ovos Caipiras:</span>
+                                <strong id="dre-rec-ovos" class="font-mono text-stone-800">R$ 0,00</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>(+) Outras Receitas da Fazenda:</span>
+                                <strong id="dre-rec-outras" class="font-mono text-stone-800">R$ 0,00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. CUSTOS OPERACIONAIS (DESPESAS) -->
+                    <div class="p-3 bg-rose-50 rounded-xl border border-rose-200 space-y-2">
+                        <div class="flex justify-between items-center font-black text-rose-900 text-sm">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-minus text-rose-600 text-xs"></i> 2. CUSTOS OPERACIONAIS (DESPESAS)</span>
+                            <span id="dre-total-despesas" class="font-mono text-base text-rose-700">R$ 0,00</span>
+                        </div>
+                        <div class="pl-4 space-y-1 text-stone-600 font-medium" id="dre-lista-categorias-custo">
+                            <!-- Preenchido dinamicamente com as categorias de despesas -->
+                        </div>
+                    </div>
+
+                    <!-- 3. RESULTADO OPERACIONAL LÍQUIDO -->
+                    <div class="p-4 bg-stone-900 text-white rounded-xl space-y-2 shadow-md">
+                        <div class="flex justify-between items-center font-black text-base">
+                            <span>(=) RESULTADO LÍQUIDO DA FAZENDA</span>
+                            <span id="dre-resultado-liquido" class="font-mono text-xl text-emerald-400">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-stone-400 border-t border-stone-800 pt-2 font-medium">
+                            <span>Margem Operacional Líquida:</span>
+                            <strong id="dre-margem-liquida" class="font-mono text-white text-sm">0%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV BAR)
+         ═══════════════════════════════════════════════════════ -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bottom-nav-blur px-2 py-2 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-house"></i>
+                </div>
+                <span class="text-[10px] mt-1">Início</span>
+            </a>
+
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <a href="financeiro.html" class="flex flex-col items-center justify-center -mt-5 transition active:scale-95" title="Financeiro DRE">
+                <div class="w-12 h-12 rounded-full hero-gradient text-white flex items-center justify-center text-xl shadow-lg border-2 border-white">
+                    <i class="fas fa-scale-balanced"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-900 mt-0.5">Balanço</span>
+            </a>
+
+            <a href="registro_animais.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-cow"></i>
+                </div>
+                <span class="text-[10px] mt-1">Rebanho</span>
+            </a>
+
+            <a href="despesas.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <span class="text-[10px] mt-1">Despesas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FIREBASE MODULAR (V10) SCRIPT
+         ═══════════════════════════════════════════════════════ -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, getDocs, addDoc, deleteDoc, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = window.globalFirebaseConfig || {
+            apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
+            authDomain: "fazendawm-83f34.firebaseapp.com",
+            projectId: "fazendawm-83f34",
+            storageBucket: "fazendawm-83f34.firebasestorage.app",
+            messagingSenderId: "40894938435",
+            appId: "1:40894938435:web:1d8bdaf8f7869ecf7183f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        window.dadosLeite = [];
+        window.dadosDespesas = [];
+        window.dadosReceitas = [];
+        window.dataRef = new Date();
+
+        let chartEvolucao = null;
+        let chartFontes = null;
+
+        function showToast(msg, type = "info") {
+            const colors = { success: "#064e3b", error: "#dc2626", info: "#0284c7" };
+            Toastify({
+                text: msg,
+                duration: 3500,
+                gravity: "top",
+                position: "center",
+                style: { background: colors[type] || "#064e3b", borderRadius: "12px", fontWeight: "600", fontSize: "13px" }
+            }).showToast();
+        }
+
+        window.fazerLoginGoogle = () => {
+            signInWithPopup(auth, provider).catch(err => {
+                document.getElementById('login-error').innerText = err.message;
+                document.getElementById('login-error').classList.remove('hidden');
+            });
+        };
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('tela-login').classList.add('hidden');
+                if (user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
+                document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
+                carregarFinanceiroCompleto();
+            } else {
+                document.getElementById('tela-login').classList.remove('hidden');
+            }
+        });
+
+        window.nav = (tela) => {
+            ['balanco', 'receitas', 'dre'].forEach(t => {
+                const sec = document.getElementById('tela-' + t);
+                if (sec) sec.classList.add('hidden');
+                const btn = document.getElementById('tab-nav-' + t);
+                if (btn) btn.classList.remove('active');
+            });
+
+            const target = document.getElementById('tela-' + tela);
+            if (target) target.classList.remove('hidden');
+            const targetBtn = document.getElementById('tab-nav-' + tela);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            if (tela === 'dre') atualizarDRE();
+        };
+
+        window.mudarMesRelatorio = (offset) => {
+            window.dataRef.setMonth(window.dataRef.getMonth() + offset);
+            atualizarRelatorioMes();
+        };
+
+        function formatBRL(v) {
+            return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatToFloat(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            return parseFloat(String(val).replace('R$', '').trim().replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        function parseDateBR(str) {
+            if (!str) return new Date();
+            if (str instanceof Date) return str;
+            if (typeof str === 'string') {
+                if (str.includes('/')) {
+                    const [d, m, y] = str.split('/');
+                    return new Date(Number(y), Number(m) - 1, Number(d));
+                }
+                if (str.match(/^\d{4}-\d{2}-\d{2}$/)) return new Date(str + 'T00:00:00');
+            }
+            return new Date();
+        }
+
+        window.carregarFinanceiroCompleto = async (manual = false) => {
+            const icon = document.getElementById('icon-sync');
+            if (icon) icon.classList.add('fa-spin');
+
+            try {
+                // 1. Carregar Registros de Leite (Receita Principal)
+                const snapLeite = await getDocs(collection(db, "artifacts/fazendawm-83f34/public/data/production_records"));
+                let leite = [];
+                snapLeite.forEach(d => {
+                    const data = d.data();
+                    const dObj = parseDateBR(data.date || d.id);
+                    const totalL = (Number(data.morningLiters) || 0) + (Number(data.afternoonLiters) || 0);
+                    const preco = Number(data.milkPrice) || 2.45;
+                    leite.push({
+                        docId: d.id,
+                        date: data.date || d.id,
+                        dateObj: dObj,
+                        litros: totalL,
+                        faturamento: totalL * preco
+                    });
+                });
+                window.dadosLeite = leite;
+
+                // 2. Carregar Despesas
+                const snapDespesas = await getDocs(collection(db, "despesas"));
+                let despesas = [];
+                snapDespesas.forEach(d => {
+                    const data = d.data();
+                    despesas.push({
+                        docId: d.id,
+                        ...data,
+                        dataObj: parseDateBR(data.Data),
+                        totalNum: formatToFloat(data.Total)
+                    });
+                });
+                window.dadosDespesas = despesas;
+
+                // 3. Carregar Receitas Avulsas (Gado, Queijo, Serviços)
+                const snapReceitas = await getDocs(collection(db, "farm_revenues"));
+                let receitas = [];
+                snapReceitas.forEach(d => {
+                    const data = d.data();
+                    receitas.push({
+                        docId: d.id,
+                        ...data,
+                        dataObj: parseDateBR(data.date || data.data),
+                        valorNum: Number(data.amount || data.valor || 0)
+                    });
+                });
+
+                // 4. Carregar Vendas de Ovos Pagas (egg_sales)
+                try {
+                    const snapOvos = await getDocs(collection(db, "artifacts/fazendawm-83f34/public/data/egg_sales"));
+                    snapOvos.forEach(d => {
+                        const data = d.data();
+                        if (data.status_pagamento === 'PAGO') {
+                            receitas.push({
+                                docId: d.id,
+                                description: `Venda Ovos - ${data.cliente || 'Cliente'}`,
+                                category: 'Venda de Ovos',
+                                dataObj: parseDateBR(data.data_pagamento || data.data_entrega),
+                                valorNum: Number(data.valor_total || 0)
+                            });
+                        }
+                    });
+                } catch(errOvos) {
+                    console.log("Sem vendas de ovos ainda:", errOvos);
+                }
+
+                window.dadosReceitas = receitas;
+
+                atualizarRelatorioMes();
+                renderizarReceitasAvulsas();
+                renderizarGraficosAnuais();
+
+                if (manual) showToast("Dados financeiros sincronizados!", "success");
+            } catch (e) {
+                console.error("Erro carregando dados financeiros:", e);
+                showToast("Erro ao sincronizar dados", "error");
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        };
+
+        function atualizarRelatorioMes() {
+            const m = window.dataRef.getMonth();
+            const y = window.dataRef.getFullYear();
+
+            document.getElementById('lbl-mes-ano-selecionado').innerText = `${mesesNomes[m]} / ${y}`;
+            document.getElementById('dre-periodo-lbl').innerText = `Período: ${mesesNomes[m]} de ${y}`;
+
+            // Receita de Leite no Mês
+            const leiteMes = window.dadosLeite.filter(l => l.dateObj.getMonth() === m && l.dateObj.getFullYear() === y);
+            const fatLeite = leiteMes.reduce((acc, l) => acc + l.faturamento, 0);
+
+            // Receitas Avulsas no Mês
+            const recMes = window.dadosReceitas.filter(r => r.dataObj.getMonth() === m && r.dataObj.getFullYear() === y);
+            const fatAvulsas = recMes.reduce((acc, r) => acc + r.valorNum, 0);
+
+            // Total de Receitas
+            const totalReceitas = fatLeite + fatAvulsas;
+
+            // Despesas no Mês
+            const despMes = window.dadosDespesas.filter(d => d.dataObj.getMonth() === m && d.dataObj.getFullYear() === y);
+            const totalDespesas = despMes.reduce((acc, d) => acc + d.totalNum, 0);
+
+            // Saldo Líquido
+            const saldoLiquido = totalReceitas - totalDespesas;
+            const margem = totalReceitas > 0 ? ((saldoLiquido / totalReceitas) * 100).toFixed(1) : 0;
+
+            // Atualiza Hero Card
+            document.getElementById('hero-saldo-mes').innerText = formatBRL(saldoLiquido);
+            document.getElementById('txt-margem').innerText = `${margem}% margem`;
+            document.getElementById('lbl-prog-receita').innerText = formatBRL(totalReceitas);
+            document.getElementById('lbl-prog-despesa').innerText = formatBRL(totalDespesas);
+
+            document.getElementById('card-fat-leite').innerText = formatBRL(fatLeite);
+            document.getElementById('card-total-custos').innerText = formatBRL(totalDespesas);
+
+            // Barra proporcional
+            const volTotal = totalReceitas + totalDespesas;
+            if (volTotal > 0) {
+                const pctR = (totalReceitas / volTotal) * 100;
+                document.getElementById('bar-receita').style.width = pctR + '%';
+                document.getElementById('bar-despesa').style.width = (100 - pctR) + '%';
+            }
+
+            atualizarDRE();
+        }
+
+        function atualizarDRE() {
+            const m = window.dataRef.getMonth();
+            const y = window.dataRef.getFullYear();
+
+            // 1. Receitas
+            const leiteMes = window.dadosLeite.filter(l => l.dateObj.getMonth() === m && l.dateObj.getFullYear() === y);
+            const fatLeite = leiteMes.reduce((acc, l) => acc + l.faturamento, 0);
+
+            const recMes = window.dadosReceitas.filter(r => r.dataObj.getMonth() === m && r.dataObj.getFullYear() === y);
+            const fatGado = recMes.filter(r => (r.category || r.categoria || '').includes('Gado') || (r.category || r.categoria || '').includes('Animais')).reduce((acc, r) => acc + r.valorNum, 0);
+            const fatOvos = recMes.filter(r => (r.category || r.categoria || '').includes('Ovos') || (r.category || r.categoria || '').includes('ovos')).reduce((acc, r) => acc + r.valorNum, 0);
+            const fatOutras = recMes.filter(r => !(r.category || r.categoria || '').includes('Gado') && !(r.category || r.categoria || '').includes('Animais') && !(r.category || r.categoria || '').includes('Ovos')).reduce((acc, r) => acc + r.valorNum, 0);
+
+            const recBruta = fatLeite + fatGado + fatOvos + fatOutras;
+
+            document.getElementById('dre-rec-bruta').innerText = formatBRL(recBruta);
+            document.getElementById('dre-rec-leite').innerText = formatBRL(fatLeite);
+            document.getElementById('dre-rec-animais').innerText = formatBRL(fatGado);
+            document.getElementById('dre-rec-ovos').innerText = formatBRL(fatOvos);
+            document.getElementById('dre-rec-outras').innerText = formatBRL(fatOutras);
+
+            // 2. Despesas por Categoria
+            const despMes = window.dadosDespesas.filter(d => d.dataObj.getMonth() === m && d.dataObj.getFullYear() === y);
+            const totalDesp = despMes.reduce((acc, d) => acc + d.totalNum, 0);
+            document.getElementById('dre-total-despesas').innerText = formatBRL(totalDesp);
+
+            const catMap = {};
+            despMes.forEach(d => {
+                const c = d.Categoria || 'Outros';
+                catMap[c] = (catMap[c] || 0) + d.totalNum;
+            });
+
+            const divCat = document.getElementById('dre-lista-categorias-custo');
+            divCat.innerHTML = '';
+            if (Object.keys(catMap).length === 0) {
+                divCat.innerHTML = '<span class="text-stone-400">Nenhuma despesa no período.</span>';
+            } else {
+                Object.entries(catMap).sort((a, b) => b[1] - a[1]).forEach(([cat, val]) => {
+                    divCat.innerHTML += `
+                        <div class="flex justify-between border-b border-rose-100 pb-1">
+                            <span>(-) ${cat}:</span>
+                            <strong class="font-mono text-rose-800">${formatBRL(val)}</strong>
+                        </div>`;
+                });
+            }
+
+            // 3. Resultado Líquido
+            const resLiq = recBruta - totalDesp;
+            const margem = recBruta > 0 ? ((resLiq / recBruta) * 100).toFixed(1) : 0;
+            const elRes = document.getElementById('dre-resultado-liquido');
+            elRes.innerText = formatBRL(resLiq);
+            elRes.className = `font-mono text-xl ${resLiq >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+            document.getElementById('dre-margem-liquida').innerText = `${margem}%`;
+        }
+
+        function renderizarReceitasAvulsas() {
+            const divLista = document.getElementById('lista-receitas-avulsas');
+            const msgSem = document.getElementById('msg-sem-receitas');
+            divLista.innerHTML = '';
+
+            const m = window.dataRef.getMonth();
+            const y = window.dataRef.getFullYear();
+            const recs = window.dadosReceitas.filter(r => r.dataObj.getMonth() === m && r.dataObj.getFullYear() === y);
+
+            const total = recs.reduce((acc, r) => acc + r.valorNum, 0);
+            document.getElementById('lbl-total-rec-avulsas').innerText = `Total: ${formatBRL(total)}`;
+
+            if (recs.length === 0) {
+                msgSem.classList.remove('hidden');
+                return;
+            }
+            msgSem.classList.add('hidden');
+
+            recs.forEach(r => {
+                divLista.innerHTML += `
+                    <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded uppercase">${r.category || r.categoria || 'Geral'}</span>
+                                <span class="text-[10px] text-stone-400 font-mono">${r.date || r.data}</span>
+                            </div>
+                            <p class="text-xs font-bold text-stone-900 mt-0.5">${r.description || r.descricao || 'Receita'}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-sm text-emerald-800 font-mono">${formatBRL(r.valorNum)}</span>
+                            <button onclick="excluirReceitaAvulsa('${r.docId}')" class="p-1.5 text-stone-400 hover:text-rose-600 transition">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Submissão de Receitas Avulsas
+        document.getElementById('formReceita').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = document.getElementById('rec-data').value;
+            const cat = document.getElementById('rec-categoria').value;
+            const val = parseFloat(document.getElementById('rec-valor').value) || 0;
+            const desc = document.getElementById('rec-descricao').value.trim();
+
+            if (!val || !desc) return showToast("Preencha todos os campos.", "error");
+
+            try {
+                await addDoc(collection(db, "farm_revenues"), {
+                    date: data,
+                    data: data,
+                    category: cat,
+                    categoria: cat,
+                    amount: val,
+                    valor: val,
+                    description: desc,
+                    descricao: desc,
+                    type: "revenue",
+                    createdAt: serverTimestamp()
+                });
+
+                document.getElementById('rec-valor').value = '';
+                document.getElementById('rec-descricao').value = '';
+                showToast("Receita cadastrada!", "success");
+                carregarFinanceiroCompleto();
+            } catch (err) {
+                showToast("Erro ao salvar: " + err.message, "error");
+            }
+        });
+
+        window.excluirReceitaAvulsa = async (docId) => {
+            if (!confirm("Deseja apagar esta receita?")) return;
+            try {
+                await deleteDoc(doc(db, "farm_revenues", docId));
+                showToast("Receita excluída!", "info");
+                carregarFinanceiroCompleto();
+            } catch (err) {
+                showToast("Erro ao apagar: " + err.message, "error");
+            }
+        };
+
+        // Gráficos Anuais
+        function renderizarGraficosAnuais() {
+            const ano = window.dataRef.getFullYear();
+            const recMeses = Array(12).fill(0);
+            const despMeses = Array(12).fill(0);
+
+            // Leite + Receitas
+            window.dadosLeite.forEach(l => {
+                if (l.dateObj.getFullYear() === ano) recMeses[l.dateObj.getMonth()] += l.faturamento;
+            });
+            window.dadosReceitas.forEach(r => {
+                if (r.dataObj.getFullYear() === ano) recMeses[r.dataObj.getMonth()] += r.valorNum;
+            });
+
+            // Despesas
+            window.dadosDespesas.forEach(d => {
+                if (d.dataObj.getFullYear() === ano) despMeses[d.dataObj.getMonth()] += d.totalNum;
+            });
+
+            // 1. Gráfico de Barras Duplo (Receitas vs Despesas)
+            const ctxEvolucao = document.getElementById('chartEvolucaoMensal');
+            if (chartEvolucao) chartEvolucao.destroy();
+            chartEvolucao = new Chart(ctxEvolucao, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [
+                        { label: 'Receitas', data: recMeses, backgroundColor: '#059669', borderRadius: 4 },
+                        { label: 'Despesas', data: despMeses, backgroundColor: '#e11d48', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { ticks: { callback: v => 'R$' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v), font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // 2. Gráfico de Fontes de Receita (Donut)
+            const totalLeiteAno = window.dadosLeite.filter(l => l.dateObj.getFullYear() === ano).reduce((a, b) => a + b.faturamento, 0);
+            const totalGadoAno = window.dadosReceitas.filter(r => r.dataObj.getFullYear() === ano && ((r.category || '').includes('Gado') || (r.category || '').includes('Animais'))).reduce((a, b) => a + b.valorNum, 0);
+            const totalOutrasAno = window.dadosReceitas.filter(r => r.dataObj.getFullYear() === ano && !((r.category || '').includes('Gado') || (r.category || '').includes('Animais'))).reduce((a, b) => a + b.valorNum, 0);
+
+            const ctxFontes = document.getElementById('chartFontesReceita');
+            if (chartFontes) chartFontes.destroy();
+            chartFontes = new Chart(ctxFontes, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Leite', 'Gado / Animais', 'Outras'],
+                    datasets: [{
+                        data: [totalLeiteAno, totalGadoAno, totalOutrasAno],
+                        backgroundColor: ['#064e3b', '#d97706', '#0284c7'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        window.imprimirDRE = () => window.print();
+
+        // Iniciar
+        nav('balanco');
+    </script>
+</body>
+
+</html>

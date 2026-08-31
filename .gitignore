@@ -1,0 +1,6 @@
+# Pastas temporárias e de descarte
+_LIXEIRA/
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

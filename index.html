@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#064e3b">
+    <meta name="description" content="Portal de Gestão Integrada da Fazenda WM de Jesus - Cockpit Agro, Leite, Rebanho e Finanças">
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <title>Fazenda WM de Jesus • Cockpit Agro</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <!-- Global Firebase Config -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e'
+                        },
+                        stone: {
+                            850: '#1c1917',
+                            900: '#141210',
+                            950: '#0c0a09'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Otimizações Mobile de Toque e Safe Area */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f7f6f2;
+            padding-bottom: env(safe-area-inset-bottom, 24px);
+        }
+
+        /* Glass & Elevation Tokens */
+        .agro-card {
+            background: #ffffff;
+            border: 1px solid #e7e5e4;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 20px -2px rgba(6, 78, 59, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .agro-card:active {
+            transform: scale(0.985);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #0f766e 100%);
+        }
+
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.8);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-full flex flex-col text-stone-800 antialiased select-none pb-28">
+
+    <!-- TOPBAR / CABEÇALHO COMPACTO MOBILE -->
+    <header class="hero-gradient text-white sticky top-0 z-40 shadow-lg px-4 pt-3 pb-6 md:pb-8 rounded-b-[2rem] border-b border-emerald-700/50">
+        <div class="max-w-5xl mx-auto">
+            <!-- Top Line: Logo & Status & User -->
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <!-- Marca da Fazenda -->
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-200 text-lg shadow-inner">
+                        <i class="fas fa-wheat-awn"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-extrabold text-base tracking-tight leading-tight">Fazenda WM</span>
+                            <span class="text-[10px] bg-emerald-400/20 text-emerald-200 font-semibold px-2 py-0.5 rounded-full border border-emerald-300/30">de Jesus</span>
+                        </div>
+                        <p class="text-[11px] text-emerald-100/70 font-medium" id="txt-data-hoje">Carregando data...</p>
+                    </div>
+                </div>
+
+                <!-- Painel de Login / Usuário -->
+                <div id="auth-box" class="flex items-center gap-2">
+                    <!-- Botão de Login (Quando Deslogado) -->
+                    <button id="btn-login-google" onclick="fazerLoginGoogle()"
+                        class="bg-white/15 hover:bg-white/25 active:bg-white/30 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2 border border-white/20 transition backdrop-blur-md shadow-sm">
+                        <i class="fab fa-google text-amber-300"></i>
+                        <span>Entrar</span>
+                    </button>
+
+                    <!-- Card de Usuário (Quando Logado) -->
+                    <div id="user-profile" class="hidden flex items-center gap-2 bg-black/20 backdrop-blur-md py-1 px-2.5 rounded-full border border-white/15">
+                        <img id="user-avatar" class="w-7 h-7 rounded-full object-cover border border-emerald-400" src="" alt="Usuário">
+                        <div class="text-left hidden sm:block">
+                            <p id="user-name" class="text-xs font-bold leading-none text-white max-w-[100px] truncate">Produtor</p>
+                        </div>
+                        <button onclick="fazerLogout()" title="Sair da conta" class="text-emerald-200/80 hover:text-white text-xs p-1">
+                            <i class="fas fa-arrow-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saudação & Status Operacional -->
+            <div class="flex items-center justify-between mt-2">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-white tracking-tight" id="txt-saudacao">Olá, seja bem-vindo!</h1>
+                    <p class="text-xs text-emerald-100/90 font-medium flex items-center gap-1.5 mt-0.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 -ml-3.5"></span>
+                        <span>Cockpit Agro sincronizado com Firebase</span>
+                    </p>
+                </div>
+                <!-- Botão de Atualizar Dados Manualmente -->
+                <button onclick="carregarCockpitCompleto(true)" id="btn-sync" title="Atualizar Dados Agora"
+                    class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-emerald-100 text-sm border border-white/15 transition">
+                    <i class="fas fa-arrows-rotate" id="icon-sync"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL DO COCKPIT -->
+    <main class="max-w-5xl mx-auto px-4 -mt-3 w-full flex-grow space-y-6">
+
+        <!-- 🚀 1. BARRA DE AÇÕES RÁPIDAS (NO CURRAL / OPERAÇÃO) -->
+        <section class="agro-card p-3.5 bg-white border border-stone-200">
+            <div class="flex items-center justify-between mb-2.5 px-1">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
+                    <i class="fas fa-bolt text-amber-500"></i> Ações Rápidas de Campo
+                </span>
+                <span class="text-[10px] text-stone-400">Atalhos 1-toque</span>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2">
+                <!-- Ação 1: Lançar Leite -->
+                <button onclick="abrirModalLeiteRapido()" class="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-emerald-50 active:bg-emerald-100 border border-emerald-100 text-emerald-800 transition">
+                    <div class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-base shadow-sm">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <span class="text-[11px] font-bold tracking-tight">Leite Hoje</span>
+                </button>
+
+                <!-- Ação 2: Cadastrar Animal -->
+                <a href="registro_animais.html" class="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-sky-50 active:bg-sky-100 border border-sky-100 text-sky-800 transition">
+                    <div class="w-9 h-9 rounded-lg bg-sky-600 text-white flex items-center justify-center text-base shadow-sm">
+                        <i class="fas fa-cow"></i>
+                    </div>
+                    <span class="text-[11px] font-bold tracking-tight">Novo Animal</span>
+                </a>
+
+                <!-- Ação 3: Lançar Despesa -->
+                <a href="despesas.html" class="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-amber-50 active:bg-amber-100 border border-amber-100 text-amber-800 transition">
+                    <div class="w-9 h-9 rounded-lg bg-amber-600 text-white flex items-center justify-center text-base shadow-sm">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <span class="text-[11px] font-bold tracking-tight">Despesa</span>
+                </a>
+
+                <!-- Ação 4: Checklist -->
+                <a href="https://wilksonac.github.io/checklist/" target="_blank" class="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-teal-50 active:bg-teal-100 border border-teal-100 text-teal-800 transition">
+                    <div class="w-9 h-9 rounded-lg bg-teal-600 text-white flex items-center justify-center text-base shadow-sm">
+                        <i class="fas fa-list-check"></i>
+                    </div>
+                    <span class="text-[11px] font-bold tracking-tight">Checklist</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 📊 2. OS 4 CARDS DO COCKPIT EM TEMPO REAL -->
+        <section class="space-y-3">
+            <div class="flex items-center justify-between px-1">
+                <h2 class="text-sm font-extrabold text-stone-800 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-emerald-700"></i> Painel Operacional em Tempo Real
+                </h2>
+                <span class="text-[11px] text-emerald-800 font-semibold bg-emerald-100/70 px-2 py-0.5 rounded-full" id="tag-mes-vigente">Mês Atual</span>
+            </div>
+
+            <!-- Grid 2x2 no Mobile / 4 Colunas no Desktop -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+
+                <!-- CARD 1: PRODUÇÃO DE LEITE -->
+                <div class="agro-card p-4 relative overflow-hidden flex flex-col justify-between border-l-4 border-l-emerald-600 group">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 block">Produção de Leite</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span class="text-3xl font-black text-stone-900 font-mono" id="kpi-leite-hoje">--</span>
+                                <span class="text-xs font-bold text-stone-500">L hoje</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg shadow-sm">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                    </div>
+
+                    <!-- Métricas de Apoio do Leite -->
+                    <div class="mt-3 pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Acumulado do Mês:</span>
+                            <strong class="font-mono text-stone-800 font-bold" id="kpi-leite-mes">-- L</strong>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Média Diária:</span>
+                            <strong class="font-mono text-emerald-700 font-bold" id="kpi-leite-media">-- L/dia</strong>
+                        </div>
+                    </div>
+
+                    <a href="leite_colaborativo.html" class="mt-3 w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <span>Ver Produção Completa</span>
+                        <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+
+                <!-- CARD 2: REBANHO & LACTAÇÃO -->
+                <div class="agro-card p-4 relative overflow-hidden flex flex-col justify-between border-l-4 border-l-sky-600 group">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-sky-700 block">Vacas em Lactação</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span class="text-3xl font-black text-stone-900 font-mono" id="kpi-vacas-lactacao">--</span>
+                                <span class="text-xs font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded-full" id="kpi-vacas-pct">--%</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-lg shadow-sm">
+                            <i class="fas fa-cow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Métricas de Apoio do Rebanho -->
+                    <div class="mt-3 pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Total de Animais Ativos:</span>
+                            <strong class="font-mono text-stone-800 font-bold" id="kpi-total-rebanho">-- cab</strong>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Secas / Bezerros:</span>
+                            <span class="font-mono font-bold text-stone-700"><span id="kpi-vacas-secas">--</span> / <span id="kpi-bezerros">--</span></span>
+                        </div>
+                    </div>
+
+                    <a href="registro_animais.html" class="mt-3 w-full py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <span>Gerenciar Rebanho</span>
+                        <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+
+                <!-- CARD 3: DESPESAS DO MÊS -->
+                <div class="agro-card p-4 relative overflow-hidden flex flex-col justify-between border-l-4 border-l-amber-600 group">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-700 block">Despesas do Mês</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span class="text-2xl sm:text-3xl font-black text-stone-900 font-mono" id="kpi-despesas-mes">R$ --</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg shadow-sm">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                    </div>
+
+                    <!-- Métricas de Apoio das Despesas -->
+                    <div class="mt-3 pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Registros no Mês:</span>
+                            <strong class="font-mono text-stone-800 font-bold" id="kpi-despesas-qtd">-- itens</strong>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Status Conciliação:</span>
+                            <span class="font-mono font-bold text-amber-700" id="kpi-conciliacao-status">Atualizado</span>
+                        </div>
+                    </div>
+
+                    <a href="despesas.html" class="mt-3 w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <span>Ver Despesas</span>
+                        <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+
+                <!-- CARD 4: CHECKLIST & MANEJO DIÁRIO -->
+                <div class="agro-card p-4 relative overflow-hidden flex flex-col justify-between border-l-4 border-l-teal-600 group">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-teal-700 block">Rotina & Manejo</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span class="text-2xl font-black text-stone-900">Checklist</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-lg shadow-sm">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                    </div>
+
+                    <!-- Métricas de Apoio do Checklist -->
+                    <div class="mt-3 pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Controle de Tarefas:</span>
+                            <strong class="text-emerald-700 font-bold flex items-center gap-1">
+                                <i class="fas fa-circle-check text-[11px]"></i> ADAPEC & Diário
+                            </strong>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-stone-500 font-medium">Próxima Ação:</span>
+                            <span class="text-stone-700 font-bold truncate max-w-[130px]" id="kpi-proxima-tarefa">Conferir rotinas</span>
+                        </div>
+                    </div>
+
+                    <a href="https://wilksonac.github.io/checklist/" target="_blank" class="mt-3 w-full py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <span>Abrir Checklist</span>
+                        <i class="fas fa-up-right-from-square text-[10px]"></i>
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 📱 3. HUB DE MÓDULOS DA FAZENDA -->
+        <section class="space-y-3 pt-2">
+            <div class="flex items-center justify-between px-1">
+                <h2 class="text-sm font-extrabold text-stone-800 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-cubes text-emerald-700"></i> Todos os Módulos do Sistema
+                </h2>
+                <span class="text-[11px] text-stone-400">Acesso Direto</span>
+            </div>
+
+            <!-- Grid com Cards Táteis Grandes para Dedo/Mobile -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3.5">
+
+                <!-- 1. Leite Colaborativo -->
+                <a href="leite_colaborativo.html" class="agro-card p-4 flex flex-col items-center text-center gap-2.5 hover:border-emerald-600 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fas fa-droplet"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 leading-tight">Leite Colaborativo</h3>
+                        <p class="text-[11px] text-stone-500 mt-0.5">Produção diária, gráficos e faturamento</p>
+                    </div>
+                </a>
+
+                <!-- 2. Rebanho & Gado Pro -->
+                <a href="registro_animais.html" class="agro-card p-4 flex flex-col items-center text-center gap-2.5 hover:border-sky-600 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-800 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fas fa-cow"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 leading-tight">Rebanho & Gado Pro</h3>
+                        <p class="text-[11px] text-stone-500 mt-0.5">Controle zootécnico, brincos e partos</p>
+                    </div>
+                </a>
+
+                <!-- 3. Despesas & Extrato -->
+                <a href="despesas.html" class="agro-card p-4 flex flex-col items-center text-center gap-2.5 hover:border-amber-600 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 leading-tight">Despesas da Fazenda</h3>
+                        <p class="text-[11px] text-stone-500 mt-0.5">Custos, conciliação e categorias</p>
+                    </div>
+                </a>
+
+                <!-- 4. Venda de Ovos & Fidelidade -->
+                <a href="venda_ovos.html" class="agro-card p-4 flex flex-col items-center text-center gap-2.5 hover:border-amber-600 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fas fa-egg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 leading-tight">Venda de Ovos</h3>
+                        <p class="text-[11px] text-stone-500 mt-0.5">Encomendas, entregas e fidelidade</p>
+                    </div>
+                </a>
+
+                <!-- 5. Gestão Financeira Integrada -->
+                <a href="financeiro.html" class="agro-card p-4 flex flex-col items-center text-center gap-2.5 hover:border-emerald-600 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fas fa-scale-balanced"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 leading-tight">Gestão Financeira</h3>
+                        <p class="text-[11px] text-stone-500 mt-0.5">Balanço geral, receitas e DRE</p>
+                    </div>
+                </a>
+
+                <!-- 6. Checklist & Manejo Sanitário -->
+                <a href="https://wilksonac.github.io/checklist/" target="_blank" class="agro-card p-4 flex flex-col items-center text-center gap-2.5 hover:border-teal-600 hover:shadow-md transition">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 leading-tight">Checklist da Fazenda</h3>
+                        <p class="text-[11px] text-stone-500 mt-0.5">Rotinas diárias e calendário sanitário</p>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 📲 BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM BAR MOBILE-FIRST) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bottom-nav-blur px-2 py-2 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+
+            <!-- Item: Início (Ativo) -->
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-emerald-800 font-bold transition">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-base shadow-sm">
+                    <i class="fas fa-house"></i>
+                </div>
+                <span class="text-[10px] mt-1">Início</span>
+            </a>
+
+            <!-- Item: Leite -->
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <!-- Botão Central Flutuante: Lançamento Rápido -->
+            <button onclick="abrirModalLeiteRapido()" class="flex flex-col items-center justify-center -mt-5 transition active:scale-95" title="Lançamento Rápido">
+                <div class="w-12 h-12 rounded-full hero-gradient text-white flex items-center justify-center text-xl shadow-lg border-2 border-white">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-900 mt-0.5">Lançar</span>
+            </button>
+
+            <!-- Item: Rebanho -->
+            <a href="registro_animais.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-cow"></i>
+                </div>
+                <span class="text-[10px] mt-1">Rebanho</span>
+            </a>
+
+            <!-- Item: Finanças -->
+            <a href="despesas.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <span class="text-[10px] mt-1">Despesas</span>
+            </a>
+
+        </div>
+    </nav>
+
+    <!-- 📝 MODAL DE LANÇAMENTO RÁPIDO DE LEITE (DIRETO NA HOME) -->
+    <div id="modal-leite-rapido" class="hidden fixed inset-0 z-50 bg-stone-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="agro-card bg-white w-full max-w-lg rounded-b-none sm:rounded-2xl p-5 shadow-2xl space-y-4 border-t sm:border border-stone-200">
+            <!-- Header do Modal -->
+            <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-base text-stone-800">Lançamento Rápido de Leite</h3>
+                        <p class="text-xs text-stone-500">Salva direto na produção diária</p>
+                    </div>
+                </div>
+                <button onclick="fecharModalLeiteRapido()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="form-leite-rapido" onsubmit="salvarLeiteRapido(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">Data da Coleta</label>
+                    <input type="date" id="input-rapido-data" required
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 mb-1">Manhã (Litros)</label>
+                        <input type="number" step="0.01" id="input-rapido-manha" required placeholder="0.00"
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 text-base font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 mb-1">Tarde (Opcional)</label>
+                        <input type="number" step="0.01" id="input-rapido-tarde" placeholder="0.00"
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 text-base font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">Preço do Leite (R$/Litro)</label>
+                    <input type="number" step="0.01" id="input-rapido-preco" required placeholder="2.50"
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="pt-2 flex gap-2.5">
+                    <button type="button" onclick="fecharModalLeiteRapido()"
+                        class="w-1/3 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-sm rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btn-submit-rapido"
+                        class="w-2/3 py-3 hero-gradient text-white font-extrabold text-sm rounded-xl shadow-md active:scale-98 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>
+                        <span>Salvar Registro</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🔥 FIREBASE MODULAR SCRIPTS (V10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signInAnonymously, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            getDoc, 
+            getDocs, 
+            addDoc, 
+            query, 
+            where, 
+            orderBy, 
+            limit, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- 1. CONFIGURAÇÕES DOS PROJETOS FIREBASE ---
+        const mainFirebaseConfig = window.globalFirebaseConfig;
+
+        const animaisFirebaseConfig = {
+            apiKey: "AIzaSyDT93mKi2kTXKLxdQngup6D-czdu9_vTYk",
+            authDomain: "registro-animais.firebaseapp.com",
+            projectId: "registro-animais",
+            storageBucket: "registro-animais.firebasestorage.app",
+            messagingSenderId: "343289114136",
+            appId: "1:343289114136:web:d98ed164d8bbd3f7b9dd6d"
+        };
+
+        // Inicialização dos dois Apps
+        const appMain = initializeApp(mainFirebaseConfig);
+        const dbMain = getFirestore(appMain);
+        const authMain = getAuth(appMain);
+
+        const appAnimais = initializeApp(animaisFirebaseConfig, "animaisApp");
+        const dbAnimais = getFirestore(appAnimais);
+        const authAnimais = getAuth(appAnimais);
+
+        let currentUser = null;
+
+        // --- 2. GESTÃO DE AUTENTICAÇÃO UNIFICADA GOOGLE ---
+        onAuthStateChanged(authMain, (user) => {
+            currentUser = user;
+            const btnLogin = document.getElementById('btn-login-google');
+            const userProfile = document.getElementById('user-profile');
+            const userAvatar = document.getElementById('user-avatar');
+            const userName = document.getElementById('user-name');
+            const txtSaudacao = document.getElementById('txt-saudacao');
+
+            if (user) {
+                btnLogin.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                userAvatar.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                userName.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Produtor';
+                
+                const hora = new Date().getHours();
+                const saudacaoTempo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+                txtSaudacao.textContent = `${saudacaoTempo}, ${user.displayName ? user.displayName.split(' ')[0] : 'Produtor'}!`;
+            } else {
+                btnLogin.classList.remove('hidden');
+                userProfile.classList.add('hidden');
+                txtSaudacao.textContent = 'Olá, Fazenda WM de Jesus!';
+            }
+        });
+
+        // Autentica anonimamente no banco de animais para leitura rápida
+        signInAnonymously(authAnimais).catch(e => console.warn("Animais Auth:", e));
+
+        window.fazerLoginGoogle = async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(authMain, provider);
+                showToast("Login realizado com sucesso!", "success");
+                carregarCockpitCompleto();
+            } catch (err) {
+                console.error("Erro login:", err);
+                showToast("Erro ao fazer login: " + err.message, "error");
+            }
+        };
+
+        window.fazerLogout = async () => {
+            try {
+                await signOut(authMain);
+                showToast("Sessão finalizada", "info");
+            } catch (err) {
+                console.error("Erro logout:", err);
+            }
+        };
+
+        // --- 3. FUNÇÃO DE TOAST / NOTIFICAÇÃO ---
+        window.showToast = (msg, type = "info") => {
+            const bg = type === "success" ? "#064e3b" : type === "error" ? "#dc2626" : "#d97706";
+            Toastify({
+                text: msg,
+                duration: 3500,
+                gravity: "top",
+                position: "center",
+                style: { background: bg, borderRadius: "12px", fontWeight: "600", fontSize: "13px" }
+            }).showToast();
+        };
+
+        // --- 4. FORMATADORES & HELPERS ---
+        function formatMoneyBRL(val) {
+            return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatDataHoje() {
+            const opcoes = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            const dataExtensa = new Date().toLocaleDateString('pt-BR', opcoes);
+            return dataExtensa.charAt(0).toUpperCase() + dataExtensa.slice(1);
+        }
+
+        document.getElementById('txt-data-hoje').textContent = formatDataHoje();
+
+        const dataAtual = new Date();
+        const nomeMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        document.getElementById('tag-mes-vigente').textContent = `${nomeMeses[dataAtual.getMonth()]} ${dataAtual.getFullYear()}`;
+
+        // --- 5. CARREGAMENTO DOS 4 KPIS DO COCKPIT ---
+        window.carregarCockpitCompleto = async (manual = false) => {
+            const iconSync = document.getElementById('icon-sync');
+            if (iconSync) iconSync.classList.add('fa-spin');
+
+            try {
+                await Promise.all([
+                    carregarKpiLeite(),
+                    carregarKpiRebanho(),
+                    carregarKpiDespesas()
+                ]);
+
+                if (manual) showToast("Dados atualizados com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro carregando cockpit:", e);
+                if (manual) showToast("Erro ao sincronizar dados.", "error");
+            } finally {
+                if (iconSync) iconSync.classList.remove('fa-spin');
+            }
+        };
+
+        // KPI 1: Produção de Leite
+        async function carregarKpiLeite() {
+            try {
+                const appId = mainFirebaseConfig.projectId;
+                const colRef = collection(dbMain, `artifacts/${appId}/public/data/production_records`);
+                
+                const snap = await getDocs(colRef);
+                let registros = [];
+                snap.forEach(d => {
+                    const dataObj = d.data();
+                    dataObj.Data = dataObj.Data && dataObj.Data.toDate ? dataObj.Data.toDate() : new Date(dataObj.Data);
+                    registros.push(dataObj);
+                });
+
+                if (registros.length === 0) {
+                    document.getElementById('kpi-leite-hoje').textContent = '0.00';
+                    document.getElementById('kpi-leite-mes').textContent = '0 L';
+                    document.getElementById('kpi-leite-media').textContent = '0 L/dia';
+                    return;
+                }
+
+                registros.sort((a, b) => b.Data - a.Data);
+
+                const hojeStr = new Date().toISOString().split('T')[0];
+                const mesAtual = new Date().getMonth();
+                const anoAtual = new Date().getFullYear();
+
+                let leiteHoje = 0;
+                let leiteMes = 0;
+                let diasComProducaoMes = 0;
+
+                const registroHoje = registros.find(r => {
+                    const rStr = r.Data.toISOString().split('T')[0];
+                    return rStr === hojeStr;
+                });
+
+                if (registroHoje) {
+                    leiteHoje = (registroHoje.Manha || 0) + (registroHoje.Tarde || 0);
+                } else if (registros[0]) {
+                    leiteHoje = (registros[0].Manha || 0) + (registros[0].Tarde || 0);
+                }
+
+                registros.forEach(r => {
+                    if (r.Data.getMonth() === mesAtual && r.Data.getFullYear() === anoAtual) {
+                        const tot = (r.Manha || 0) + (r.Tarde || 0);
+                        leiteMes += tot;
+                        diasComProducaoMes++;
+                    }
+                });
+
+                const mediaMes = diasComProducaoMes > 0 ? (leiteMes / diasComProducaoMes) : 0;
+
+                document.getElementById('kpi-leite-hoje').textContent = leiteHoje.toFixed(2);
+                document.getElementById('kpi-leite-mes').textContent = `${Math.round(leiteMes).toLocaleString('pt-BR')} L`;
+                document.getElementById('kpi-leite-media').textContent = `${mediaMes.toFixed(1)} L/dia`;
+
+            } catch (err) {
+                console.error("Erro KPI Leite:", err);
+                document.getElementById('kpi-leite-hoje').textContent = "--";
+            }
+        }
+
+        // KPI 2: Rebanho e Vacas em Lactação
+        async function carregarKpiRebanho() {
+            try {
+                const snap = await getDocs(collection(dbAnimais, 'animais'));
+                let animais = [];
+                snap.forEach(d => animais.push(d.data()));
+
+                const limpar = (str) => str ? str.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+                const ativos = animais.filter(a => {
+                    const st = limpar(a.status_produtivo);
+                    return !st.includes('VENDIDO') && !st.includes('MORTO') && !st.includes('ROUBO') && !st.includes('OUTRO');
+                });
+
+                const lactacao = ativos.filter(a => limpar(a.status_produtivo).includes('LACTA'));
+                const secas = ativos.filter(a => limpar(a.status_produtivo).includes('SECA'));
+                const bezerros = ativos.filter(a => a.nascimento ? (Math.floor((new Date() - new Date(a.nascimento)) / (1000 * 60 * 60 * 24 * 30.4375)) < 12) : limpar(a.categoria_manual).includes('BEZERRO'));
+
+                const pctLact = ativos.length > 0 ? Math.round((lactacao.length / ativos.length) * 100) : 0;
+
+                document.getElementById('kpi-vacas-lactacao').textContent = lactacao.length;
+                document.getElementById('kpi-vacas-pct').textContent = `${pctLact}% em ordenha`;
+                document.getElementById('kpi-total-rebanho').textContent = `${ativos.length} cab`;
+                document.getElementById('kpi-vacas-secas').textContent = `${secas.length} secas`;
+                document.getElementById('kpi-bezerros').textContent = `${bezerros.length} bez`;
+
+            } catch (err) {
+                console.error("Erro KPI Rebanho:", err);
+                document.getElementById('kpi-vacas-lactacao').textContent = "--";
+            }
+        }
+
+        // KPI 3: Despesas do Mês Atual
+        async function carregarKpiDespesas() {
+            try {
+                const snap = await getDocs(collection(dbMain, 'despesas'));
+                const mesAtual = new Date().getMonth();
+                const anoAtual = new Date().getFullYear();
+
+                let totalDespesasMes = 0;
+                let qtdDespesasMes = 0;
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    let dataItem = null;
+
+                    if (data.Data) {
+                        if (data.Data.toDate) {
+                            dataItem = data.Data.toDate();
+                        } else if (typeof data.Data === 'string') {
+                            const partes = data.Data.split('/');
+                            if (partes.length === 3) {
+                                dataItem = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
+                            } else if (data.Data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                dataItem = new Date(data.Data + 'T00:00:00');
+                            }
+                        }
+                    }
+
+                    if (dataItem && dataItem.getMonth() === mesAtual && dataItem.getFullYear() === anoAtual) {
+                        let valor = 0;
+                        if (typeof data.Total === 'number') {
+                            valor = data.Total;
+                        } else if (typeof data.Total === 'string') {
+                            valor = parseFloat(data.Total.replace('R$', '').trim().replace(/\./g, '').replace(',', '.')) || 0;
+                        }
+                        totalDespesasMes += valor;
+                        qtdDespesasMes++;
+                    }
+                });
+
+                document.getElementById('kpi-despesas-mes').textContent = formatMoneyBRL(totalDespesasMes);
+                document.getElementById('kpi-despesas-qtd').textContent = `${qtdDespesasMes} lançamentos`;
+
+            } catch (err) {
+                console.error("Erro KPI Despesas:", err);
+                document.getElementById('kpi-despesas-mes').textContent = "R$ --";
+            }
+        }
+
+        // --- 6. MODAL DE LANÇAMENTO RÁPIDO DE LEITE ---
+        window.abrirModalLeiteRapido = async () => {
+            const modal = document.getElementById('modal-leite-rapido');
+            const inputData = document.getElementById('input-rapido-data');
+            const inputPreco = document.getElementById('input-rapido-preco');
+            
+            inputData.value = new Date().toISOString().split('T')[0];
+            
+            try {
+                const appId = mainFirebaseConfig.projectId;
+                const docSnap = await getDoc(doc(dbMain, `artifacts/${appId}/public/config_geral`));
+                if (docSnap.exists() && docSnap.data().defaultMilkPrice) {
+                    inputPreco.value = docSnap.data().defaultMilkPrice;
+                } else {
+                    inputPreco.value = "2.50";
+                }
+            } catch (e) {
+                inputPreco.value = "2.50";
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.fecharModalLeiteRapido = () => {
+            document.getElementById('modal-leite-rapido').classList.add('hidden');
+        };
+
+        window.salvarLeiteRapido = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-rapido');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+            try {
+                const dateVal = document.getElementById('input-rapido-data').value;
+                const manha = parseFloat(document.getElementById('input-rapido-manha').value) || 0;
+                const tarde = parseFloat(document.getElementById('input-rapido-tarde').value) || 0;
+                const preco = parseFloat(document.getElementById('input-rapido-preco').value) || 2.50;
+
+                const [ano, mes, dia] = dateVal.split('-').map(Number);
+                const dataObj = new Date(ano, mes - 1, dia, 12, 0, 0);
+
+                const total = manha + tarde;
+                const receita = total * preco;
+
+                const payload = {
+                    Data: dataObj,
+                    Manha: manha,
+                    Tarde: tarde,
+                    Total: total,
+                    PrecoLitro: preco,
+                    Receita: receita,
+                    createdAt: new Date(),
+                    origem: 'Cockpit Home Mobile'
+                };
+
+                const appId = mainFirebaseConfig.projectId;
+                const colRef = collection(dbMain, `artifacts/${appId}/public/data/production_records`);
+                await addDoc(colRef, payload);
+
+                showToast("Produção de leite salva com sucesso!", "success");
+                fecharModalLeiteRapido();
+                document.getElementById('form-leite-rapido').reset();
+                carregarKpiLeite();
+
+            } catch (err) {
+                console.error("Erro salvando leite rápido:", err);
+                showToast("Erro ao salvar: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> <span>Salvar Registro</span>';
+            }
+        };
+
+        // Carrega os dados ao abrir a página
+        carregarCockpitCompleto();
+    </script>
+</body>
+
+</html>

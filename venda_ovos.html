@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ovos WM">
+    <meta name="theme-color" content="#064E3B">
+    <title>Venda de Ovos & Fidelidade • Fazenda WM de Jesus</title>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Google Fonts & FontAwesome 6 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Toastify & Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e'
+                        },
+                        stone: {
+                            50: '#fbfbfa',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F7F6F2;
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .agro-card {
+            background: #ffffff;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(231, 229, 228, 0.85);
+            box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #059669 100%);
+        }
+
+        .amber-gradient {
+            background: linear-gradient(135deg, #b45309 0%, #d97706 60%, #f59e0b 100%);
+        }
+
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.9);
+        }
+
+        .tab-btn.active {
+            background-color: #064e3b;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.25);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .safe-bottom {
+            padding-bottom: max(env(safe-area-inset-bottom, 16px), 76px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F7F6F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 999px;
+        }
+
+        .stamp-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            transition: all 0.2s ease;
+        }
+    </style>
+    <script src="firebase-config.js"></script>
+</head>
+
+<body class="min-h-full flex flex-col antialiased selection:bg-amber-200">
+
+    <!-- ═══════════════════════════════════════════════════════
+         TELA DE LOGIN UNIFICADA
+         ═══════════════════════════════════════════════════════ -->
+    <div id="tela-login" class="fixed inset-0 z-50 bg-stone-900/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="agro-card p-6 sm:p-8 max-w-sm w-full text-center space-y-5 shadow-2xl border-stone-700">
+            <div class="w-16 h-16 rounded-2xl hero-gradient flex items-center justify-center text-white mx-auto shadow-lg">
+                <i class="fas fa-egg text-2xl"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-black text-stone-900">Fazenda WM de Jesus</h2>
+                <p class="text-xs text-stone-500 font-medium mt-1">Venda de Ovos Caipiras & Fidelidade</p>
+            </div>
+            <div class="pt-2 space-y-2">
+                <button onclick="fazerLoginGoogle()" class="w-full py-3.5 px-4 bg-white border border-stone-300 rounded-xl text-stone-700 font-bold text-xs shadow-sm hover:bg-stone-50 flex items-center justify-center gap-3 transition active:scale-98">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google">
+                    <span>Entrar com Google</span>
+                </button>
+                <button onclick="fazerLoginAnonimo()" class="w-full py-2.5 px-4 bg-stone-100 border border-stone-200 rounded-xl text-stone-600 font-semibold text-xs hover:bg-stone-200 flex items-center justify-center gap-2 transition active:scale-98">
+                    <i class="fas fa-user-clock text-stone-400"></i>
+                    <span>Acesso Rápido Direto</span>
+                </button>
+            </div>
+            <p id="login-error" class="text-xs text-rose-600 font-medium hidden"></p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER SUPERIOR FIXO / APP BAR
+         ═══════════════════════════════════════════════════════ -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200/80 px-4 py-3">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl amber-gradient text-white flex items-center justify-center text-lg shadow-sm">
+                    <i class="fas fa-egg"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-sm text-stone-900 leading-tight">Venda de Ovos & Fidelidade</h1>
+                    <p class="text-[11px] text-stone-500 font-medium">Fazenda WM de Jesus</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="carregarOvosCompleto(true)" title="Sincronizar Dados" class="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 hover:bg-stone-200 flex items-center justify-center text-xs transition active:scale-95">
+                    <i class="fas fa-rotate" id="icon-sync"></i>
+                </button>
+                <div class="flex items-center gap-2 pl-1 border-l border-stone-200">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=WM&background=064E3B&color=fff" class="w-8 h-8 rounded-xl object-cover border border-stone-200" alt="Avatar">
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Abas de Navegação -->
+        <div class="max-w-4xl mx-auto mt-2.5">
+            <div class="flex bg-stone-100 p-1 rounded-xl gap-1 text-xs">
+                <button id="tab-nav-encomendas" onclick="nav('encomendas')" class="tab-btn flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 active">
+                    <i class="fas fa-calendar-week"></i>
+                    <span>Encomendas</span>
+                    <span id="badge-total-encomendas" class="hidden text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full font-black ml-0.5">0</span>
+                </button>
+                <button id="tab-nav-nova" onclick="nav('nova')" class="tab-btn flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-stone-600">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Novo Pedido</span>
+                </button>
+                <button id="tab-nav-fidelidade" onclick="nav('fidelidade')" class="tab-btn flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-stone-600">
+                    <i class="fas fa-gift"></i>
+                    <span>Fidelidade</span>
+                    <span id="badge-brindes-prontos" class="hidden text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded-full font-black ml-0.5">0</span>
+                </button>
+                <button id="tab-nav-relatorio" onclick="nav('relatorio')" class="tab-btn flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-stone-600">
+                    <i class="fas fa-chart-simple"></i>
+                    <span>Relatório</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTEÚDO PRINCIPAL
+         ═══════════════════════════════════════════════════════ -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-4 safe-bottom">
+
+        <!-- ═══════════════════════════════════════════════════════
+             1. ABA: ENCOMENDAS DO FIM DE SEMANA
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-encomendas" class="space-y-3.5 fade-in">
+            
+            <!-- Resumo / Cockpit de Encomendas -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <!-- Cartelas 30 -->
+                <div class="agro-card p-3 border-amber-200 bg-amber-50/40 flex flex-col justify-between">
+                    <span class="text-[10px] font-extrabold uppercase text-amber-800 tracking-wider">Cartelas (30)</span>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-xl font-black text-amber-950 font-mono" id="kpi-cartelas-30">0</span>
+                        <span class="text-[10px] text-amber-700 font-bold font-mono" id="kpi-ovos-30">0 ovos</span>
+                    </div>
+                </div>
+
+                <!-- Dúzias (12) -->
+                <div class="agro-card p-3 border-stone-200 flex flex-col justify-between">
+                    <span class="text-[10px] font-extrabold uppercase text-stone-500 tracking-wider">Dúzias (12)</span>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-xl font-black text-stone-800 font-mono" id="kpi-duzias-12">0</span>
+                        <span class="text-[10px] text-stone-500 font-bold font-mono" id="kpi-ovos-12">0 ovos</span>
+                    </div>
+                </div>
+
+                <!-- Dezenas (10) -->
+                <div class="agro-card p-3 border-stone-200 flex flex-col justify-between">
+                    <span class="text-[10px] font-extrabold uppercase text-stone-500 tracking-wider">Dezenas (10)</span>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-xl font-black text-stone-800 font-mono" id="kpi-dezenas-10">0</span>
+                        <span class="text-[10px] text-stone-500 font-bold font-mono" id="kpi-ovos-10">0 ovos</span>
+                    </div>
+                </div>
+
+                <!-- Total a Receber -->
+                <div class="agro-card p-3 border-emerald-200 bg-emerald-50/50 flex flex-col justify-between">
+                    <span class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider">A Receber</span>
+                    <div class="mt-1">
+                        <span class="text-base sm:text-lg font-black text-emerald-900 font-mono" id="kpi-valor-pendente">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros Rápidos da Lista de Encomendas -->
+            <div class="agro-card p-3 border border-stone-200 flex flex-col sm:flex-row gap-2 justify-between sm:items-center">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-stone-400 text-xs"></i>
+                    <input type="text" id="filtro-busca-encomendas" oninput="aplicarFiltrosEncomendas()" placeholder="Buscar cliente, whatsapp ou obs..."
+                        class="w-full pl-8 pr-3 py-1.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-800 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="flex gap-2">
+                    <select id="filtro-status-entrega" onchange="aplicarFiltrosEncomendas()"
+                        class="border border-stone-300 rounded-xl text-xs py-1.5 px-2 bg-white text-stone-700 font-bold focus:outline-none focus:border-amber-500">
+                        <option value="ALL">Entrega: Todas</option>
+                        <option value="ENCOMENDADO" selected>⏳ Para Entregar</option>
+                        <option value="ENTREGUE">✅ Entregues</option>
+                    </select>
+
+                    <select id="filtro-status-pagamento" onchange="aplicarFiltrosEncomendas()"
+                        class="border border-stone-300 rounded-xl text-xs py-1.5 px-2 bg-white text-stone-700 font-bold focus:outline-none focus:border-amber-500">
+                        <option value="ALL">Pagamento: Todos</option>
+                        <option value="PENDENTE">❌ Não Pago</option>
+                        <option value="PAGO">💵 Pago</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lista de Cards de Encomendas -->
+            <div id="lista-encomendas-cards" class="space-y-2.5">
+                <!-- Renderizado via JS -->
+            </div>
+
+            <div id="encomendas-vazio" class="hidden agro-card p-8 text-center text-stone-400 space-y-2">
+                <div class="w-12 h-12 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto text-xl">
+                    <i class="fas fa-basket-shopping"></i>
+                </div>
+                <p class="text-xs font-bold text-stone-600">Nenhuma encomenda encontrada neste filtro.</p>
+                <p class="text-[11px]">Clique em <strong>Novo Pedido</strong> para registrar uma nova encomenda.</p>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             2. ABA: NOVO PEDIDO / ENCOMENDA
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-nova" class="hidden space-y-4 fade-in">
+            <div class="agro-card p-4 sm:p-5 border border-stone-200 space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-black">
+                            <i class="fas fa-cart-plus"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-sm text-stone-900" id="titulo-form-pedido">Registrar Nova Encomenda / Venda</h3>
+                            <p class="text-[11px] text-stone-500">Separar e entregar no fim de semana</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="limparFormularioPedido()" class="text-[11px] text-stone-400 hover:text-stone-700 font-bold">Limpar</button>
+                </div>
+
+                <form id="formPedido" class="space-y-3.5">
+                    <input type="hidden" id="pedido-edit-id">
+
+                    <!-- Dados do Comprador -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">
+                                Nome do Comprador <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" id="pedido-cliente" required list="lista-sugestao-clientes" placeholder="Ex: Dona Maria, Seu João..."
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500">
+                            <datalist id="lista-sugestao-clientes"></datalist>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">WhatsApp / Telefone (Opcional)</label>
+                            <input type="tel" id="pedido-whatsapp" placeholder="Ex: (63) 99999-9999"
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <!-- Data Prevista de Entrega -->
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Data de Entrega Prevista</label>
+                        <div class="flex gap-2 mb-1.5">
+                            <button type="button" onclick="definirDataEntrega('sabado')" class="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[11px] font-bold text-amber-900 transition">
+                                <i class="fas fa-calendar-day"></i> Próx. Sábado
+                            </button>
+                            <button type="button" onclick="definirDataEntrega('domingo')" class="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[11px] font-bold text-amber-900 transition">
+                                <i class="fas fa-calendar-day"></i> Próx. Domingo
+                            </button>
+                            <button type="button" onclick="definirDataEntrega('hoje')" class="flex-1 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition">
+                                Hoje
+                            </button>
+                        </div>
+                        <input type="date" id="pedido-data-entrega" required
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2 text-xs font-semibold text-stone-800 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <!-- Itens da Encomenda (3 Opções) -->
+                    <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+                        <span class="text-xs font-extrabold text-stone-800 flex items-center gap-1.5">
+                            <i class="fas fa-egg text-amber-600"></i> Selecione as Embalagens:
+                        </span>
+
+                        <!-- 1. Cartela com 30 Ovos -->
+                        <div class="flex items-center justify-between gap-3 p-2 bg-white rounded-lg border border-stone-200">
+                            <div class="flex-1">
+                                <span class="text-xs font-bold text-stone-900 block">Cartela com 30 Ovos</span>
+                                <span class="text-[10px] text-stone-400">Embalagem clássica grande</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-semibold text-stone-500">R$</span>
+                                <input type="number" step="0.50" id="preco-cartela-30" value="25.00" oninput="calcularTotalPedido()"
+                                    class="w-16 bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-bold text-right text-stone-800">
+                                <span class="text-xs text-stone-400">x</span>
+                                <input type="number" min="0" id="qtd-cartela-30" value="0" oninput="calcularTotalPedido()"
+                                    class="w-14 bg-amber-50 border border-amber-300 rounded-lg p-1.5 text-xs font-black text-center text-amber-900 font-mono">
+                            </div>
+                        </div>
+
+                        <!-- 2. Embalagem com 12 Ovos (Dúzia) -->
+                        <div class="flex items-center justify-between gap-3 p-2 bg-white rounded-lg border border-stone-200">
+                            <div class="flex-1">
+                                <span class="text-xs font-bold text-stone-900 block">Embalagem 12 Ovos (Dúzia)</span>
+                                <span class="text-[10px] text-stone-400">Estojo de 12 unidades</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-semibold text-stone-500">R$</span>
+                                <input type="number" step="0.50" id="preco-duzia-12" value="12.00" oninput="calcularTotalPedido()"
+                                    class="w-16 bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-bold text-right text-stone-800">
+                                <span class="text-xs text-stone-400">x</span>
+                                <input type="number" min="0" id="qtd-duzia-12" value="0" oninput="calcularTotalPedido()"
+                                    class="w-14 bg-amber-50 border border-amber-300 rounded-lg p-1.5 text-xs font-black text-center text-amber-900 font-mono">
+                            </div>
+                        </div>
+
+                        <!-- 3. Embalagem com 10 Ovos (Dezena) -->
+                        <div class="flex items-center justify-between gap-3 p-2 bg-white rounded-lg border border-stone-200">
+                            <div class="flex-1">
+                                <span class="text-xs font-bold text-stone-900 block">Embalagem 10 Ovos (Dezena)</span>
+                                <span class="text-[10px] text-stone-400">Estojo de 10 unidades</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-semibold text-stone-500">R$</span>
+                                <input type="number" step="0.50" id="preco-dezena-10" value="10.00" oninput="calcularTotalPedido()"
+                                    class="w-16 bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-bold text-right text-stone-800">
+                                <span class="text-xs text-stone-400">x</span>
+                                <input type="number" min="0" id="qtd-dezena-10" value="0" oninput="calcularTotalPedido()"
+                                    class="w-14 bg-amber-50 border border-amber-300 rounded-lg p-1.5 text-xs font-black text-center text-amber-900 font-mono">
+                            </div>
+                        </div>
+
+                        <!-- Resumo do Pedido -->
+                        <div class="pt-2 border-t border-stone-200 flex items-center justify-between">
+                            <span class="text-xs font-bold text-stone-600" id="resumo-total-ovos">0 ovos no pedido</span>
+                            <div class="text-right">
+                                <span class="text-[10px] font-black text-stone-400 uppercase">Valor Total</span>
+                                <p class="text-lg font-black text-emerald-900 font-mono" id="resumo-valor-total">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status de Entrega e Pagamento -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Status de Entrega</label>
+                            <select id="pedido-status-entrega"
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500">
+                                <option value="ENCOMENDADO">⏳ Encomendado (Aguardando fim de semana)</option>
+                                <option value="ENTREGUE">✅ Entregue ao Cliente</option>
+                                <option value="CANCELADO">❌ Cancelado</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Status de Pagamento</label>
+                            <select id="pedido-status-pagamento" onchange="alternarCampoFormaPagamento()"
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500">
+                                <option value="PENDENTE">❌ Não Pago (A receber)</option>
+                                <option value="PAGO">💵 Pago</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="box-forma-pagamento" class="hidden">
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Forma de Pagamento</label>
+                        <select id="pedido-forma-pagamento"
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-amber-500">
+                            <option value="PIX">Pix</option>
+                            <option value="DINHEIRO">Dinheiro em Espécie</option>
+                            <option value="CARTAO">Cartão de Débito/Crédito</option>
+                            <option value="OUTRO">Outro / Fiado Acordado</option>
+                        </select>
+                    </div>
+
+                    <!-- Observações -->
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Observações / Ponto de Entrega</label>
+                        <input type="text" id="pedido-obs" placeholder="Ex: Deixar na portaria, troco para 50..."
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <button type="submit"
+                        class="w-full hero-gradient text-white font-extrabold py-3.5 rounded-xl text-xs shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>
+                        <span id="btn-salvar-pedido-texto">Salvar Encomenda de Ovos</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             3. ABA: FIDELIDADE & CLIENTES
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-fidelidade" class="hidden space-y-4 fade-in">
+            
+            <!-- Banner de Regras de Fidelidade -->
+            <div class="agro-card p-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white space-y-2 shadow-md">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+                            <i class="fas fa-award text-amber-200"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-sm">Programa Fidelidade Caipira</h3>
+                            <p class="text-[11px] text-amber-100">Recompense seus melhores compradores de ovos</p>
+                        </div>
+                    </div>
+                    <button onclick="abrirConfigMetaFidelidade()" class="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-bold text-white flex items-center gap-1 transition">
+                        <i class="fas fa-gear"></i> Meta: <span id="lbl-meta-atual" class="font-mono">10</span>
+                    </button>
+                </div>
+                <p class="text-xs text-amber-50 font-medium">
+                    A cada <strong id="lbl-meta-texto" class="font-mono">10</strong> cartelas/embalagens compradas, o cliente ganha <strong>1 Brinde Especial</strong>! Ao entregar o brinde, a pontuação atual zera e recomeça o ciclo, ficando arquivado no histórico.
+                </p>
+            </div>
+
+            <!-- Busca de Clientes -->
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-3 text-stone-400 text-xs"></i>
+                <input type="text" id="busca-cliente-fidelidade" oninput="renderizarClientesFidelidade()" placeholder="Buscar cliente por nome ou telefone..."
+                    class="w-full pl-9 pr-3 py-2.5 bg-white border border-stone-300 rounded-xl text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500 shadow-sm">
+            </div>
+
+            <!-- Lista de Cartões de Fidelidade dos Clientes -->
+            <div id="lista-clientes-fidelidade" class="space-y-3">
+                <!-- Renderizado via JS -->
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             4. ABA: RELATÓRIO FINANCEIRO & HISTÓRICO GERAL
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-relatorio" class="hidden space-y-4 fade-in">
+            
+            <!-- Cards de Total do Período -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="agro-card p-4 border border-stone-200">
+                    <span class="text-[10px] font-black text-stone-400 uppercase">Faturamento Ovos (Mês)</span>
+                    <p class="text-xl font-black text-emerald-900 font-mono mt-1" id="rel-faturamento-mes">R$ 0,00</p>
+                    <span class="text-[10px] text-stone-500 font-medium" id="rel-qtd-vendas-mes">0 vendas realizadas</span>
+                </div>
+
+                <div class="agro-card p-4 border border-stone-200">
+                    <span class="text-[10px] font-black text-stone-400 uppercase">Total de Ovos Vendidos</span>
+                    <p class="text-xl font-black text-stone-800 font-mono mt-1" id="rel-total-ovos-mes">0</p>
+                    <span class="text-[10px] text-stone-500 font-medium" id="rel-detalhe-embalagens">--</span>
+                </div>
+
+                <div class="agro-card p-4 border border-stone-200 col-span-2 sm:col-span-1">
+                    <span class="text-[10px] font-black text-stone-400 uppercase">Brindes Entregues</span>
+                    <p class="text-xl font-black text-amber-700 font-mono mt-1" id="rel-total-brindes-mes">0</p>
+                    <span class="text-[10px] text-stone-500 font-medium">Recompensas de fidelidade</span>
+                </div>
+            </div>
+
+            <!-- Gráfico de Vendas Semanais -->
+            <div class="agro-card p-4 border border-stone-200 space-y-2">
+                <h4 class="text-xs font-extrabold text-stone-800 flex items-center gap-1.5">
+                    <i class="fas fa-chart-line text-emerald-700"></i> Evolução de Faturamento de Ovos
+                </h4>
+                <div class="h-48 relative">
+                    <canvas id="chartVendasOvos"></canvas>
+                </div>
+            </div>
+
+            <!-- Botões de Ação de Backup & Exportação -->
+            <div class="agro-card p-4 border border-stone-200 flex flex-col sm:flex-row gap-2 justify-between items-center">
+                <div>
+                    <h4 class="text-xs font-extrabold text-stone-800">Exportar Histórico Completo</h4>
+                    <p class="text-[11px] text-stone-500">Baixar planilha de todas as vendas e clientes em CSV</p>
+                </div>
+                <button onclick="exportarVendasCSV()" class="w-full sm:w-auto px-4 py-2 bg-stone-800 hover:bg-stone-900 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
+                    <i class="fas fa-file-csv"></i> Baixar CSV
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODAIS DE APOIO
+         ═══════════════════════════════════════════════════════ -->
+
+    <!-- Modal 1: Entrega de Brinde de Fidelidade -->
+    <div id="modal-entregar-brinde" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-4 shadow-2xl fade-in border-amber-300">
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 rounded-2xl amber-gradient text-white flex items-center justify-center text-2xl mx-auto shadow-lg">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h3 class="font-black text-base text-stone-900">Entregar Brinde de Fidelidade</h3>
+                <p class="text-xs text-stone-600">
+                    Cliente: <strong id="modal-brinde-cliente" class="text-stone-900">--</strong>
+                </p>
+            </div>
+
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5 text-xs text-stone-700">
+                <p class="font-bold text-amber-900 flex items-center gap-1.5">
+                    <i class="fas fa-check-circle text-amber-600"></i> Meta de Compras Atingida!
+                </p>
+                <p class="text-[11px]">
+                    Ao confirmar a entrega, o contador atual do cliente será <strong>zerado</strong> para iniciar o próximo ciclo de compras, e este brinde ficará arquivado com a data de hoje.
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-stone-700 mb-1">Descrição do Brinde Entregue</label>
+                <input type="text" id="modal-brinde-desc" value="1 Cartela Grátis de 30 Ovos Caipiras"
+                    class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500">
+            </div>
+
+            <div class="space-y-2 pt-1">
+                <button onclick="confirmarEntregaBrinde()" class="w-full py-3 amber-gradient text-white font-extrabold text-xs rounded-xl shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                    <i class="fas fa-award"></i> Confirmar Entrega do Brinde
+                </button>
+                <button onclick="document.getElementById('modal-entregar-brinde').classList.add('hidden')" class="w-full py-2 bg-stone-100 text-stone-700 font-bold text-xs rounded-xl">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Histórico de Brindes de um Cliente -->
+    <div id="modal-historico-brindes-cliente" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-md w-full max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl fade-in">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-black">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-900" id="hist-cliente-nome">Histórico do Cliente</h3>
+                        <p class="text-[11px] text-stone-500" id="hist-cliente-contato">--</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-historico-brindes-cliente').classList.add('hidden')" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Resumo do Comprador -->
+            <div class="grid grid-cols-3 gap-2 p-3 bg-stone-50 rounded-xl border border-stone-200 text-center">
+                <div>
+                    <span class="text-[9px] font-black text-stone-400 uppercase block">Total Gasto</span>
+                    <span class="text-xs font-black text-emerald-900 font-mono" id="hist-cliente-gasto">R$ 0</span>
+                </div>
+                <div>
+                    <span class="text-[9px] font-black text-stone-400 uppercase block">Total Pedidos</span>
+                    <span class="text-xs font-black text-stone-800 font-mono" id="hist-cliente-pedidos">0</span>
+                </div>
+                <div>
+                    <span class="text-[9px] font-black text-stone-400 uppercase block">Brindes Ganhos</span>
+                    <span class="text-xs font-black text-amber-700 font-mono" id="hist-cliente-brindes">0</span>
+                </div>
+            </div>
+
+            <!-- Linha do Tempo de Brindes Entregues -->
+            <div>
+                <h4 class="text-xs font-extrabold text-stone-800 mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-gift text-amber-600"></i> Brindes Resgatados pelo Cliente:
+                </h4>
+                <div id="hist-lista-brindes" class="space-y-2">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV)
+         ═══════════════════════════════════════════════════════ -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bottom-nav-blur px-2 py-2 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-house"></i>
+                </div>
+                <span class="text-[10px] mt-1">Início</span>
+            </a>
+
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <button onclick="nav('nova'); window.scrollTo({top: 0, behavior: 'smooth'});" class="flex flex-col items-center justify-center -mt-5 transition active:scale-95" title="Novo Pedido">
+                <div class="w-12 h-12 rounded-full amber-gradient text-white flex items-center justify-center text-xl shadow-lg border-2 border-white">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="text-[10px] font-bold text-amber-900 mt-0.5">Vender</span>
+            </button>
+
+            <a href="venda_ovos.html" class="flex flex-col items-center justify-center w-14 py-1 text-amber-800 font-bold transition">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-base shadow-sm">
+                    <i class="fas fa-egg"></i>
+                </div>
+                <span class="text-[10px] mt-1">Ovos</span>
+            </a>
+
+            <a href="registro_animais.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-cow"></i>
+                </div>
+                <span class="text-[10px] mt-1">Gado</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FIREBASE MODULAR (V10) & APP LOGIC
+         ═══════════════════════════════════════════════════════ -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, getDocs, addDoc, setDoc, deleteDoc, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, signInAnonymously, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = window.globalFirebaseConfig || {
+            apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
+            authDomain: "fazendawm-83f34.firebaseapp.com",
+            projectId: "fazendawm-83f34",
+            storageBucket: "fazendawm-83f34.firebasestorage.app",
+            messagingSenderId: "40894938435",
+            appId: "1:40894938435:web:1d8bdaf8f7869ecf7183f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const appId = firebaseConfig.projectId || "fazendawm-83f34";
+        const PATH_VENDAS = `artifacts/${appId}/public/data/egg_sales`;
+        const PATH_CLIENTES = `artifacts/${appId}/public/data/egg_customers`;
+        const PATH_CONFIG = `artifacts/${appId}/public/config_ovos`;
+
+        window.vendasOvos = [];
+        window.clientesFidelidade = [];
+        window.metaFidelidade = 10;
+        let chartVendas = null;
+        let clienteSelecionadoParaBrinde = null;
+
+        function showToast(msg, type = "info") {
+            const colors = { success: "#064e3b", error: "#dc2626", info: "#b45309" };
+            Toastify({
+                text: msg,
+                duration: 3500,
+                gravity: "top",
+                position: "center",
+                style: { background: colors[type] || "#064e3b", borderRadius: "12px", fontWeight: "600", fontSize: "13px" }
+            }).showToast();
+        }
+
+        window.fazerLoginGoogle = () => {
+            signInWithPopup(auth, provider).catch(err => {
+                document.getElementById('login-error').innerText = err.message;
+                document.getElementById('login-error').classList.remove('hidden');
+            });
+        };
+
+        window.fazerLoginAnonimo = () => {
+            signInAnonymously(auth).catch(err => {
+                document.getElementById('login-error').innerText = err.message;
+                document.getElementById('login-error').classList.remove('hidden');
+            });
+        };
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('tela-login').classList.add('hidden');
+                if (user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
+                definirDataEntrega('sabado');
+                carregarOvosCompleto();
+            } else {
+                document.getElementById('tela-login').classList.remove('hidden');
+            }
+        });
+
+        // Navegação de Abas
+        window.nav = (tela) => {
+            ['encomendas', 'nova', 'fidelidade', 'relatorio'].forEach(t => {
+                const el = document.getElementById('tela-' + t);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('tab-nav-' + t);
+                if (btn) {
+                    btn.classList.remove('active', 'bg-emerald-900', 'text-white');
+                    btn.classList.add('text-stone-600');
+                }
+            });
+
+            const targetTela = document.getElementById('tela-' + tela);
+            if (targetTela) targetTela.classList.remove('hidden');
+
+            const targetBtn = document.getElementById('tab-nav-' + tela);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+                targetBtn.classList.remove('text-stone-600');
+            }
+
+            if (tela === 'relatorio') renderizarRelatorio();
+            if (tela === 'fidelidade') renderizarClientesFidelidade();
+        };
+
+        // Helpers de Data
+        window.definirDataEntrega = (tipo) => {
+            const hoje = new Date();
+            const input = document.getElementById('pedido-data-entrega');
+            if (tipo === 'hoje') {
+                input.value = hoje.toISOString().split('T')[0];
+            } else if (tipo === 'sabado') {
+                const diaSemana = hoje.getDay(); // 0 = Domingo, 6 = Sábado
+                const diff = (6 - diaSemana + 7) % 7 || 7;
+                const proxSabado = new Date(hoje);
+                proxSabado.setDate(hoje.getDate() + diff);
+                input.value = proxSabado.toISOString().split('T')[0];
+            } else if (tipo === 'domingo') {
+                const diaSemana = hoje.getDay();
+                const diff = (7 - diaSemana) % 7 || 7;
+                const proxDomingo = new Date(hoje);
+                proxDomingo.setDate(hoje.getDate() + diff);
+                input.value = proxDomingo.toISOString().split('T')[0];
+            }
+        };
+
+        function formatarDataBr(d) {
+            if (!d) return '--';
+            const parts = d.split('-');
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+            return d;
+        }
+
+        function formatBRL(val) {
+            return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Cálculo do Pedido
+        window.calcularTotalPedido = () => {
+            const p30 = parseFloat(document.getElementById('preco-cartela-30').value) || 0;
+            const q30 = parseInt(document.getElementById('qtd-cartela-30').value) || 0;
+
+            const p12 = parseFloat(document.getElementById('preco-duzia-12').value) || 0;
+            const q12 = parseInt(document.getElementById('qtd-duzia-12').value) || 0;
+
+            const p10 = parseFloat(document.getElementById('preco-dezena-10').value) || 0;
+            const q10 = parseInt(document.getElementById('qtd-dezena-10').value) || 0;
+
+            const totalOvos = (q30 * 30) + (q12 * 12) + (q10 * 10);
+            const totalValor = (p30 * q30) + (p12 * q12) + (p10 * q10);
+
+            document.getElementById('resumo-total-ovos').innerText = `${totalOvos} ovos selecionados`;
+            document.getElementById('resumo-valor-total').innerText = formatBRL(totalValor);
+            return { q30, q12, q10, p30, p12, p10, totalOvos, totalValor };
+        };
+
+        window.alternarCampoFormaPagamento = () => {
+            const status = document.getElementById('pedido-status-pagamento').value;
+            const box = document.getElementById('box-forma-pagamento');
+            if (status === 'PAGO') {
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
+        };
+
+        // Carregamento Geral do Firestore
+        window.carregarOvosCompleto = async (manual = false) => {
+            const icon = document.getElementById('icon-sync');
+            if (icon) icon.classList.add('fa-spin');
+
+            try {
+                // 1. Carregar Configuração de Meta
+                try {
+                    const cfgDoc = await getDoc(doc(db, PATH_CONFIG, "geral"));
+                    if (cfgDoc.exists()) {
+                        window.metaFidelidade = cfgDoc.data().meta || 10;
+                    }
+                } catch(e){}
+                document.getElementById('lbl-meta-atual').innerText = window.metaFidelidade;
+                document.getElementById('lbl-meta-texto').innerText = window.metaFidelidade;
+
+                // 2. Carregar Vendas
+                const snapVendas = await getDocs(query(collection(db, PATH_VENDAS), orderBy("data_entrega", "desc")));
+                window.vendasOvos = [];
+                snapVendas.forEach(d => {
+                    window.vendasOvos.push({ id: d.id, ...d.data() });
+                });
+
+                // 3. Carregar Clientes / Fidelidade
+                const snapClientes = await getDocs(collection(db, PATH_CLIENTES));
+                window.clientesFidelidade = [];
+                snapClientes.forEach(d => {
+                    window.clientesFidelidade.push({ id: d.id, ...d.data() });
+                });
+
+                // Atualiza Datalist de Sugestão de Clientes
+                const datalist = document.getElementById('lista-sugestao-clientes');
+                datalist.innerHTML = '';
+                window.clientesFidelidade.forEach(c => {
+                    datalist.innerHTML += `<option value="${c.nome}">${c.whatsapp ? '(' + c.whatsapp + ')' : ''}</option>`;
+                });
+
+                // Processar KPIs e Renderizar
+                atualizarKPIsEncomendas();
+                aplicarFiltrosEncomendas();
+                renderizarClientesFidelidade();
+
+                if (manual) showToast("Dados de ovos atualizados!", "success");
+            } catch (err) {
+                console.error("Erro ao carregar ovos:", err);
+                showToast("Erro ao carregar dados: " + err.message, "error");
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        };
+
+        // KPIs de Encomendas
+        function atualizarKPIsEncomendas() {
+            const pendentes = window.vendasOvos.filter(v => v.status_entrega === 'ENCOMENDADO');
+
+            let cartelas30 = 0;
+            let duzias12 = 0;
+            let dezenas10 = 0;
+            let aReceber = 0;
+
+            pendentes.forEach(v => {
+                cartelas30 += (v.qtd_cartela_30 || 0);
+                duzias12 += (v.qtd_duzia_12 || 0);
+                dezenas10 += (v.qtd_dezena_10 || 0);
+                if (v.status_pagamento !== 'PAGO') {
+                    aReceber += (v.valor_total || 0);
+                }
+            });
+
+            document.getElementById('kpi-cartelas-30').innerText = cartelas30;
+            document.getElementById('kpi-ovos-30').innerText = (cartelas30 * 30) + ' ovos';
+
+            document.getElementById('kpi-duzias-12').innerText = duzias12;
+            document.getElementById('kpi-ovos-12').innerText = (duzias12 * 12) + ' ovos';
+
+            document.getElementById('kpi-dezenas-10').innerText = dezenas10;
+            document.getElementById('kpi-ovos-10').innerText = (dezenas10 * 10) + ' ovos';
+
+            document.getElementById('kpi-valor-pendente').innerText = formatBRL(aReceber);
+
+            const badgeEnc = document.getElementById('badge-total-encomendas');
+            if (pendentes.length > 0) {
+                badgeEnc.innerText = pendentes.length;
+                badgeEnc.classList.remove('hidden');
+            } else {
+                badgeEnc.classList.add('hidden');
+            }
+        }
+
+        // Renderização da Lista de Encomendas
+        window.aplicarFiltrosEncomendas = () => {
+            const busca = document.getElementById('filtro-busca-encomendas').value.toUpperCase().trim();
+            const fEntrega = document.getElementById('filtro-status-entrega').value;
+            const fPagamento = document.getElementById('filtro-status-pagamento').value;
+
+            const listaContainer = document.getElementById('lista-encomendas-cards');
+            listaContainer.innerHTML = '';
+
+            const filtradas = window.vendasOvos.filter(v => {
+                if (busca) {
+                    const mCliente = v.cliente && v.cliente.toUpperCase().includes(busca);
+                    const mWhats = v.whatsapp && v.whatsapp.includes(busca);
+                    const mObs = v.obs && v.obs.toUpperCase().includes(busca);
+                    if (!mCliente && !mWhats && !mObs) return false;
+                }
+                if (fEntrega !== 'ALL' && v.status_entrega !== fEntrega) return false;
+                if (fPagamento !== 'ALL' && v.status_pagamento !== fPagamento) return false;
+                return true;
+            });
+
+            if (filtradas.length === 0) {
+                document.getElementById('encomendas-vazio').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('encomendas-vazio').classList.add('hidden');
+            }
+
+            filtradas.forEach(v => {
+                const card = document.createElement('div');
+                const isEntregue = v.status_entrega === 'ENTREGUE';
+                const isPago = v.status_pagamento === 'PAGO';
+
+                card.className = `agro-card p-3.5 border ${isEntregue ? 'border-stone-200 bg-white' : 'border-amber-200 bg-amber-50/20'} space-y-2.5`;
+
+                // Montar texto dos itens
+                let itensArr = [];
+                if (v.qtd_cartela_30 > 0) itensArr.push(`<strong>${v.qtd_cartela_30}x</strong> Cartela 30`);
+                if (v.qtd_duzia_12 > 0) itensArr.push(`<strong>${v.qtd_duzia_12}x</strong> Dúzia 12`);
+                if (v.qtd_dezena_10 > 0) itensArr.push(`<strong>${v.qtd_dezena_10}x</strong> Dezena 10`);
+                const itensStr = itensArr.join(' + ') || 'Sem itens informados';
+
+                const dataFmt = formatarDataBr(v.data_entrega);
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-extrabold text-sm text-stone-900">${v.cliente}</h4>
+                                ${v.whatsapp ? `
+                                    <a href="https://wa.me/55${v.whatsapp.replace(/\D/g, '')}" target="_blank" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold" title="Abrir WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>` : ''}
+                            </div>
+                            <p class="text-xs text-stone-600 mt-0.5">${itensStr}</p>
+                            ${v.obs ? `<p class="text-[11px] text-stone-400 italic">"${v.obs}"</p>` : ''}
+                        </div>
+
+                        <div class="text-right">
+                            <span class="text-base font-black text-stone-900 font-mono">${formatBRL(v.valor_total)}</span>
+                            <span class="block text-[10px] text-stone-400 font-mono mt-0.5">Entrega: ${dataFmt}</span>
+                        </div>
+                    </div>
+
+                    <!-- Badges de Status Interativos (1 toque para alternar) -->
+                    <div class="flex flex-wrap gap-2 pt-1 border-t border-stone-100 text-xs">
+                        <button onclick="alternarStatusEntrega('${v.id}', '${v.status_entrega}')"
+                            class="px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${isEntregue ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+                            <i class="fas ${isEntregue ? 'fa-circle-check text-emerald-700' : 'fa-hourglass-half text-amber-700'}"></i>
+                            <span>${isEntregue ? 'Entregue' : 'Encomendado'}</span>
+                        </button>
+
+                        <button onclick="alternarStatusPagamento('${v.id}', '${v.status_pagamento}')"
+                            class="px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${isPago ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                            <i class="fas ${isPago ? 'fa-money-bill-wave text-emerald-700' : 'fa-circle-xmark text-rose-600'}"></i>
+                            <span>${isPago ? 'Pago (' + (v.forma_pagamento || 'PIX') + ')' : 'Pendente (Não Pago)'}</span>
+                        </button>
+
+                        <div class="ml-auto flex items-center gap-1">
+                            <button onclick="editarPedido('${v.id}')" class="w-7 h-7 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200 flex items-center justify-center text-xs" title="Editar Pedido">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button onclick="excluirPedido('${v.id}')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center text-xs" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listaContainer.appendChild(card);
+            });
+        };
+
+        // Alternar Status
+        window.alternarStatusEntrega = async (id, statusAtual) => {
+            const novo = statusAtual === 'ENTREGUE' ? 'ENCOMENDADO' : 'ENTREGUE';
+            try {
+                await setDoc(doc(db, PATH_VENDAS, id), { status_entrega: novo }, { merge: true });
+                showToast(`Status atualizado para: ${novo}`, "info");
+                carregarOvosCompleto();
+            } catch (e) {
+                showToast("Erro: " + e.message, "error");
+            }
+        };
+
+        window.alternarStatusPagamento = async (id, statusAtual) => {
+            const novo = statusAtual === 'PAGO' ? 'PENDENTE' : 'PAGO';
+            try {
+                await setDoc(doc(db, PATH_VENDAS, id), {
+                    status_pagamento: novo,
+                    forma_pagamento: novo === 'PAGO' ? 'PIX' : null,
+                    data_pagamento: novo === 'PAGO' ? new Date().toISOString().split('T')[0] : null
+                }, { merge: true });
+                showToast(`Pagamento marcado como: ${novo}`, "info");
+                carregarOvosCompleto();
+            } catch (e) {
+                showToast("Erro: " + e.message, "error");
+            }
+        };
+
+        // Salvar Pedido / Encomenda
+        document.getElementById('formPedido').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idEdit = document.getElementById('pedido-edit-id').value;
+            const cliente = document.getElementById('pedido-cliente').value.trim();
+            const whatsapp = document.getElementById('pedido-whatsapp').value.trim();
+            const dataEntrega = document.getElementById('pedido-data-entrega').value;
+            const statusEntrega = document.getElementById('pedido-status-entrega').value;
+            const statusPagamento = document.getElementById('pedido-status-pagamento').value;
+            const formaPagamento = document.getElementById('pedido-forma-pagamento').value;
+            const obs = document.getElementById('pedido-obs').value.trim();
+
+            const calc = calcularTotalPedido();
+            if (calc.totalOvos <= 0) return showToast("Adicione ao menos uma embalagem de ovos no pedido.", "error");
+
+            try {
+                const totalCartelasPontos = calc.q30 + calc.q12 + calc.q10;
+
+                const dadosPedido = {
+                    cliente,
+                    whatsapp,
+                    data_entrega: dataEntrega,
+                    qtd_cartela_30: calc.q30,
+                    preco_cartela_30: calc.p30,
+                    qtd_duzia_12: calc.q12,
+                    preco_duzia_12: calc.p12,
+                    qtd_dezena_10: calc.q10,
+                    preco_dezena_10: calc.p10,
+                    total_ovos: calc.totalOvos,
+                    valor_total: calc.totalValor,
+                    total_embalagens: totalCartelasPontos,
+                    status_entrega: statusEntrega,
+                    status_pagamento: statusPagamento,
+                    forma_pagamento: statusPagamento === 'PAGO' ? formaPagamento : null,
+                    obs,
+                    updated_at: new Date()
+                };
+
+                if (idEdit) {
+                    await setDoc(doc(db, PATH_VENDAS, idEdit), dadosPedido, { merge: true });
+                    showToast("Pedido atualizado com sucesso!", "success");
+                } else {
+                    dadosPedido.created_at = new Date();
+                    await addDoc(collection(db, PATH_VENDAS), dadosPedido);
+                    showToast("Encomenda salva com sucesso!", "success");
+                }
+
+                // Atualiza/Cria Ficha do Cliente para Fidelidade
+                await atualizarFichaClienteFidelidade(cliente, whatsapp);
+
+                limparFormularioPedido();
+                nav('encomendas');
+                carregarOvosCompleto();
+            } catch (err) {
+                console.error("Erro ao salvar pedido:", err);
+                showToast("Erro ao salvar: " + err.message, "error");
+            }
+        });
+
+        async function atualizarFichaClienteFidelidade(nomeCliente, whatsapp) {
+            const clienteId = nomeCliente.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+            const docRef = doc(db, PATH_CLIENTES, clienteId);
+            const docSnap = await getDoc(docRef);
+
+            let dados = {
+                id: clienteId,
+                nome: nomeCliente,
+                whatsapp: whatsapp || '',
+                updated_at: new Date()
+            };
+
+            if (docSnap.exists()) {
+                const d = docSnap.data();
+                if (whatsapp) dados.whatsapp = whatsapp;
+                dados.pontos_atuais = d.pontos_atuais || 0;
+                dados.total_historico_embalagens = d.total_historico_embalagens || 0;
+                dados.total_gasto = d.total_gasto || 0;
+                dados.historico_brindes = d.historico_brindes || [];
+            } else {
+                dados.pontos_atuais = 0;
+                dados.total_historico_embalagens = 0;
+                dados.total_gasto = 0;
+                dados.historico_brindes = [];
+            }
+
+            await setDoc(docRef, dados, { merge: true });
+        }
+
+        window.limparFormularioPedido = () => {
+            document.getElementById('pedido-edit-id').value = '';
+            document.getElementById('pedido-cliente').value = '';
+            document.getElementById('pedido-whatsapp').value = '';
+            document.getElementById('qtd-cartela-30').value = '0';
+            document.getElementById('qtd-duzia-12').value = '0';
+            document.getElementById('qtd-dezena-10').value = '0';
+            document.getElementById('pedido-status-entrega').value = 'ENCOMENDADO';
+            document.getElementById('pedido-status-pagamento').value = 'PENDENTE';
+            document.getElementById('pedido-obs').value = '';
+            document.getElementById('titulo-form-pedido').innerText = 'Registrar Nova Encomenda / Venda';
+            document.getElementById('btn-salvar-pedido-texto').innerText = 'Salvar Encomenda de Ovos';
+            document.getElementById('box-forma-pagamento').classList.add('hidden');
+            definirDataEntrega('sabado');
+            calcularTotalPedido();
+        };
+
+        window.editarPedido = (id) => {
+            const v = window.vendasOvos.find(x => x.id === id);
+            if (!v) return;
+
+            document.getElementById('pedido-edit-id').value = v.id;
+            document.getElementById('pedido-cliente').value = v.cliente || '';
+            document.getElementById('pedido-whatsapp').value = v.whatsapp || '';
+            document.getElementById('pedido-data-entrega').value = v.data_entrega || '';
+            document.getElementById('qtd-cartela-30').value = v.qtd_cartela_30 || 0;
+            document.getElementById('preco-cartela-30').value = v.preco_cartela_30 || 25;
+            document.getElementById('qtd-duzia-12').value = v.qtd_duzia_12 || 0;
+            document.getElementById('preco-duzia-12').value = v.preco_duzia_12 || 12;
+            document.getElementById('qtd-dezena-10').value = v.qtd_dezena_10 || 0;
+            document.getElementById('preco-dezena-10').value = v.preco_dezena_10 || 10;
+            document.getElementById('pedido-status-entrega').value = v.status_entrega || 'ENCOMENDADO';
+            document.getElementById('pedido-status-pagamento').value = v.status_pagamento || 'PENDENTE';
+            document.getElementById('pedido-forma-pagamento').value = v.forma_pagamento || 'PIX';
+            document.getElementById('pedido-obs').value = v.obs || '';
+
+            document.getElementById('titulo-form-pedido').innerText = 'Editar Encomenda';
+            document.getElementById('btn-salvar-pedido-texto').innerText = 'Atualizar Pedido';
+
+            alternarCampoFormaPagamento();
+            calcularTotalPedido();
+            nav('nova');
+        };
+
+        window.excluirPedido = async (id) => {
+            if (!confirm("Deseja realmente apagar esta encomenda?")) return;
+            try {
+                await deleteDoc(doc(db, PATH_VENDAS, id));
+                showToast("Encomenda apagada.", "info");
+                carregarOvosCompleto();
+            } catch (e) {
+                showToast("Erro ao excluir: " + e.message, "error");
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════
+        // SISTEMA DE FIDELIDADE & BRINDES COM REINÍCIO DE CICLO
+        // ═══════════════════════════════════════════════════════
+        window.renderizarClientesFidelidade = () => {
+            const busca = (document.getElementById('busca-cliente-fidelidade').value || '').toUpperCase().trim();
+            const container = document.getElementById('lista-clientes-fidelidade');
+            container.innerHTML = '';
+
+            // Calcular pontos e histórico de cada cliente a partir de suas vendas
+            const mapaClientes = {};
+
+            window.vendasOvos.forEach(v => {
+                if (!v.cliente) return;
+                const chave = v.cliente.toUpperCase().trim();
+                if (!mapaClientes[chave]) {
+                    mapaClientes[chave] = {
+                        nome: v.cliente,
+                        whatsapp: v.whatsapp || '',
+                        totalGasto: 0,
+                        totalPedidos: 0,
+                        totalEmbalagens: 0
+                    };
+                }
+                mapaClientes[chave].totalGasto += (v.valor_total || 0);
+                mapaClientes[chave].totalPedidos += 1;
+                mapaClientes[chave].totalEmbalagens += (v.total_embalagens || (v.qtd_cartela_30 || 0) + (v.qtd_duzia_12 || 0) + (v.qtd_dezena_10 || 0));
+                if (v.whatsapp && !mapaClientes[chave].whatsapp) mapaClientes[chave].whatsapp = v.whatsapp;
+            });
+
+            let clientesArray = Object.values(mapaClientes);
+            if (busca) {
+                clientesArray = clientesArray.filter(c => c.nome.toUpperCase().includes(busca) || (c.whatsapp && c.whatsapp.includes(busca)));
+            }
+
+            // Cruzar com os dados de brindes salvos no Firestore
+            let brindesProntosContador = 0;
+
+            clientesArray.forEach(c => {
+                const clienteId = c.nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+                const docFirestore = window.clientesFidelidade.find(x => x.id === clienteId);
+
+                const historicoBrindes = docFirestore && docFirestore.historico_brindes ? docFirestore.historico_brindes : [];
+                const brindesRecebidosQtd = historicoBrindes.length;
+
+                // Pontos Atuais = Total de Embalagens Compradas - (Brindes Ganhos * Meta)
+                // Se o usuário zerou manualmente ou acumulou:
+                let pontosAtuais = docFirestore && docFirestore.pontos_atuais !== undefined 
+                    ? docFirestore.pontos_atuais 
+                    : Math.max(0, c.totalEmbalagens - (brindesRecebidosQtd * window.metaFidelidade));
+
+                const meta = window.metaFidelidade;
+                const podeResgatar = pontosAtuais >= meta;
+                if (podeResgatar) brindesProntosContador++;
+
+                const pct = Math.min(100, Math.round((pontosAtuais / meta) * 100));
+
+                const card = document.createElement('div');
+                card.className = `agro-card p-4 border ${podeResgatar ? 'border-amber-400 bg-amber-50/40 shadow-md ring-1 ring-amber-300' : 'border-stone-200'} space-y-3`;
+
+                // Gera os selos de ovos da fidelidade
+                let selosHtml = '';
+                for (let i = 1; i <= meta; i++) {
+                    if (i <= pontosAtuais) {
+                        selosHtml += `<div class="stamp-circle bg-amber-500 text-white shadow-sm" title="Compra #${i}">🥚</div>`;
+                    } else {
+                        selosHtml += `<div class="stamp-circle bg-stone-100 text-stone-300 border border-stone-200" title="Meta #${i}">${i}</div>`;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl ${podeResgatar ? 'bg-amber-500 text-white' : 'bg-stone-100 text-stone-700'} flex items-center justify-center text-lg font-black shadow-inner">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-sm text-stone-900">${c.nome}</h4>
+                                <div class="flex items-center gap-2 text-stone-400 text-[11px]">
+                                    <span>${c.totalPedidos} compras</span>
+                                    <span>•</span>
+                                    <span class="font-mono text-emerald-800 font-bold">${formatBRL(c.totalGasto)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            ${podeResgatar 
+                                ? '<span class="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse"><i class="fas fa-gift"></i> Brinde Pronto</span>' 
+                                : `<span class="text-xs font-black text-stone-700 font-mono">${pontosAtuais}/${meta}</span>`}
+                        </div>
+                    </div>
+
+                    <!-- Cartão de Selos Visuais -->
+                    <div class="space-y-1.5 p-2.5 bg-white rounded-xl border border-stone-200">
+                        <div class="flex items-center justify-between text-[11px] font-bold text-stone-600">
+                            <span>Cartão Fidelidade (${pontosAtuais} de ${meta} cartelas)</span>
+                            <span class="text-amber-800">${pct}%</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 items-center justify-start pt-1">
+                            ${selosHtml}
+                        </div>
+                    </div>
+
+                    <!-- Ações de Fidelidade -->
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                        <button onclick="abrirHistoricoCliente('${c.nome}', '${c.whatsapp}', ${c.totalGasto}, ${c.totalPedidos}, ${brindesRecebidosQtd})"
+                            class="text-[11px] text-stone-500 hover:text-stone-800 font-bold flex items-center gap-1 transition">
+                            <i class="fas fa-history"></i> Ver Histórico (${brindesRecebidosQtd} brindes ganhos)
+                        </button>
+
+                        ${podeResgatar ? `
+                            <button onclick="abrirModalBrinde('${c.nome}')"
+                                class="px-3.5 py-1.5 amber-gradient text-white rounded-xl font-extrabold text-xs shadow-md transition active:scale-95 flex items-center gap-1.5">
+                                <i class="fas fa-gift"></i> Entregar Brinde
+                            </button>
+                        ` : `
+                            <button onclick="ajustarPontosManual('${c.nome}', ${pontosAtuais})" class="text-[11px] text-stone-400 hover:text-stone-600 font-semibold underline">
+                                Ajustar Saldo
+                            </button>
+                        `}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            const badgeBrindes = document.getElementById('badge-brindes-prontos');
+            if (brindesProntosContador > 0) {
+                badgeBrindes.innerText = brindesProntosContador;
+                badgeBrindes.classList.remove('hidden');
+            } else {
+                badgeBrindes.classList.add('hidden');
+            }
+        };
+
+        // Abrir Modal de Entrega de Brinde
+        window.abrirModalBrinde = (nomeCliente) => {
+            clienteSelecionadoParaBrinde = nomeCliente;
+            document.getElementById('modal-brinde-cliente').innerText = nomeCliente;
+            document.getElementById('modal-entregar-brinde').classList.remove('hidden');
+        };
+
+        window.confirmarEntregaBrinde = async () => {
+            if (!clienteSelecionadoParaBrinde) return;
+            const nome = clienteSelecionadoParaBrinde;
+            const desc = document.getElementById('modal-brinde-desc').value.trim() || '1 Cartela de Ovos Caipiras';
+            const clienteId = nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+
+            try {
+                const docRef = doc(db, PATH_CLIENTES, clienteId);
+                const docSnap = await getDoc(docRef);
+
+                let historicoBrindes = [];
+                let pontosAtuais = 0;
+
+                if (docSnap.exists()) {
+                    const d = docSnap.data();
+                    historicoBrindes = d.historico_brindes || [];
+                    pontosAtuais = d.pontos_atuais || 0;
+                }
+
+                // Subtrai a meta ou zera a contagem para reiniciar o ciclo
+                const novosPontos = Math.max(0, pontosAtuais - window.metaFidelidade);
+
+                historicoBrindes.push({
+                    data: new Date().toISOString().split('T')[0],
+                    brinde: desc,
+                    ciclo: historicoBrindes.length + 1
+                });
+
+                await setDoc(docRef, {
+                    nome: nome,
+                    pontos_atuais: novosPontos,
+                    historico_brindes: historicoBrindes,
+                    updated_at: new Date()
+                }, { merge: true });
+
+                document.getElementById('modal-entregar-brinde').classList.add('hidden');
+                showToast(`🎉 Brinde entregue com sucesso para ${nome}! Ciclo reiniciado.`, "success");
+                carregarOvosCompleto();
+            } catch (e) {
+                showToast("Erro: " + e.message, "error");
+            }
+        };
+
+        window.abrirHistoricoCliente = async (nome, whatsapp, gasto, pedidos, brindesQtd) => {
+            document.getElementById('hist-cliente-nome').innerText = nome;
+            document.getElementById('hist-cliente-contato').innerText = whatsapp ? `WhatsApp: ${whatsapp}` : 'Sem telefone cadastrado';
+            document.getElementById('hist-cliente-gasto').innerText = formatBRL(gasto);
+            document.getElementById('hist-cliente-pedidos').innerText = pedidos;
+            document.getElementById('hist-cliente-brindes').innerText = brindesQtd;
+
+            const listaBrindes = document.getElementById('hist-lista-brindes');
+            listaBrindes.innerHTML = '<p class="text-xs text-stone-400">Carregando brindes...</p>';
+
+            const clienteId = nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+            const docSnap = await getDoc(doc(db, PATH_CLIENTES, clienteId));
+
+            listaBrindes.innerHTML = '';
+            if (docSnap.exists() && docSnap.data().historico_brindes && docSnap.data().historico_brindes.length > 0) {
+                docSnap.data().historico_brindes.reverse().forEach((b, idx) => {
+                    listaBrindes.innerHTML += `
+                        <div class="p-2.5 bg-amber-50/60 rounded-xl border border-amber-200 flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs">
+                                    #${b.ciclo || (idx + 1)}
+                                </div>
+                                <div>
+                                    <strong class="text-stone-800">${b.brinde}</strong>
+                                    <span class="block text-[10px] text-stone-500 font-mono">Entregue em: ${formatarDataBr(b.data)}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">Entregue</span>
+                        </div>
+                    `;
+                });
+            } else {
+                listaBrindes.innerHTML = '<p class="text-xs text-stone-400 p-2 text-center">Nenhum brinde resgatado ainda neste cliente.</p>';
+            }
+
+            document.getElementById('modal-historico-brindes-cliente').classList.remove('hidden');
+        };
+
+        window.ajustarPontosManual = async (nome, pontosAtuais) => {
+            const novo = prompt(`Ajustar saldo de cartelas acumuladas para ${nome}:`, pontosAtuais);
+            if (novo === null) return;
+            const val = parseInt(novo) || 0;
+
+            const clienteId = nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+            try {
+                await setDoc(doc(db, PATH_CLIENTES, clienteId), {
+                    nome: nome,
+                    pontos_atuais: val,
+                    updated_at: new Date()
+                }, { merge: true });
+                showToast("Saldo de fidelidade ajustado!", "info");
+                carregarOvosCompleto();
+            } catch (e) {
+                showToast(e.message, "error");
+            }
+        };
+
+        window.abrirConfigMetaFidelidade = async () => {
+            const novaMeta = prompt("Digite a nova meta de cartelas para ganhar 1 brinde (ex: 10):", window.metaFidelidade);
+            if (!novaMeta) return;
+            const val = parseInt(novaMeta) || 10;
+            try {
+                await setDoc(doc(db, PATH_CONFIG, "geral"), { meta: val }, { merge: true });
+                window.metaFidelidade = val;
+                document.getElementById('lbl-meta-atual').innerText = val;
+                document.getElementById('lbl-meta-texto').innerText = val;
+                showToast(`Meta de fidelidade atualizada para ${val} cartelas!`, "success");
+                renderizarClientesFidelidade();
+            } catch (e) {
+                showToast("Erro: " + e.message, "error");
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════
+        // RELATÓRIOS & GRÁFICOS
+        // ═══════════════════════════════════════════════════════
+        function renderizarRelatorio() {
+            let fatMes = 0;
+            let ovosMes = 0;
+            let c30 = 0, d12 = 0, dz10 = 0;
+            let vendasMesQtd = 0;
+
+            const hoje = new Date();
+            const mesAtual = hoje.getMonth();
+            const anoAtual = hoje.getFullYear();
+
+            window.vendasOvos.forEach(v => {
+                if (v.data_entrega) {
+                    const dt = new Date(v.data_entrega + 'T00:00:00');
+                    if (dt.getMonth() === mesAtual && dt.getFullYear() === anoAtual && v.status_pagamento === 'PAGO') {
+                        fatMes += (v.valor_total || 0);
+                        ovosMes += (v.total_ovos || 0);
+                        c30 += (v.qtd_cartela_30 || 0);
+                        d12 += (v.qtd_duzia_12 || 0);
+                        dz10 += (v.qtd_dezena_10 || 0);
+                        vendasMesQtd++;
+                    }
+                }
+            });
+
+            document.getElementById('rel-faturamento-mes').innerText = formatBRL(fatMes);
+            document.getElementById('rel-qtd-vendas-mes').innerText = `${vendasMesQtd} vendas pagas no mês`;
+            document.getElementById('rel-total-ovos-mes').innerText = ovosMes.toLocaleString('pt-BR');
+            document.getElementById('rel-detalhe-embalagens').innerText = `${c30} c/30 • ${d12} c/12 • ${dz10} c/10`;
+
+            // Gráfico de Faturamento
+            const ctx = document.getElementById('chartVendasOvos');
+            if (chartVendas) chartVendas.destroy();
+
+            const semanas = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
+            const valoresSemana = [fatMes * 0.2, fatMes * 0.3, fatMes * 0.25, fatMes * 0.25];
+
+            chartVendas = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: semanas,
+                    datasets: [{
+                        label: 'Faturamento (R$)',
+                        data: valoresSemana,
+                        backgroundColor: '#d97706',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { ticks: { callback: v => 'R$' + v } }
+                    }
+                }
+            });
+        }
+
+        window.exportarVendasCSV = () => {
+            if (!window.vendasOvos || window.vendasOvos.length === 0) return showToast("Sem vendas para exportar.", "error");
+
+            const csv = Papa.unparse(window.vendasOvos, { delimiter: ";" });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `vendas_ovos_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            showToast("Planilha CSV baixada com sucesso!", "success");
+        };
+
+        // Inicia na aba Encomendas
+        nav('encomendas');
+    </script>
+</body>
+
+</html>

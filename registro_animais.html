@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#064e3b">
+    <meta name="description" content="Controle Zootécnico e Gestão de Rebanho - Fazenda WM de Jesus">
+
+    <link rel="icon" type="image/svg+xml" href="./registro/favicon.svg">
+    <link rel="apple-touch-icon" href="./registro/apple-touch-icon.png">
+
+    <title>Rebanho & Gado Pro • Fazenda WM de Jesus</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e'
+                        },
+                        stone: {
+                            850: '#1c1917',
+                            900: '#141210',
+                            950: '#0c0a09'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f7f6f2;
+            padding-bottom: env(safe-area-inset-bottom, 24px);
+        }
+
+        .agro-card {
+            background: #ffffff;
+            border: 1px solid #e7e5e4;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 20px -2px rgba(6, 78, 59, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #0f766e 100%);
+        }
+
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.8);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-subnav.active {
+            background-color: #064e3b;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.25);
+        }
+
+        .tab-subnav {
+            background-color: rgba(255, 255, 255, 0.85);
+            color: #57534e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="min-h-full flex flex-col text-stone-800 antialiased select-none pb-28">
+
+    <!-- 🔝 CABEÇALHO COMPACTO MOBILE -->
+    <header class="hero-gradient text-white sticky top-0 z-40 shadow-lg px-4 pt-3 pb-4 rounded-b-[2rem] border-b border-emerald-700/50">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+            <!-- Voltar & Título -->
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-emerald-100 text-base border border-white/15 transition backdrop-blur-md">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-base tracking-tight leading-tight">Rebanho & Gado Pro</span>
+                        <span class="text-[10px] bg-emerald-400/20 text-emerald-200 font-semibold px-2 py-0.5 rounded-full border border-emerald-300/30">Zootecnia</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-100/70 font-medium">Controle zootécnico, partos e sanitário</p>
+                </div>
+            </div>
+
+            <!-- Botão de Sincronização / Status -->
+            <div class="flex items-center gap-2">
+                <button onclick="carregarDados(true)" title="Recarregar Dados" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-emerald-100 text-sm border border-white/15 transition backdrop-blur-md">
+                    <i class="fas fa-arrows-rotate" id="icon-sync"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SUB-BARRA DE NAVEGAÇÃO DE ABAS INTERNAS (HORIZONTAL SCROLL) -->
+        <div class="max-w-5xl mx-auto mt-3 overflow-x-auto hide-scroll flex items-center gap-1.5 pb-0.5">
+            <button onclick="nav('dashboard')" id="tab-nav-dashboard" class="tab-subnav active px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
+                <i class="fas fa-chart-pie text-[11px]"></i> Painel
+            </button>
+            <button onclick="nav('lista')" id="tab-nav-lista" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
+                <i class="fas fa-cow text-[11px]"></i> Animais
+            </button>
+            <button onclick="nav('diario')" id="tab-nav-diario" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
+                <i class="fas fa-book-medical text-[11px]"></i> Diário & Vacinas
+            </button>
+            <button onclick="nav('cadastro')" id="tab-nav-cadastro" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
+                <i class="fas fa-plus text-[11px]"></i> Novo Cadastro
+            </button>
+            <button onclick="nav('exportar')" id="tab-nav-exportar" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
+                <i class="fas fa-database text-[11px]"></i> Backup
+            </button>
+        </div>
+    </header>
+
+    <!-- TELA DE LOADING INICIAL -->
+    <div id="tela-login" class="fixed inset-0 z-[100] bg-stone-900/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="agro-card p-6 max-w-sm w-full text-center space-y-3">
+            <div class="w-12 h-12 rounded-full border-4 border-emerald-600 border-t-transparent animate-spin mx-auto"></div>
+            <h2 class="text-base font-extrabold text-stone-800">Conectando ao Rebanho...</h2>
+            <p class="text-xs text-stone-500">Sincronizando registros zootécnicos</p>
+            <p id="login-error" class="text-xs text-red-600 font-bold hidden"></p>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main id="conteudo-principal" class="max-w-5xl mx-auto px-4 -mt-1 w-full flex-grow space-y-4">
+
+        <!-- ═══════════════════════════════════════════════════════
+             1. ABA: PAINEL / DASHBOARD
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-dashboard" class="space-y-4 fade-in">
+
+            <!-- Alerta de Brincos Substitutos / Re-brincagem Pendente -->
+            <div id="alerta-substituicoes" class="hidden agro-card p-3.5 bg-sky-50 border border-sky-300 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-sky-200 text-sky-900 flex items-center justify-center text-sm shadow-inner">
+                        <i class="fas fa-link-slash"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-black text-sky-900">Re-brincagem / Brinco Perdido</p>
+                        <p class="text-[11px] text-sky-700 font-medium"><strong id="qtd-substituicoes">0</strong> animal(is) com novo brinco aguardando vincular a ficha antiga.</p>
+                    </div>
+                </div>
+                <button onclick="filtrarSubstituicoes()" class="bg-sky-700 hover:bg-sky-800 text-white text-[11px] font-extrabold py-1.5 px-3 rounded-xl shadow-sm transition active:scale-95 whitespace-nowrap">
+                    Vincular Agora
+                </button>
+            </div>
+
+            <!-- Alerta de Brincos Provisórios -->
+            <div id="alerta-provisorios" class="hidden agro-card p-3.5 bg-amber-50/90 border border-amber-300 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center text-sm shadow-inner">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-black text-amber-900">Pendência de Brinco Provisório</p>
+                        <p class="text-[11px] text-amber-700 font-medium"><strong id="qtd-provisorios">0</strong> animal(is) aguardando identificação definitiva.</p>
+                    </div>
+                </div>
+                <button onclick="filtrarProvisorios()" class="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-extrabold py-1.5 px-3 rounded-xl shadow-sm transition active:scale-95 whitespace-nowrap">
+                    Ver Lista
+                </button>
+            </div>
+
+            <!-- Widget de Calendário Sanitário & Agenda Oficial -->
+            <div class="agro-card overflow-hidden border border-stone-200">
+                <div class="bg-gradient-to-r from-stone-800 to-stone-700 p-3.5 flex justify-between items-center text-white">
+                    <h3 class="font-extrabold text-xs flex items-center gap-2">
+                        <i class="fas fa-calendar-check text-emerald-400"></i> Agenda Oficial & Sanitária
+                    </h3>
+                    <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold" id="data-hoje">Hoje</span>
+                </div>
+                <div class="p-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Campanha Aftosa / ADAPEC -->
+                    <div id="card-campanha" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-200 text-emerald-800 flex items-center justify-center text-lg shadow-inner">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-black uppercase text-emerald-700" id="lbl-campanha-status">Próxima Campanha</span>
+                                <h4 class="font-black text-xs text-stone-800 leading-tight" id="lbl-campanha-nome">Vacinação Aftosa + Declaração</h4>
+                                <p class="text-[11px] text-stone-500 mt-0.5" id="lbl-campanha-data">Maio</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-2xl font-black text-stone-900 font-mono" id="lbl-campanha-dias">--</span>
+                            <span class="text-[9px] font-extrabold text-stone-400 uppercase">Dias</span>
+                        </div>
+                    </div>
+
+                    <!-- Alvo Brucelose (Fêmeas 3 a 8 meses) -->
+                    <div class="p-3 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-teal-200 text-teal-800 flex items-center justify-center text-lg shadow-inner">
+                                <i class="fas fa-syringe"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-black uppercase text-teal-700">Alvo Brucelose</span>
+                                <h4 class="font-black text-xs text-stone-800 leading-tight">Fêmeas 3 a 8 meses</h4>
+                                <p class="text-[11px] text-stone-500 mt-0.5">Vacinação obrigatória</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-2xl font-black text-teal-800 font-mono" id="kpi-brucelose-alvo">0</span>
+                            <span class="text-[9px] font-extrabold text-stone-400 uppercase">Bezerras</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Cartões de KPIs Zootécnicos -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- KPI 1: Total Ativo -->
+                <div class="agro-card p-3.5 border-l-4 border-l-stone-700 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-stone-400">Total Ativo</span>
+                        <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="kpi-total">0</p>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-stone-100 flex justify-between text-[10px] font-bold text-stone-500" id="kpi-detalhe-total">
+                        <span><i class="fas fa-mars text-sky-600"></i> -</span>
+                        <span><i class="fas fa-venus text-rose-500"></i> -</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Lactação -->
+                <div class="agro-card p-3.5 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-stone-400">Em Lactação</span>
+                        <div class="flex items-baseline gap-1.5 mt-1">
+                            <p class="text-2xl font-black text-emerald-800 font-mono" id="kpi-lactacao">0</p>
+                            <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-full" id="pct-lactacao">0%</span>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-stone-100 text-[10px] font-bold text-emerald-700 flex items-center gap-1">
+                        <i class="fas fa-droplet text-[9px]"></i> Produzindo
+                    </div>
+                </div>
+
+                <!-- KPI 3: Bezerros (< 1 ano) -->
+                <div class="agro-card p-3.5 border-l-4 border-l-sky-600 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-stone-400">Bezerros (&lt; 1 ano)</span>
+                        <p class="text-2xl font-black text-sky-800 font-mono mt-1" id="kpi-bezerros">0</p>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-stone-100 flex justify-between text-[10px] font-bold text-stone-500" id="kpi-detalhe-bezerros">
+                        <span><i class="fas fa-mars text-sky-600"></i> -</span>
+                        <span><i class="fas fa-venus text-rose-500"></i> -</span>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Alertas de Secagem -->
+                <div class="agro-card p-3.5 border-l-4 border-l-amber-600 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-stone-400">Alertas Secagem</span>
+                        <p class="text-2xl font-black text-amber-700 font-mono mt-1" id="kpi-alertas">0</p>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-stone-100 text-[10px] font-bold text-amber-700 flex items-center gap-1">
+                        <i class="fas fa-clock-rotate-left text-[9px]"></i> &gt; 300 dias lact.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Status & Nascimentos -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div class="agro-card p-4 lg:col-span-1">
+                    <h3 class="font-extrabold text-xs text-stone-800 mb-3 flex items-center gap-1.5">
+                        <i class="fas fa-chart-pie text-emerald-700"></i> Distribuição do Rebanho
+                    </h3>
+                    <div class="h-44 relative flex items-center justify-center">
+                        <canvas id="chartStatus"></canvas>
+                        <div id="chart-msg" class="absolute text-xs text-stone-400 hidden">Sem dados</div>
+                    </div>
+                </div>
+
+                <div class="agro-card p-4 lg:col-span-2">
+                    <h3 class="font-extrabold text-xs text-stone-800 mb-3 flex items-center gap-1.5">
+                        <i class="fas fa-chart-bar text-sky-700"></i> Nascimentos (Últimos 12 Meses)
+                    </h3>
+                    <div class="h-44">
+                        <canvas id="chartNascimentos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cronograma de Manejo (Lactação / Seca) -->
+            <div class="agro-card overflow-hidden border border-stone-200">
+                <div class="p-3.5 bg-stone-50/80 border-b border-stone-200 flex flex-col sm:flex-row justify-between sm:items-center gap-2.5">
+                    <div>
+                        <h3 class="font-extrabold text-xs text-stone-800 flex items-center gap-2">
+                            <i class="fas fa-stopwatch text-emerald-700"></i> Cronograma Zootécnico
+                        </h3>
+                        <p class="text-[11px] text-stone-500">Tempo de permanência em produção ou seca</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="filtro-crono-status" onchange="atualizarCronograma()"
+                            class="border border-stone-300 rounded-xl text-xs py-1.5 px-2.5 bg-white text-stone-700 font-semibold focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Todos os Status</option>
+                            <option value="LACTAÇÃO">Em Lactação</option>
+                            <option value="SECA">Vacas Secas</option>
+                        </select>
+                        <select id="filtro-crono-ordem" onchange="atualizarCronograma()"
+                            class="border border-stone-300 rounded-xl text-xs py-1.5 px-2.5 bg-white text-stone-700 font-semibold focus:outline-none focus:border-emerald-500">
+                            <option value="DESC">Mais Dias</option>
+                            <option value="ASC">Menos Dias</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-72 divide-y divide-stone-100 text-xs">
+                    <table class="w-full text-left whitespace-nowrap">
+                        <thead class="bg-stone-100/70 text-stone-400 text-[10px] uppercase font-bold sticky top-0">
+                            <tr>
+                                <th class="px-4 py-2.5">Brinco / ID</th>
+                                <th class="px-4 py-2.5">Status</th>
+                                <th class="px-4 py-2.5 text-right">Duração</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-cronograma" class="divide-y divide-stone-100 font-mono text-xs text-stone-700"></tbody>
+                    </table>
+                    <div id="crono-msg" class="hidden p-4 text-center text-xs text-stone-400">Nenhum animal neste filtro.</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             2. ABA: LISTA DE ANIMAIS & FILTROS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-lista" class="hidden space-y-3 fade-in">
+
+            <!-- Filtros de Busca -->
+            <div class="agro-card p-3.5 border border-stone-200 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
+                        <i class="fas fa-filter text-emerald-700"></i> Filtros de Busca
+                    </span>
+                    <span id="lbl-resultado-filtro" class="text-xs font-extrabold text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-xl border border-emerald-200">
+                        Carregando...
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    <div class="col-span-2 md:col-span-1 relative">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-stone-400 text-xs"></i>
+                        <input type="text" id="filtro-busca" onkeyup="aplicarFiltros()" placeholder="Buscar Brinco..."
+                            class="w-full pl-8 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <select id="filtro-sexo" onchange="aplicarFiltros()"
+                            class="w-full py-2 px-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Sexo: Todos</option>
+                            <option value="FEMEA">Fêmeas</option>
+                            <option value="MACHO">Machos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filtro-status" onchange="aplicarFiltros()"
+                            class="w-full py-2 px-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Status: Todos</option>
+                            <option value="LACTACAO">Em Lactação</option>
+                            <option value="SECA">Secas</option>
+                            <option value="OUTROS">Outros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filtro-cat" onchange="aplicarFiltros()"
+                            class="w-full py-2 px-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Categoria: Todas</option>
+                            <option value="BEZERRO">Bezerros</option>
+                            <option value="ADULTO">Adultos</option>
+                            <option value="SUBSTITUICAO">🔗 Re-brincagem (Pendentes)</option>
+                            <option value="PROVISORIO">⚠ Provisórios</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <select id="filtro-foto" onchange="aplicarFiltros()"
+                            class="w-full py-2 px-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Fotos: Todas</option>
+                            <option value="COM_FOTO">Com Foto</option>
+                            <option value="SEM_FOTO">Sem Foto</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listagem: Cards no Mobile / Tabela no Desktop -->
+            <!-- 1. Mobile Cards -->
+            <div id="mobile-animals-list" class="md:hidden space-y-2.5">
+                <!-- Renderizado via JS -->
+            </div>
+
+            <!-- 2. Desktop Table -->
+            <div class="hidden md:block agro-card overflow-hidden border border-stone-200">
+                <div class="overflow-x-auto max-h-[580px] overflow-y-auto">
+                    <table class="w-full text-left text-xs text-stone-600">
+                        <thead class="text-[11px] text-stone-500 uppercase bg-stone-100/80 sticky top-0 border-b border-stone-200">
+                            <tr>
+                                <th class="px-5 py-3 font-bold">Brinco / ID</th>
+                                <th class="px-5 py-3 text-center font-bold">Sexo</th>
+                                <th class="px-5 py-3 font-bold">Status Produtivo</th>
+                                <th class="px-5 py-3 font-bold">Data Ref.</th>
+                                <th class="px-5 py-3 text-center font-bold">Ações Rápidas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-lista" class="divide-y divide-stone-100 font-mono text-xs">
+                            <!-- Renderizado via JS -->
+                        </tbody>
+                    </table>
+                    <div id="sem-resultados" class="hidden p-8 text-center text-stone-400 text-xs">Nenhum animal encontrado.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             3. ABA: DIÁRIO DA FAZENDA & VACINAS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-diario" class="hidden max-w-2xl mx-auto space-y-4 fade-in">
+
+            <!-- Atalhos Rápidos Sanitários -->
+            <div class="agro-card p-4 border border-emerald-200 bg-emerald-50/40 space-y-3">
+                <h3 class="font-extrabold text-xs text-emerald-900 flex items-center gap-2">
+                    <i class="fas fa-syringe text-emerald-700"></i> Atalhos de Manejo Sanitário
+                </h3>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="preencherNota('Vacinação de Aftosa realizada em todo o rebanho.', 'VACINA')"
+                        class="p-2.5 bg-white rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-500 transition text-left group">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <div class="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-xs">
+                                <i class="fas fa-syringe"></i>
+                            </div>
+                            <span class="text-xs font-bold text-stone-800 group-hover:text-emerald-800">Vacina Aftosa</span>
+                        </div>
+                        <p class="text-[10px] text-stone-400">Registrar Campanha</p>
+                    </button>
+
+                    <button onclick="preencherNota('Declaração de Rebanho atualizada junto à ADAPEC.', 'ADAPEC')"
+                        class="p-2.5 bg-white rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-500 transition text-left group">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                                <i class="fas fa-file-signature"></i>
+                            </div>
+                            <span class="text-xs font-bold text-stone-800 group-hover:text-emerald-800">ADAPEC</span>
+                        </div>
+                        <p class="text-[10px] text-stone-400">Declaração</p>
+                    </button>
+
+                    <button onclick="preencherNota('Vacinação contra Brucelose (Bezerras 3-8 meses).', 'VACINA')"
+                        class="p-2.5 bg-white rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-500 transition text-left group">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs">
+                                <i class="fas fa-shield-virus"></i>
+                            </div>
+                            <span class="text-xs font-bold text-stone-800 group-hover:text-emerald-800">Brucelose</span>
+                        </div>
+                        <p class="text-[10px] text-stone-400">Bezerras</p>
+                    </button>
+
+                    <button onclick="preencherNota('Vermifugação geral realizada.', 'MANEJO')"
+                        class="p-2.5 bg-white rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-500 transition text-left group">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <div class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <span class="text-xs font-bold text-stone-800 group-hover:text-emerald-800">Vermífugo</span>
+                        </div>
+                        <p class="text-[10px] text-stone-400">Manejo Geral</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form: Nova Nota -->
+            <div class="agro-card p-4 border border-stone-200 space-y-3">
+                <h3 class="font-extrabold text-xs text-stone-800 flex items-center gap-2">
+                    <i class="fas fa-pen-to-square text-emerald-700"></i> Registrar Ocorrência no Diário
+                </h3>
+                <div class="space-y-2.5">
+                    <div class="flex gap-2">
+                        <input type="date" id="diario-data"
+                            class="w-2/3 bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                        <select id="diario-categoria"
+                            class="w-1/3 bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                            <option value="GERAL">Geral</option>
+                            <option value="VACINA">Vacina</option>
+                            <option value="ADAPEC">ADAPEC</option>
+                            <option value="MANEJO">Manejo</option>
+                        </select>
+                    </div>
+                    <textarea id="diario-desc"
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl p-3 text-xs font-medium text-stone-800 min-h-[75px] resize-none focus:bg-white focus:outline-none focus:border-emerald-500 transition"
+                        placeholder="Descreva o evento sanitário, parto ou observação..."></textarea>
+                    <button onclick="salvarNotaDiario()"
+                        class="w-full hero-gradient text-white font-extrabold py-3 rounded-xl text-xs shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Adicionar ao Diário da Fazenda</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Histórico do Diário -->
+            <div class="agro-card overflow-hidden border border-stone-200">
+                <div class="p-3.5 bg-stone-50/80 border-b border-stone-200">
+                    <h3 class="font-extrabold text-xs text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-timeline text-emerald-700"></i> Linha do Tempo da Fazenda
+                    </h3>
+                </div>
+                <div id="lista-diario" class="divide-y divide-stone-100 max-h-[460px] overflow-y-auto">
+                    <div class="p-6 text-center text-stone-400 text-xs">Carregando diário...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             4. ABA: CADASTRO DE ANIMAIS & PARTOS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-cadastro" class="hidden max-w-lg mx-auto space-y-3 fade-in">
+            <!-- Tabs Internas do Cadastro -->
+            <div class="flex gap-2">
+                <button onclick="switchCadastro('nasc')" id="tab-nasc"
+                    class="tab-btn active flex-1 py-2.5 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-baby"></i> Nascimento / Parto
+                </button>
+                <button onclick="switchCadastro('adulto')" id="tab-adulto"
+                    class="tab-btn flex-1 py-2.5 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-cow"></i> Adulto / Compra
+                </button>
+            </div>
+
+            <!-- Box 1: Nascimento -->
+            <div id="box-nasc" class="agro-card p-4 sm:p-5 border border-stone-200">
+                <form id="formNascimento" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 mb-1">Brinco / ID do Bezerro</label>
+                        <input type="text" id="cad-idBezerro" required placeholder="Ex: BEZ-01"
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-sm font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 mb-1">Data do Parto</label>
+                        <input type="date" id="cad-data" required
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1">Sexo</label>
+                            <select id="cad-sexo" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                                <option value="FEMEA">Fêmea</option>
+                                <option value="MACHO">Macho</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1">Brinco da Mãe</label>
+                            <input type="text" id="cad-idMae" required placeholder="Ex: VACA-12"
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-sm font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-stone-500 italic">* Ao salvar o nascimento, a mãe entrará automaticamente em lactação.</p>
+                    <button type="submit"
+                        class="w-full hero-gradient text-white font-extrabold py-3.5 rounded-xl text-xs shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>
+                        <span>Salvar Parto & Bezerro</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Box 2: Adulto / Compra -->
+            <div id="box-adulto" class="hidden agro-card p-4 sm:p-5 border border-stone-200">
+                <form id="formAdulto" class="space-y-3">
+                    <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                        <label class="block text-[11px] font-black text-amber-900 mb-1">Tipo de Identificação</label>
+                        <select id="adulto-tipo-registro" onchange="verificarTipoRegistro()"
+                            class="w-full bg-white border border-amber-300 rounded-lg p-2 text-xs font-bold text-stone-800 focus:outline-none">
+                            <option value="DEFINITIVO">Brinco Oficial / Animal Novo (Adiciona ao rebanho)</option>
+                            <option value="SUBSTITUICAO">🔗 Substituição de Brinco Perdido (NÃO SOMA novo animal)</option>
+                            <option value="PROVISORIO">⚠ Provisório (Brinco de manejo temporário)</option>
+                        </select>
+                        <div id="info-substituicao-aviso" class="hidden mt-2 p-2 bg-sky-50 border border-sky-200 rounded-lg text-[11px] text-sky-800 font-medium">
+                            <i class="fas fa-info-circle text-sky-600"></i> <strong>Re-brincagem:</strong> Este animal <u>não</u> aumentará a contagem do rebanho. O sistema guardará o novo brinco como substituto para você vincular ao histórico antigo do animal a qualquer momento.
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1">Brinco / ID</label>
+                            <input type="text" id="adulto-id" required placeholder="Ex: 104"
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-sm font-bold font-mono text-stone-800 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1">Data de Entrada</label>
+                            <input type="date" id="adulto-data" required
+                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1">Sexo</label>
+                            <select id="adulto-sexo" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                                <option value="FEMEA">Fêmea</option>
+                                <option value="MACHO">Macho</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1">Status Produtivo</label>
+                            <select id="adulto-status" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                                <option value="LACTAÇÃO">Em Lactação</option>
+                                <option value="SECA">Seca</option>
+                                <option value="ATIVO">Ativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-600 mb-1">Observações (Raça, Origem...)</label>
+                        <input type="text" id="adulto-obs" placeholder="Ex: Girolando 3/4, comprada na feira"
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <button type="submit"
+                        class="w-full hero-gradient text-white font-extrabold py-3.5 rounded-xl text-xs shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>
+                        <span>Salvar Cadastro</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             5. ABA: BACKUP & IMPORTAÇÃO DE DADOS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-exportar" class="hidden max-w-lg mx-auto space-y-4 fade-in">
+            <!-- Backup Completo -->
+            <div class="agro-card p-5 border border-stone-200 text-center space-y-3">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl mx-auto shadow-inner">
+                    <i class="fas fa-file-csv"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-sm text-stone-800">Backup Completo do Rebanho</h3>
+                    <p class="text-xs text-stone-500 mt-0.5">Baixe todos os animais e histórico em formato CSV seguro.</p>
+                </div>
+                <button onclick="exportarDados()"
+                    class="w-full hero-gradient text-white font-extrabold py-3 rounded-xl text-xs shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i>
+                    <span>Baixar CSV do Rebanho</span>
+                </button>
+            </div>
+
+            <!-- Restaurar Backup -->
+            <div class="agro-card p-5 border border-stone-200 space-y-3">
+                <h3 class="font-extrabold text-xs text-stone-800 flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud-arrow-up text-sky-600"></i> Restaurar Dados via Backup
+                </h3>
+                <div class="p-4 border-2 border-dashed border-stone-300 rounded-xl hover:border-emerald-500 transition relative text-center bg-stone-50">
+                    <i class="fas fa-file-import text-stone-400 text-2xl mb-1"></i>
+                    <p class="text-xs font-bold text-stone-700">Selecione o arquivo CSV de Backup</p>
+                    <input type="file" id="fileBackupCompleto" class="absolute inset-0 opacity-0 cursor-pointer" onchange="importarBackupCompleto()">
+                </div>
+            </div>
+
+            <p id="import-status" class="text-xs text-emerald-800 font-bold text-center h-4"></p>
+        </div>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODAIS DE MANEJO ZOOTÉCNICO & DOSSIÊ
+         ═══════════════════════════════════════════════════════ -->
+
+    <!-- Modal 1: Secagem de Vaca -->
+    <div id="modal-secagem" class="hidden fixed inset-0 z-50 bg-stone-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-3 shadow-2xl fade-in">
+            <h3 class="text-sm font-extrabold text-stone-800 flex items-center gap-2">
+                <i class="fas fa-pause text-amber-600"></i> Encerrar Lactação (Secagem)
+            </h3>
+            <p class="text-xs text-stone-500">Animal: <strong id="lbl-id-vaca-sec" class="text-emerald-800 font-mono"></strong></p>
+            <input type="hidden" id="input-id-secagem">
+            <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Data da Secagem</label>
+                <input type="date" id="input-data-secagem" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="document.getElementById('modal-secagem').classList.add('hidden')" class="w-1/3 py-2.5 bg-stone-100 font-bold text-xs rounded-xl text-stone-700">Cancelar</button>
+                <button onclick="confirmarSecagem()" class="w-2/3 py-2.5 hero-gradient font-extrabold text-xs rounded-xl text-white shadow-md">Confirmar Secagem</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Retorno / Início de Lactação -->
+    <div id="modal-retorno" class="hidden fixed inset-0 z-50 bg-stone-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-3 shadow-2xl fade-in">
+            <h3 class="text-sm font-extrabold text-stone-800 flex items-center gap-2">
+                <i class="fas fa-play text-emerald-600"></i> Iniciar / Retomar Lactação
+            </h3>
+            <p class="text-xs text-stone-500">Animal: <strong id="lbl-id-vaca-ret" class="text-emerald-800 font-mono"></strong></p>
+            <input type="hidden" id="input-id-retorno">
+            <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Data de Início</label>
+                <input type="date" id="input-data-retorno" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="document.getElementById('modal-retorno').classList.add('hidden')" class="w-1/3 py-2.5 bg-stone-100 font-bold text-xs rounded-xl text-stone-700">Cancelar</button>
+                <button onclick="confirmarRetorno()" class="w-2/3 py-2.5 hero-gradient font-extrabold text-xs rounded-xl text-white shadow-md">Confirmar Início</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Troca / Edição de Brinco -->
+    <div id="modal-editar" class="hidden fixed inset-0 z-50 bg-stone-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-3 shadow-2xl fade-in">
+            <h3 class="text-sm font-extrabold text-stone-800 flex items-center gap-2">
+                <i class="fas fa-tag text-emerald-700"></i> Troca / Correção de Brinco
+            </h3>
+            <input type="hidden" id="edit-id-antigo">
+            <div>
+                <label class="block text-[11px] font-bold text-stone-500 mb-1">Brinco Atual</label>
+                <input type="text" id="view-id-antigo" readonly class="w-full bg-stone-100 border border-stone-200 rounded-xl p-2.5 text-xs font-bold font-mono text-stone-500">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Novo Brinco Oficial</label>
+                <input type="text" id="edit-id-novo" placeholder="Ex: 108" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold font-mono text-stone-800 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="document.getElementById('modal-editar').classList.add('hidden')" class="w-1/3 py-2.5 bg-stone-100 font-bold text-xs rounded-xl text-stone-700">Cancelar</button>
+                <button onclick="confirmarEdicao()" class="w-2/3 py-2.5 hero-gradient font-extrabold text-xs rounded-xl text-white shadow-md">Salvar Brinco</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Baixa / Saída do Animal -->
+    <div id="modal-excluir" class="hidden fixed inset-0 z-50 bg-stone-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-3 shadow-2xl fade-in">
+            <h3 class="text-sm font-extrabold text-rose-700 flex items-center gap-2">
+                <i class="fas fa-arrow-right-from-bracket"></i> Saída do Rebanho (Baixa)
+            </h3>
+            <p class="text-xs text-stone-500">Animal: <strong id="lbl-id-excluir" class="text-stone-800 font-mono"></strong></p>
+            <input type="hidden" id="input-id-excluir">
+            <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Motivo da Saída</label>
+                <select id="input-motivo-excluir" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none">
+                    <option value="VENDIDO">Vendido</option>
+                    <option value="MORTO">Morte Natural / Doença</option>
+                    <option value="ROUBO">Roubo / Extravio</option>
+                    <option value="OUTRO">Outro Motivo</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Data da Saída</label>
+                <input type="date" id="input-data-excluir" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Observações</label>
+                <input type="text" id="input-obs-excluir" placeholder="Ex: Vendido para vizinho" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none">
+            </div>
+            <div class="space-y-2 pt-2">
+                <button onclick="confirmarExclusao()" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition">Confirmar Baixa do Animal</button>
+                <button onclick="confirmarExclusaoDefinitiva()" class="w-full py-2 text-[11px] text-stone-400 hover:text-red-600 font-semibold underline">Apagar Registro Definitivamente (Erro de Cadastro)</button>
+                <button onclick="document.getElementById('modal-excluir').classList.add('hidden')" class="w-full py-2 bg-stone-100 text-stone-700 font-bold text-xs rounded-xl">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: Dossiê Completo do Animal -->
+    <div id="modal-dossie" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div class="agro-card p-5 max-w-lg w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl fade-in">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-base">
+                        <i class="fas fa-clipboard-user"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-900">Dossiê Zootécnico</h3>
+                        <p class="text-[11px] text-stone-500" id="dossie-resumo">--</p>
+                    </div>
+                </div>
+                <button onclick="fecharDossie()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Identificação / Brinco -->
+            <div class="bg-stone-50 p-3 rounded-xl border border-stone-200 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-black text-stone-400 uppercase">Brinco / Identificação</span>
+                    <p class="text-xl font-black text-stone-900 font-mono" id="dossie-id">--</p>
+                </div>
+                <div id="area-visualizar-foto" class="hidden">
+                    <a id="btn-ver-foto" href="#" target="_blank" class="px-3 py-1.5 bg-sky-50 text-sky-700 border border-sky-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                        <i class="fas fa-camera"></i> Ver Foto
+                    </a>
+                </div>
+            </div>
+
+            <!-- Foto Link -->
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-stone-600">Link da Foto (Google Photos / Web)</label>
+                <div class="flex gap-2">
+                    <input type="text" id="dossie-foto-url" placeholder="https://..." class="flex-1 bg-stone-50 border border-stone-300 rounded-xl p-2 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-500">
+                    <button onclick="salvarLinkFoto()" class="hero-gradient text-white px-3.5 rounded-xl text-xs font-bold shadow-sm">
+                        <i class="fas fa-floppy-disk"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Adicionar Nova Ocorrência ao Animal -->
+            <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                <span class="text-[11px] font-bold text-stone-700">Registrar Evento no Histórico do Animal</span>
+                <input type="date" id="dossie-nova-data" class="w-full bg-white border border-stone-300 rounded-lg p-2 text-xs font-bold text-stone-800 focus:outline-none">
+                <textarea id="dossie-nova-obs" placeholder="Ex: Inseminação artificial com touro Nelore, vacinação..." class="w-full bg-white border border-stone-300 rounded-lg p-2 text-xs text-stone-800 h-16 resize-none focus:outline-none"></textarea>
+                <button onclick="salvarOcorrencia()" class="w-full hero-gradient text-white font-extrabold py-2 rounded-lg text-xs shadow-sm">Salvar Ocorrência</button>
+            </div>
+
+            <!-- Timeline Genealógica / Zootécnica -->
+            <div>
+                <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-timeline text-emerald-700"></i> Histórico do Animal
+                </h4>
+                <div class="space-y-3 pl-2" id="dossie-timeline">
+                    <!-- Renderizado dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Assistente de Vinculação / Re-brincagem (Merge) -->
+    <div id="modal-unificar-brinco" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div class="agro-card p-5 max-w-lg w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl fade-in">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center text-base">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-900">Vincular Brinco Perdido</h3>
+                        <p class="text-[11px] text-stone-500">Unificar o novo brinco ao histórico antigo</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-unificar-brinco').classList.add('hidden')" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Dados do Brinco Novo Substituto -->
+            <div class="p-3 bg-sky-50 rounded-xl border border-sky-200">
+                <span class="text-[10px] font-black text-sky-800 uppercase block">1. Novo Brinco Colocado no Curral:</span>
+                <div class="flex items-center justify-between mt-1">
+                    <span class="text-xl font-black text-stone-900 font-mono" id="unif-novo-id">--</span>
+                    <span class="text-xs bg-sky-200 text-sky-900 font-bold px-2 py-0.5 rounded-full" id="unif-novo-detalhes">--</span>
+                </div>
+                <p class="text-[11px] text-stone-600 mt-1 font-medium" id="unif-novo-obs">--</p>
+            </div>
+
+            <!-- Busca do Animal Antigo que perdeu o brinco -->
+            <div class="space-y-2">
+                <label class="block text-xs font-extrabold text-stone-800">
+                    2. Selecione qual era o Animal Original (Brinco Perdido):
+                </label>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-3 text-stone-400 text-xs"></i>
+                    <input type="text" id="unif-busca-antigo" oninput="filtrarCandidatosUnificar()" placeholder="Buscar por brinco antigo, mãe, características..."
+                        class="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <!-- Lista Selecionável de Animais Ativos do Rebanho -->
+                <div id="unif-lista-candidatos" class="max-h-56 overflow-y-auto space-y-1.5 p-1 bg-stone-100 rounded-xl border border-stone-200 divide-y divide-stone-200/50">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- Painel de Confirmação Selecionado -->
+            <div id="unif-painel-confirmacao" class="hidden p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-2 text-xs">
+                <span class="text-[10px] font-black text-emerald-800 uppercase block">Resultado da Vinculação:</span>
+                <p class="text-stone-700">
+                    O animal antigo <strong id="unif-conf-antigo" class="font-mono text-emerald-900">--</strong> terá seu brinco atualizado para <strong id="unif-conf-novo" class="font-mono text-emerald-900">--</strong>.
+                </p>
+                <p class="text-[11px] text-emerald-700 font-medium">
+                    ✅ Todo o histórico de partos, vacinas e lactações será mantido e transferido.<br>
+                    ✅ O registro duplicado será removido, mantendo a contagem do rebanho exata.
+                </p>
+            </div>
+
+            <!-- Ações -->
+            <div class="space-y-2 pt-1">
+                <button id="btn-confirmar-unificacao" onclick="confirmarUnificacao()" disabled
+                    class="w-full py-3 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <i class="fas fa-check-double"></i> Confirmar Vinculação & Unificar Fichas
+                </button>
+                <button onclick="confirmarComoNovoAnimal()"
+                    class="w-full py-2 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-bold text-xs rounded-xl transition">
+                    Não era animal antigo: Manter como Novo Animal Oficial
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📲 BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM BAR) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bottom-nav-blur px-2 py-2 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-house"></i>
+                </div>
+                <span class="text-[10px] mt-1">Início</span>
+            </a>
+
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <button onclick="nav('cadastro'); switchCadastro('nasc'); window.scrollTo({top: 0, behavior: 'smooth'});" class="flex flex-col items-center justify-center -mt-5 transition active:scale-95" title="Novo Animal">
+                <div class="w-12 h-12 rounded-full hero-gradient text-white flex items-center justify-center text-xl shadow-lg border-2 border-white">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-900 mt-0.5">Cadastrar</span>
+            </button>
+
+            <a href="registro_animais.html" class="flex flex-col items-center justify-center w-14 py-1 text-emerald-800 font-bold transition">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-base shadow-sm">
+                    <i class="fas fa-cow"></i>
+                </div>
+                <span class="text-[10px] mt-1">Rebanho</span>
+            </a>
+
+            <a href="despesas.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <span class="text-[10px] mt-1">Despesas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 🔥 FIREBASE MODULAR (V10) SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, writeBatch, getDocs, setDoc, addDoc, query, where, getDoc, deleteDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Credenciais do Banco Dedicado 'registro-animais'
+        const firebaseConfig = {
+            apiKey: "AIzaSyDT93mKi2kTXKLxdQngup6D-czdu9_vTYk",
+            authDomain: "registro-animais.firebaseapp.com",
+            projectId: "registro-animais",
+            storageBucket: "registro-animais.firebasestorage.app",
+            messagingSenderId: "343289114136",
+            appId: "1:343289114136:web:d98ed164d8bbd3f7b9dd6d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const PATH_ANIMAIS = 'animais';
+        const PATH_HISTORICO = 'historico';
+        const PATH_DIARIO = 'diario_geral';
+
+        window.todosAnimais = [];
+        window.cronogramaGlobal = [];
+        let chartStatus = null;
+        let chartNasc = null;
+
+        // Autenticação Automática
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('tela-login').classList.add('hidden');
+                carregarDados();
+            } else {
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Erro Auth:", error);
+                    const errEl = document.getElementById('login-error');
+                    errEl.innerText = "Erro ao autenticar: " + error.message;
+                    errEl.classList.remove('hidden');
+                });
+            }
+        });
+
+        // Toast Helper
+        function showToast(msg, type = "info") {
+            const colors = { success: "#064e3b", error: "#dc2626", info: "#0284c7" };
+            Toastify({
+                text: msg,
+                duration: 3500,
+                gravity: "top",
+                position: "center",
+                style: { background: colors[type] || "#064e3b", borderRadius: "12px", fontWeight: "600", fontSize: "13px" }
+            }).showToast();
+        }
+
+        // Navegação de Abas
+        window.nav = (tela) => {
+            ['dashboard', 'cadastro', 'lista', 'exportar', 'diario'].forEach(t => {
+                const el = document.getElementById('tela-' + t);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('tab-nav-' + t);
+                if (btn) btn.classList.remove('active');
+            });
+
+            const targetTela = document.getElementById('tela-' + tela);
+            if (targetTela) targetTela.classList.remove('hidden');
+
+            const targetBtn = document.getElementById('tab-nav-' + tela);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            if (auth.currentUser) {
+                if (tela === 'dashboard' || tela === 'lista') carregarDados();
+                if (tela === 'diario') carregarDiario();
+            }
+        };
+
+        window.switchCadastro = (tipo) => {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active', 'bg-emerald-900', 'text-white');
+                b.classList.add('bg-white', 'text-stone-600');
+            });
+            const btnActive = document.getElementById('tab-' + tipo);
+            if (btnActive) {
+                btnActive.classList.add('active', 'bg-emerald-900', 'text-white');
+                btnActive.classList.remove('bg-white', 'text-stone-600');
+            }
+            document.getElementById('box-nasc').classList.add('hidden');
+            document.getElementById('box-adulto').classList.add('hidden');
+            document.getElementById('box-' + tipo).classList.remove('hidden');
+        };
+
+        window.filtrarProvisorios = () => {
+            nav('lista');
+            document.getElementById('filtro-cat').value = 'PROVISORIO';
+            aplicarFiltros();
+        };
+
+        window.filtrarSubstituicoes = () => {
+            nav('lista');
+            document.getElementById('filtro-cat').value = 'SUBSTITUICAO';
+            aplicarFiltros();
+        };
+
+        window.verificarTipoRegistro = () => {
+            const tipo = document.getElementById('adulto-tipo-registro').value;
+            const aviso = document.getElementById('info-substituicao-aviso');
+            if (tipo === 'SUBSTITUICAO') {
+                aviso.classList.remove('hidden');
+            } else {
+                aviso.classList.add('hidden');
+            }
+        };
+
+        // Carregamento Geral dos Dados
+        window.carregarDados = async (manual = false) => {
+            const iconSync = document.getElementById('icon-sync');
+            if (iconSync) iconSync.classList.add('fa-spin');
+
+            try {
+                const snap = await getDocs(collection(db, PATH_ANIMAIS));
+                let animais = [];
+                snap.forEach(d => animais.push(d.data()));
+
+                const limpar = (str) => str ? str.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+                window.todosAnimais = animais.filter(a => {
+                    const st = limpar(a.status_produtivo);
+                    return !st.includes('VENDIDO') && !st.includes('MORTO') && !st.includes('ROUBO') && !st.includes('OUTRO');
+                });
+
+                // Alerta 1: Brincos Provisórios
+                const provisorios = window.todosAnimais.filter(a => a.classificacao === 'PROVISORIO');
+                if (provisorios.length > 0) {
+                    document.getElementById('alerta-provisorios').classList.remove('hidden');
+                    document.getElementById('qtd-provisorios').innerText = provisorios.length;
+                } else {
+                    document.getElementById('alerta-provisorios').classList.add('hidden');
+                }
+
+                // Alerta 2: Re-brincagens / Substituições Pendentes de Vinculação
+                const substituicoes = window.todosAnimais.filter(a => a.classificacao === 'SUBSTITUICAO');
+                if (substituicoes.length > 0) {
+                    document.getElementById('alerta-substituicoes').classList.remove('hidden');
+                    document.getElementById('qtd-substituicoes').innerText = substituicoes.length;
+                } else {
+                    document.getElementById('alerta-substituicoes').classList.add('hidden');
+                }
+
+                // Rebanho Oficial Efetivo (Exclui substituições pendentes para NUNCA somar +1 animal repetido)
+                const rebanhoEfetivo = window.todosAnimais.filter(a => a.classificacao !== 'SUBSTITUICAO');
+
+                if (!document.getElementById('tela-dashboard').classList.contains('hidden')) {
+                    atualizarAgendaSanitaria();
+
+                    const lactacao = rebanhoEfetivo.filter(a => limpar(a.status_produtivo).includes('LACTA'));
+                    const secas = rebanhoEfetivo.filter(a => limpar(a.status_produtivo).includes('SECA'));
+                    const bezerros = rebanhoEfetivo.filter(a => a.nascimento ? calcularMeses(a.nascimento) < 12 : limpar(a.categoria_manual).includes('BEZERRO'));
+
+                    const totalM = rebanhoEfetivo.filter(a => a.tipo === 'MACHO').length;
+                    const totalF = rebanhoEfetivo.filter(a => a.tipo === 'FEMEA').length;
+                    const bezM = bezerros.filter(a => a.tipo === 'MACHO').length;
+                    const bezF = bezerros.filter(a => a.tipo === 'FEMEA').length;
+
+                    // Exibe a contagem real sem o animal duplicado
+                    document.getElementById('kpi-total').innerText = rebanhoEfetivo.length;
+                    document.getElementById('kpi-detalhe-total').innerHTML = `<span><i class="fas fa-mars text-sky-600"></i> ${totalM}</span><span><i class="fas fa-venus text-rose-500"></i> ${totalF}</span>`;
+                    document.getElementById('kpi-lactacao').innerText = lactacao.length;
+                    document.getElementById('pct-lactacao').innerText = rebanhoEfetivo.length ? Math.round((lactacao.length / rebanhoEfetivo.length) * 100) + '%' : '0%';
+                    document.getElementById('kpi-bezerros').innerText = bezerros.length;
+                    document.getElementById('kpi-detalhe-bezerros').innerHTML = `<span><i class="fas fa-mars text-sky-600"></i> ${bezM}</span><span><i class="fas fa-venus text-rose-500"></i> ${bezF}</span>`;
+
+                    const alertas = [];
+                    const cronograma = [];
+                    const hoje = new Date();
+
+                    lactacao.forEach(a => {
+                        let dias = 0;
+                        let strDias = "Data N/D";
+                        if (a.data_evento) {
+                            dias = Math.floor((hoje - new Date(a.data_evento)) / 86400000);
+                            strDias = dias + " dias";
+                            if (dias > 300) alertas.push({ id: a.id, dias: dias });
+                        }
+                        cronograma.push({ id: a.id, status: 'LACTAÇÃO', diasNum: dias, diasStr: strDias });
+                    });
+
+                    secas.forEach(a => {
+                        let dias = 0;
+                        let strDias = "Data N/D";
+                        if (a.data_evento) {
+                            dias = Math.floor((hoje - new Date(a.data_evento)) / 86400000);
+                            strDias = dias + " dias";
+                        }
+                        cronograma.push({ id: a.id, status: 'SECA', diasNum: dias, diasStr: strDias });
+                    });
+
+                    window.cronogramaGlobal = cronograma;
+                    document.getElementById('kpi-alertas').innerText = alertas.length;
+                    atualizarCronograma();
+                    renderCharts(lactacao.length, rebanhoEfetivo.length - lactacao.length, rebanhoEfetivo.length, bezerros);
+                }
+
+                if (!document.getElementById('tela-lista').classList.contains('hidden')) {
+                    aplicarFiltros();
+                }
+
+                if (manual) showToast("Dados do rebanho sincronizados!", "success");
+            } catch (e) {
+                console.error("Erro carregando rebanho:", e);
+                showToast("Erro ao sincronizar dados", "error");
+            } finally {
+                if (iconSync) iconSync.classList.remove('fa-spin');
+            }
+        };
+
+        window.renderCharts = (lact, outros, total, bezerros) => {
+            const ctx1 = document.getElementById('chartStatus');
+            if (chartStatus) chartStatus.destroy();
+            if (total === 0) {
+                document.getElementById('chart-msg').classList.remove('hidden');
+            } else {
+                document.getElementById('chart-msg').classList.add('hidden');
+                chartStatus = new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Lactação', 'Outros'],
+                        datasets: [{
+                            data: [lact, total - lact],
+                            backgroundColor: ['#059669', '#d97706'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '72%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('chartNascimentos');
+            if (chartNasc) chartNasc.destroy();
+            const meses = Array(12).fill(0);
+            bezerros.forEach(b => {
+                if (b.nascimento) meses[new Date(b.nascimento).getMonth()]++;
+            });
+            chartNasc = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        data: meses,
+                        backgroundColor: '#0284c7',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { display: false }
+                    }
+                }
+            });
+        };
+
+        window.atualizarAgendaSanitaria = () => {
+            const hoje = new Date();
+            document.getElementById('data-hoje').innerText = hoje.toLocaleDateString('pt-BR');
+            const mes = hoje.getMonth() + 1;
+            const ano = hoje.getFullYear();
+
+            let proxData, nomeCampanha, diasRest, statusCor, statusBg;
+
+            if (mes < 5) {
+                proxData = new Date(ano, 4, 1);
+                nomeCampanha = "Início Vacinação Aftosa";
+                statusCor = "text-emerald-700"; statusBg = "bg-emerald-50 border-emerald-200";
+            } else if (mes === 5) {
+                proxData = new Date(ano, 4, 31);
+                nomeCampanha = "FIM DA CAMPANHA (URGENTE)";
+                statusCor = "text-rose-600"; statusBg = "bg-rose-50 border-rose-200 animate-pulse";
+            } else if (mes < 11) {
+                proxData = new Date(ano, 10, 1);
+                nomeCampanha = "Início Vacinação Aftosa (2ª)";
+                statusCor = "text-emerald-700"; statusBg = "bg-emerald-50 border-emerald-200";
+            } else if (mes === 11) {
+                proxData = new Date(ano, 10, 30);
+                nomeCampanha = "FIM DA CAMPANHA (URGENTE)";
+                statusCor = "text-rose-600"; statusBg = "bg-rose-50 border-rose-200 animate-pulse";
+            } else {
+                proxData = new Date(ano + 1, 4, 1);
+                nomeCampanha = "Próxima Campanha (Ano Que Vem)";
+                statusCor = "text-stone-500"; statusBg = "bg-stone-50 border-stone-200";
+            }
+
+            diasRest = Math.ceil((proxData - hoje) / (1000 * 60 * 60 * 24));
+
+            const card = document.getElementById('card-campanha');
+            card.className = `p-3 rounded-xl ${statusBg} border flex items-center justify-between gap-3`;
+            document.getElementById('lbl-campanha-nome').innerText = nomeCampanha;
+            document.getElementById('lbl-campanha-dias').innerText = diasRest;
+            document.getElementById('lbl-campanha-data').innerText = proxData.toLocaleDateString('pt-BR');
+
+            let femeasAlvo = 0;
+            window.todosAnimais.forEach(a => {
+                if (a.tipo === 'FEMEA' && a.nascimento) {
+                    const meses = calcularMeses(a.nascimento);
+                    if (meses >= 3 && meses <= 8) femeasAlvo++;
+                }
+            });
+            document.getElementById('kpi-brucelose-alvo').innerText = femeasAlvo;
+        };
+
+        window.atualizarCronograma = () => {
+            if (!window.cronogramaGlobal) return;
+            const filtroStatus = document.getElementById('filtro-crono-status').value;
+            const filtroOrdem = document.getElementById('filtro-crono-ordem').value;
+
+            let lista = window.cronogramaGlobal.filter(c => {
+                const stClean = c.status.toUpperCase().includes('LACTA') ? 'LACTAÇÃO' : 'SECA';
+                if (filtroStatus === 'ALL') return true;
+                return stClean === filtroStatus;
+            });
+
+            lista.sort((a, b) => filtroOrdem === 'DESC' ? b.diasNum - a.diasNum : a.diasNum - b.diasNum);
+
+            const tbl = document.getElementById('lista-cronograma');
+            tbl.innerHTML = '';
+
+            if (lista.length === 0) {
+                document.getElementById('crono-msg').classList.remove('hidden');
+            } else {
+                document.getElementById('crono-msg').classList.add('hidden');
+                lista.forEach(c => {
+                    let cor = c.status === 'LACTAÇÃO' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200';
+                    tbl.innerHTML += `
+                        <tr class="hover:bg-stone-50 border-b border-stone-100">
+                            <td class="px-4 py-2.5 font-bold text-stone-800 font-mono">${c.id}</td>
+                            <td class="px-4 py-2.5"><span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${cor}">${c.status}</span></td>
+                            <td class="px-4 py-2.5 text-right font-mono text-stone-500 font-bold">${c.diasStr}</td>
+                        </tr>`;
+                });
+            }
+        };
+
+        // Renderização dos Animais (Mobile Cards & Desktop Table)
+        window.aplicarFiltros = () => {
+            const fBusca = document.getElementById('filtro-busca').value.toUpperCase();
+            const fSexo = document.getElementById('filtro-sexo').value;
+            const fStatus = document.getElementById('filtro-status').value;
+            const fCat = document.getElementById('filtro-cat').value;
+            const fFoto = document.getElementById('filtro-foto').value;
+            const limpar = (str) => str ? str.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+            const tbody = document.getElementById('tbody-lista');
+            const mobileList = document.getElementById('mobile-animals-list');
+
+            tbody.innerHTML = '';
+            mobileList.innerHTML = '';
+
+            const lista = window.todosAnimais.filter(a => {
+                const termo = fBusca.trim();
+                if (termo) {
+                    const matchId = a.id && a.id.toUpperCase().includes(termo);
+                    const matchMae = a.id_mae && a.id_mae.toUpperCase().includes(termo);
+                    const matchObs = a.obs && a.obs.toUpperCase().includes(termo);
+                    const matchBrincoAnt = a.brinco_anterior && a.brinco_anterior.toUpperCase().includes(termo);
+                    if (!matchId && !matchMae && !matchObs && !matchBrincoAnt) return false;
+                }
+
+                if (fSexo !== 'ALL' && a.tipo !== fSexo) return false;
+                const st = limpar(a.status_produtivo);
+                if (fStatus === 'LACTACAO' && !st.includes('LACTACAO')) return false;
+                if (fStatus === 'SECA' && !st.includes('SECA')) return false;
+                if (fStatus === 'OUTROS' && (st.includes('LACTACAO') || st.includes('SECA'))) return false;
+
+                const ehBez = a.nascimento ? calcularMeses(a.nascimento) < 12 : limpar(a.categoria_manual).includes('BEZERRO');
+                if (fCat === 'BEZERRO' && !ehBez) return false;
+                if (fCat === 'ADULTO' && ehBez) return false;
+                if (fCat === 'PROVISORIO' && a.classificacao !== 'PROVISORIO') return false;
+                if (fCat === 'SUBSTITUICAO' && a.classificacao !== 'SUBSTITUICAO') return false;
+
+                if (fFoto === 'COM_FOTO' && !a.foto_url) return false;
+                if (fFoto === 'SEM_FOTO' && a.foto_url) return false;
+
+                return true;
+            });
+
+            const total = lista.length;
+            const machos = lista.filter(a => a.tipo === 'MACHO').length;
+            const femeas = lista.filter(a => a.tipo === 'FEMEA').length;
+            document.getElementById('lbl-resultado-filtro').innerHTML = `${total} animais <span class="text-stone-400 font-normal">(${femeas} F / ${machos} M)</span>`;
+
+            if (total === 0) {
+                document.getElementById('sem-resultados').classList.remove('hidden');
+                mobileList.innerHTML = '<p class="text-center py-6 text-xs text-stone-400">Nenhum animal encontrado.</p>';
+                return;
+            } else {
+                document.getElementById('sem-resultados').classList.add('hidden');
+            }
+
+            lista.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })).slice(0, 300).forEach(a => {
+                const st = limpar(a.status_produtivo);
+                let badgeClass = 'text-stone-500 bg-stone-100 border-stone-200';
+                let badgeText = 'OUTRO';
+
+                let isLact = st.includes('LACTACAO');
+                let isSeca = st.includes('SECA');
+
+                if (isLact) {
+                    badgeClass = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                    badgeText = 'LACTAÇÃO';
+                } else if (isSeca) {
+                    badgeClass = 'text-amber-700 bg-amber-50 border-amber-200';
+                    badgeText = 'SECA';
+                }
+
+                let idDisplay = a.id;
+                let idBadge = '';
+                let isSubstituicao = a.classificacao === 'SUBSTITUICAO';
+
+                if (isSubstituicao) {
+                    idBadge = '<span class="text-[9px] bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded font-black border border-sky-200 ml-1"><i class="fas fa-link-slash"></i> RE-BRINCAGEM</span>';
+                } else if (a.classificacao === 'PROVISORIO') {
+                    idBadge = '<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black border border-amber-200 ml-1">PROVISÓRIO</span>';
+                }
+
+                let sexBadge = a.tipo === 'MACHO' 
+                    ? '<span class="text-xs text-sky-700 font-bold bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-100"><i class="fas fa-mars"></i> Macho</span>' 
+                    : '<span class="text-xs text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100"><i class="fas fa-venus"></i> Fêmea</span>';
+
+                let dataRef = formatarDataBr(a.data_evento || a.nascimento);
+                let idadeStr = calcularIdade(a.nascimento);
+
+                // --- 1. LINHA NA TABELA DESKTOP ---
+                tbody.innerHTML += `
+                    <tr class="hover:bg-emerald-50/40 transition border-b border-stone-100">
+                        <td class="px-5 py-3 font-bold text-stone-900 whitespace-nowrap">
+                            ${a.id} ${idBadge}
+                        </td>
+                        <td class="px-5 py-3 text-center">${a.tipo === 'MACHO' ? '<i class="fas fa-mars text-sky-600 text-base"></i>' : '<i class="fas fa-venus text-rose-500 text-base"></i>'}</td>
+                        <td class="px-5 py-3"><span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${badgeClass}">${badgeText}</span></td>
+                        <td class="px-5 py-3 text-stone-500 font-mono">${dataRef}</td>
+                        <td class="px-5 py-3 text-center">
+                            <div class="flex justify-center gap-1.5">
+                                ${isSubstituicao ? `<button onclick="abrirModalUnificar('${a.id}')" class="px-2.5 py-1 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-700 flex items-center gap-1 shadow-sm" title="Vincular Ficha Antiga"><i class="fas fa-link"></i> Vincular</button>` : ''}
+                                ${isLact ? `<button onclick="abrirModalSecagem('${a.id}')" class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 flex items-center justify-center text-xs" title="Secar"><i class="fas fa-pause"></i></button>` : ''}
+                                ${isSeca ? `<button onclick="abrirModalRetorno('${a.id}')" class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 flex items-center justify-center text-xs" title="Iniciar Lactação"><i class="fas fa-play"></i></button>` : ''}
+                                <button onclick="abrirDossie('${a.id}')" class="w-7 h-7 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 flex items-center justify-center text-xs" title="Ver Dossiê"><i class="fas fa-clipboard-user"></i></button>
+                                <button onclick="abrirModalEditar('${a.id}')" class="w-7 h-7 rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 flex items-center justify-center text-xs" title="Editar Brinco"><i class="fas fa-pen"></i></button>
+                                <button onclick="abrirModalExcluir('${a.id}')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center text-xs" title="Dar Baixa"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+
+                // --- 2. CARD NO MOBILE (TOUCH FRIENDLY) ---
+                const card = document.createElement('div');
+                card.className = `agro-card p-3.5 border ${isSubstituicao ? 'border-sky-300 bg-sky-50/20' : 'border-stone-200/90'} space-y-2.5`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 rounded-xl ${isSubstituicao ? 'bg-sky-200 text-sky-900' : (a.tipo === 'MACHO' ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-700')} flex items-center justify-center text-base shadow-inner">
+                                <i class="fas fa-cow"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-base text-stone-900 font-mono leading-none">${a.id}</h4>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="text-[10px] text-stone-400 font-semibold">Mãe: ${a.id_mae || 'N/D'}</span>
+                                    <span class="text-stone-300">•</span>
+                                    <span class="text-[10px] text-stone-500 font-bold">${idadeStr}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="text-[10px] font-black px-2 py-0.5 rounded-full border ${badgeClass}">${badgeText}</span>
+                            ${idBadge}
+                        </div>
+                    </div>
+
+                    ${isSubstituicao ? `
+                    <div class="p-2 bg-sky-100/60 rounded-xl border border-sky-200 flex items-center justify-between gap-2">
+                        <p class="text-[11px] text-sky-900 font-bold flex items-center gap-1.5">
+                            <i class="fas fa-triangle-exclamation text-sky-600"></i> Brinco colocado por perda
+                        </p>
+                        <button onclick="abrirModalUnificar('${a.id}')" class="px-3 py-1 bg-sky-700 hover:bg-sky-800 text-white rounded-lg font-extrabold text-xs shadow-sm transition active:scale-95 flex items-center gap-1">
+                            <i class="fas fa-link"></i> Vincular Ficha
+                        </button>
+                    </div>
+                    ` : ''}
+
+                    <div class="flex items-center justify-between text-xs text-stone-500 pt-1 border-t border-stone-100">
+                        <div>${sexBadge}</div>
+                        <span class="font-mono text-[11px] text-stone-400"><i class="fas fa-calendar-day text-[10px]"></i> ${dataRef}</span>
+                    </div>
+
+                    <!-- Botões de Ação Táteis Grandes -->
+                    <div class="grid grid-cols-4 gap-1.5 pt-1 border-t border-stone-100">
+                        <button onclick="abrirDossie('${a.id}')" class="py-2 bg-sky-50 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1 border border-sky-100 active:scale-95">
+                            <i class="fas fa-clipboard-user text-[11px]"></i> Ficha
+                        </button>
+                        ${isLact ? `
+                            <button onclick="abrirModalSecagem('${a.id}')" class="py-2 bg-amber-50 text-amber-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1 border border-amber-100 active:scale-95">
+                                <i class="fas fa-pause text-[11px]"></i> Secar
+                            </button>
+                        ` : isSeca ? `
+                            <button onclick="abrirModalRetorno('${a.id}')" class="py-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1 border border-emerald-100 active:scale-95">
+                                <i class="fas fa-play text-[11px]"></i> Ordenha
+                            </button>
+                        ` : `
+                            <button onclick="abrirModalEditar('${a.id}')" class="py-2 bg-stone-100 text-stone-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1 active:scale-95">
+                                <i class="fas fa-tag text-[11px]"></i> Brinco
+                            </button>
+                        `}
+                        <button onclick="abrirModalEditar('${a.id}')" class="py-2 bg-stone-100 text-stone-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1 active:scale-95">
+                            <i class="fas fa-pen text-[11px]"></i> Editar
+                        </button>
+                        <button onclick="abrirModalExcluir('${a.id}')" class="py-2 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1 border border-rose-100 active:scale-95">
+                            <i class="fas fa-trash text-[11px]"></i> Baixa
+                        </button>
+                    </div>
+                `;
+                mobileList.appendChild(card);
+            });
+        };
+
+        // --- DIÁRIO DA FAZENDA ---
+        window.preencherNota = (texto, categoria) => {
+            document.getElementById('diario-desc').value = texto;
+            document.getElementById('diario-categoria').value = categoria;
+            document.getElementById('diario-desc').focus();
+        };
+
+        window.carregarDiario = async () => {
+            document.getElementById('diario-data').value = new Date().toISOString().split('T')[0];
+            const divLista = document.getElementById('lista-diario');
+
+            try {
+                const q = query(collection(db, PATH_DIARIO), orderBy("data", "desc"), limit(50));
+                const querySnapshot = await getDocs(q);
+
+                divLista.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    divLista.innerHTML = '<div class="p-8 text-center text-stone-400 text-xs">Nenhum registro no diário ainda.</div>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const d = docSnap.data();
+                    const dataFormatada = formatarDataBr(d.data);
+
+                    let icone = '<i class="fas fa-sticky-note"></i>';
+                    let corBg = 'bg-stone-100 text-stone-600';
+
+                    if (d.categoria === 'VACINA') {
+                        icone = '<i class="fas fa-syringe"></i>';
+                        corBg = 'bg-rose-100 text-rose-700';
+                    } else if (d.categoria === 'ADAPEC') {
+                        icone = '<i class="fas fa-file-signature"></i>';
+                        corBg = 'bg-emerald-100 text-emerald-700';
+                    } else if (d.categoria === 'MANEJO') {
+                        icone = '<i class="fas fa-hand-holding-medical"></i>';
+                        corBg = 'bg-sky-100 text-sky-700';
+                    }
+
+                    divLista.innerHTML += `
+                        <div class="p-3.5 hover:bg-stone-50 transition flex gap-3 group items-start">
+                            <div class="flex flex-col items-center min-w-[55px]">
+                                <span class="text-[10px] font-bold text-stone-400 uppercase">${dataFormatada.split('/')[2]}</span>
+                                <span class="text-base font-black text-stone-800 font-mono">${dataFormatada.split('/')[0]}/${dataFormatada.split('/')[1]}</span>
+                                <div class="w-7 h-7 rounded-xl ${corBg} flex items-center justify-center text-xs shadow-sm mt-1">
+                                    ${icone}
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-[10px] font-black ${corBg} px-2 py-0.5 rounded-full uppercase tracking-wider mb-1 inline-block border border-black/5">${d.categoria || 'GERAL'}</span>
+                                    <button onclick="excluirNotaDiario('${docSnap.id}')" class="text-stone-300 hover:text-rose-600 transition p-1">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-stone-700 whitespace-pre-wrap leading-relaxed mt-0.5 font-medium">${d.descricao}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Erro ao carregar diário:", error);
+                divLista.innerHTML = '<div class="p-4 text-center text-rose-500 text-xs">Erro ao carregar diário.</div>';
+            }
+        };
+
+        window.salvarNotaDiario = async () => {
+            const data = document.getElementById('diario-data').value;
+            const desc = document.getElementById('diario-desc').value;
+            const cat = document.getElementById('diario-categoria').value;
+
+            if (!data || !desc) return showToast("Preencha a data e a descrição.", "error");
+
+            try {
+                await addDoc(collection(db, PATH_DIARIO), {
+                    data: data,
+                    descricao: desc,
+                    categoria: cat,
+                    created_at: new Date()
+                });
+
+                document.getElementById('diario-desc').value = '';
+                showToast("Nota registrada no diário!", "success");
+                carregarDiario();
+            } catch (e) {
+                showToast("Erro ao salvar: " + e.message, "error");
+            }
+        };
+
+        window.excluirNotaDiario = async (id) => {
+            if (!confirm("Deseja apagar esta nota do diário?")) return;
+            try {
+                await deleteDoc(doc(db, PATH_DIARIO, id));
+                showToast("Nota apagada.", "info");
+                carregarDiario();
+            } catch (e) {
+                showToast("Erro ao excluir: " + e.message, "error");
+            }
+        };
+
+        // --- MANEJO DE SECAGEM & RETORNO ---
+        window.abrirModalSecagem = (id) => {
+            document.getElementById('lbl-id-vaca-sec').innerText = id;
+            document.getElementById('input-id-secagem').value = id;
+            document.getElementById('input-data-secagem').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-secagem').classList.remove('hidden');
+        };
+
+        window.confirmarSecagem = async () => {
+            const id = document.getElementById('input-id-secagem').value;
+            const data = document.getElementById('input-data-secagem').value;
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, id), { status_produtivo: "SECA", data_evento: data, data_secagem: data }, { merge: true });
+                await addDoc(collection(db, PATH_HISTORICO), { animal_id: id, evento: "SECAGEM", data, obs: "Via App", created_at: new Date() });
+                document.getElementById('modal-secagem').classList.add('hidden');
+                showToast(`Secagem da vaca ${id} confirmada!`, "success");
+                carregarDados();
+            } catch (e) {
+                showToast(e.message, "error");
+            }
+        };
+
+        window.abrirModalRetorno = (id) => {
+            document.getElementById('lbl-id-vaca-ret').innerText = id;
+            document.getElementById('input-id-retorno').value = id;
+            document.getElementById('input-data-retorno').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-retorno').classList.remove('hidden');
+        };
+
+        window.confirmarRetorno = async () => {
+            const id = document.getElementById('input-id-retorno').value;
+            const data = document.getElementById('input-data-retorno').value;
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, id), { status_produtivo: "LACTAÇÃO", data_evento: data }, { merge: true });
+                await addDoc(collection(db, PATH_HISTORICO), { animal_id: id, evento: "RE-ENTRADA LACTAÇÃO", data, obs: "Via App", created_at: new Date() });
+                document.getElementById('modal-retorno').classList.add('hidden');
+                showToast(`Vaca ${id} colocada em ordenha!`, "success");
+                carregarDados();
+            } catch (e) {
+                showToast(e.message, "error");
+            }
+        };
+
+        // --- TROCA / EDIÇÃO DE BRINCO ---
+        window.abrirModalEditar = (id) => {
+            document.getElementById('edit-id-antigo').value = id;
+            document.getElementById('view-id-antigo').value = id;
+            document.getElementById('edit-id-novo').value = '';
+            document.getElementById('modal-editar').classList.remove('hidden');
+        };
+
+        window.confirmarEdicao = async () => {
+            const oldId = document.getElementById('edit-id-antigo').value;
+            const newId = document.getElementById('edit-id-novo').value.toUpperCase().trim();
+            if (!newId || newId === oldId) return showToast("Insira um novo brinco válido.", "error");
+
+            try {
+                const docRefNovo = doc(db, PATH_ANIMAIS, newId);
+                const snapNovo = await getDoc(docRefNovo);
+
+                if (snapNovo.exists()) {
+                    if (!confirm(`ATENÇÃO: O animal '${newId}' JÁ EXISTE.\nDeseja realizar a FUSÃO?`)) return;
+                    await deleteDoc(docRefNovo);
+                }
+
+                const docRefAntigo = doc(db, PATH_ANIMAIS, oldId);
+                const snapAntigo = await getDoc(docRefAntigo);
+                if (snapAntigo.exists()) {
+                    const dados = snapAntigo.data();
+                    dados.id = newId;
+                    delete dados.classificacao;
+                    await setDoc(doc(db, PATH_ANIMAIS, newId), dados);
+                    await addDoc(collection(db, PATH_HISTORICO), { animal_id: newId, evento: "TROCA BRINCO", data: new Date().toISOString().split('T')[0], obs: `Brinco anterior: ${oldId}`, created_at: new Date() });
+                    await deleteDoc(docRefAntigo);
+                }
+
+                document.getElementById('modal-editar').classList.add('hidden');
+                showToast("Brinco atualizado com sucesso!", "success");
+                carregarDados();
+            } catch (e) {
+                showToast("Erro: " + e.message, "error");
+            }
+        };
+
+        // --- BAIXA E EXCLUSÃO ---
+        window.abrirModalExcluir = (id) => {
+            document.getElementById('lbl-id-excluir').innerText = id;
+            document.getElementById('input-id-excluir').value = id;
+            document.getElementById('input-data-excluir').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-excluir').classList.remove('hidden');
+        };
+
+        window.confirmarExclusao = async () => {
+            const id = document.getElementById('input-id-excluir').value;
+            const mot = document.getElementById('input-motivo-excluir').value;
+            const data = document.getElementById('input-data-excluir').value;
+            const obs = document.getElementById('input-obs-excluir').value;
+
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, id), { status_produtivo: mot, data_saida: data, obs_saida: obs }, { merge: true });
+                await addDoc(collection(db, PATH_HISTORICO), { animal_id: id, evento: "BAIXA - " + mot, data, obs, created_at: new Date() });
+
+                document.getElementById('modal-excluir').classList.add('hidden');
+                showToast("Baixa registrada com sucesso!", "success");
+                carregarDados();
+            } catch (e) {
+                showToast(e.message, "error");
+            }
+        };
+
+        window.confirmarExclusaoDefinitiva = async () => {
+            const id = document.getElementById('input-id-excluir').value;
+            if (!confirm(`⚠️ APAGAR DEFINITIVAMENTE o animal ${id}?\nEsta ação é irreversível.`)) return;
+
+            try {
+                await deleteDoc(doc(db, PATH_ANIMAIS, id));
+                const q = query(collection(db, PATH_HISTORICO), where("animal_id", "==", id));
+                const snap = await getDocs(q);
+                snap.forEach(d => deleteDoc(d.ref));
+
+                document.getElementById('modal-excluir').classList.add('hidden');
+                showToast("Registro do animal apagado!", "info");
+                carregarDados();
+            } catch (e) {
+                showToast("Erro ao apagar: " + e.message, "error");
+            }
+        };
+
+        // --- DOSSIÊ ZOOTÉCNICO DO ANIMAL ---
+        window.abrirDossie = async (id) => {
+            document.getElementById('modal-dossie').classList.remove('hidden');
+            document.getElementById('dossie-id').innerText = id;
+            document.getElementById('dossie-timeline').innerHTML = '<p class="text-xs text-stone-400 p-2">Carregando histórico...</p>';
+
+            document.getElementById('dossie-foto-url').value = '';
+            document.getElementById('area-visualizar-foto').classList.add('hidden');
+
+            const docSnap = await getDoc(doc(db, PATH_ANIMAIS, id));
+
+            if (docSnap.exists()) {
+                const d = docSnap.data();
+                document.getElementById('dossie-resumo').innerHTML = `${d.tipo} • Mãe: ${d.id_mae || 'N/D'} • ${calcularIdade(d.nascimento)}`;
+
+                if (d.foto_url) {
+                    document.getElementById('dossie-foto-url').value = d.foto_url;
+                    document.getElementById('area-visualizar-foto').classList.remove('hidden');
+                    document.getElementById('btn-ver-foto').href = d.foto_url;
+                }
+            }
+
+            const q = query(collection(db, PATH_HISTORICO), where("animal_id", "==", id));
+            const snap = await getDocs(q);
+            let evts = [];
+            snap.forEach(d => evts.push(d.data()));
+
+            if (docSnap.exists() && docSnap.data().nascimento)
+                evts.push({ evento: 'NASCIMENTO', data: docSnap.data().nascimento, obs: 'Registro Inicial' });
+
+            evts.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            const tl = document.getElementById('dossie-timeline');
+            tl.innerHTML = '';
+
+            evts.forEach(e => {
+                let color = 'bg-stone-400';
+                if (e.evento.includes('PARTO') || e.evento.includes('NASCIMENTO')) color = 'bg-emerald-600';
+                if (e.evento.includes('SECAGEM') || e.evento.includes('BAIXA')) color = 'bg-rose-500';
+
+                tl.innerHTML += `
+                    <div class="relative pl-5 pb-4 border-l border-stone-200 last:pb-0">
+                        <div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full ${color} ring-2 ring-white"></div>
+                        <p class="text-[10px] font-bold text-stone-400 uppercase font-mono">${formatarDataBr(e.data)}</p>
+                        <p class="text-xs font-black text-stone-800">${e.evento}</p>
+                        ${e.obs ? `<p class="text-[11px] text-stone-600 bg-white p-2 rounded-lg border border-stone-100 mt-1 shadow-sm font-medium">${e.obs}</p>` : ''}
+                    </div>`;
+            });
+        };
+
+        window.fecharDossie = () => document.getElementById('modal-dossie').classList.add('hidden');
+
+        window.salvarLinkFoto = async () => {
+            const id = document.getElementById('dossie-id').innerText;
+            const url = document.getElementById('dossie-foto-url').value.trim();
+
+            if (!url) return showToast("Insira uma URL de foto válida.", "error");
+
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, id), { foto_url: url }, { merge: true });
+                showToast("Foto do animal salva!", "success");
+                abrirDossie(id);
+            } catch (e) {
+                showToast("Erro ao salvar foto: " + e.message, "error");
+            }
+        };
+
+        window.salvarOcorrencia = async () => {
+            const id = document.getElementById('dossie-id').innerText;
+            const data = document.getElementById('dossie-nova-data').value || new Date().toISOString().split('T')[0];
+            const obs = document.getElementById('dossie-nova-obs').value.trim();
+
+            if (!obs) return showToast("Escreva a descrição do evento.", "error");
+
+            try {
+                await addDoc(collection(db, PATH_HISTORICO), { animal_id: id, evento: "OCORRÊNCIA", data, obs, created_at: new Date() });
+                document.getElementById('dossie-nova-obs').value = '';
+                showToast("Ocorrência registrada no animal!", "success");
+                abrirDossie(id);
+            } catch (e) {
+                showToast(e.message, "error");
+            }
+        };
+
+        // --- ASSISTENTE DE VINCULAÇÃO / RE-BRINCAGEM (MERGE) ---
+        let animalNovoSelecionadoParaUnificar = null;
+        let animalAntigoSelecionadoParaUnificar = null;
+
+        window.abrirModalUnificar = async (novoId) => {
+            animalNovoSelecionadoParaUnificar = novoId;
+            animalAntigoSelecionadoParaUnificar = null;
+
+            const modal = document.getElementById('modal-unificar-brinco');
+            const lblNovoId = document.getElementById('unif-novo-id');
+            const lblNovoDetalhes = document.getElementById('unif-novo-detalhes');
+            const lblNovoObs = document.getElementById('unif-novo-obs');
+            const inputBusca = document.getElementById('unif-busca-antigo');
+            const painelConf = document.getElementById('unif-painel-confirmacao');
+            const btnConf = document.getElementById('btn-confirmar-unificacao');
+
+            inputBusca.value = '';
+            painelConf.classList.add('hidden');
+            btnConf.disabled = true;
+
+            const docSnap = await getDoc(doc(db, PATH_ANIMAIS, novoId));
+            if (docSnap.exists()) {
+                const d = docSnap.data();
+                lblNovoId.innerText = novoId;
+                lblNovoDetalhes.innerText = `${d.tipo || 'ANIMAL'} • ${d.status_produtivo || 'ATIVO'}`;
+                lblNovoObs.innerText = d.obs ? `Obs cadastrada: "${d.obs}"` : 'Sem observações adicionais no cadastro.';
+            } else {
+                lblNovoId.innerText = novoId;
+                lblNovoDetalhes.innerText = '--';
+                lblNovoObs.innerText = '';
+            }
+
+            filtrarCandidatosUnificar();
+            modal.classList.remove('hidden');
+        };
+
+        window.filtrarCandidatosUnificar = () => {
+            const termo = document.getElementById('unif-busca-antigo').value.toUpperCase().trim();
+            const container = document.getElementById('unif-lista-candidatos');
+            container.innerHTML = '';
+
+            // Lista apenas animais que NÃO são o novo id e que NÃO são substituições pendentes
+            const candidatos = (window.todosAnimais || []).filter(a => {
+                if (a.id === animalNovoSelecionadoParaUnificar) return false;
+                if (a.classificacao === 'SUBSTITUICAO') return false;
+                if (!termo) return true;
+                const matchId = a.id && a.id.toUpperCase().includes(termo);
+                const matchMae = a.id_mae && a.id_mae.toUpperCase().includes(termo);
+                const matchObs = a.obs && a.obs.toUpperCase().includes(termo);
+                return matchId || matchMae || matchObs;
+            });
+
+            if (candidatos.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-stone-400 text-xs">Nenhum animal encontrado para vincular.</div>';
+                return;
+            }
+
+            candidatos.slice(0, 50).forEach(c => {
+                const isSelected = animalAntigoSelecionadoParaUnificar === c.id;
+                const item = document.createElement('div');
+                item.className = `p-2.5 rounded-xl cursor-pointer transition flex items-center justify-between gap-2 ${isSelected ? 'bg-emerald-100 border-2 border-emerald-600' : 'bg-white hover:bg-stone-50 border border-stone-200'}`;
+                item.onclick = () => selecionarCandidatoUnificar(c.id);
+
+                const dataStr = formatarDataBr(c.data_evento || c.nascimento);
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg ${c.tipo === 'MACHO' ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-700'} flex items-center justify-center text-xs font-black">
+                            <i class="fas fa-cow"></i>
+                        </div>
+                        <div>
+                            <div class="font-extrabold text-xs text-stone-900 font-mono flex items-center gap-1.5">
+                                <span>Brinco: ${c.id}</span>
+                                <span class="text-[10px] text-stone-500 font-normal">(${c.tipo || '-'})</span>
+                            </div>
+                            <p class="text-[10px] text-stone-500 font-medium">Mãe: ${c.id_mae || 'N/D'} • Status: ${c.status_produtivo || 'ATIVO'}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isSelected ? 'bg-emerald-700 text-white' : 'bg-stone-100 text-stone-600'}">
+                            ${isSelected ? '<i class="fas fa-check"></i> Selecionado' : 'Escolher'}
+                        </span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        };
+
+        window.selecionarCandidatoUnificar = (antigoId) => {
+            animalAntigoSelecionadoParaUnificar = antigoId;
+            document.getElementById('unif-conf-antigo').innerText = antigoId;
+            document.getElementById('unif-conf-novo').innerText = animalNovoSelecionadoParaUnificar;
+            document.getElementById('unif-painel-confirmacao').classList.remove('hidden');
+            document.getElementById('btn-confirmar-unificacao').disabled = false;
+            filtrarCandidatosUnificar();
+        };
+
+        window.confirmarUnificacao = async () => {
+            if (!animalNovoSelecionadoParaUnificar || !animalAntigoSelecionadoParaUnificar) return;
+            const novoId = animalNovoSelecionadoParaUnificar;
+            const antigoId = animalAntigoSelecionadoParaUnificar;
+
+            if (!confirm(`Confirmar que o animal antigo ${antigoId} agora usa o brinco ${novoId}?\nTodo o histórico será transferido para o novo brinco.`)) return;
+
+            try {
+                // 1. Carregar dados do animal antigo
+                const docRefAntigo = doc(db, PATH_ANIMAIS, antigoId);
+                const docRefNovo = doc(db, PATH_ANIMAIS, novoId);
+                
+                const snapAntigo = await getDoc(docRefAntigo);
+                const snapNovo = await getDoc(docRefNovo);
+
+                let dadosFinais = {};
+                if (snapAntigo.exists()) {
+                    dadosFinais = snapAntigo.data();
+                }
+
+                // Preserva observações do novo brinco se houver
+                if (snapNovo.exists() && snapNovo.data().obs) {
+                    dadosFinais.obs = (dadosFinais.obs ? dadosFinais.obs + " | " : "") + snapNovo.data().obs;
+                }
+
+                dadosFinais.id = novoId;
+                dadosFinais.brinco_anterior = antigoId;
+                dadosFinais.classificacao = 'DEFINITIVO';
+                dadosFinais.status = 'Ativo';
+
+                // 2. Salvar ficha oficial no novo ID
+                await setDoc(docRefNovo, dadosFinais);
+
+                // 3. Transferir eventos do histórico do animal antigo para o novo ID
+                const qHistAntigo = query(collection(db, PATH_HISTORICO), where("animal_id", "==", antigoId));
+                const snapHist = await getDocs(qHistAntigo);
+                for (let d of snapHist.docs) {
+                    await setDoc(d.ref, { animal_id: novoId }, { merge: true });
+                }
+
+                // 4. Adicionar evento oficial de re-brincagem
+                await addDoc(collection(db, PATH_HISTORICO), {
+                    animal_id: novoId,
+                    evento: "SUBSTITUIÇÃO DE BRINCO PERDIDO",
+                    data: new Date().toISOString().split('T')[0],
+                    obs: `Brinco original ${antigoId} substituído pelo novo brinco ${novoId} devido a perda no campo.`,
+                    created_at: new Date()
+                });
+
+                // 5. Excluir o registro antigo para evitar duplicação do rebanho
+                await deleteDoc(docRefAntigo);
+
+                document.getElementById('modal-unificar-brinco').classList.add('hidden');
+                showToast(`Fichas unificadas com sucesso! Animal ${novoId} atualizado.`, "success");
+                carregarDados();
+            } catch (e) {
+                console.error("Erro ao unificar animais:", e);
+                showToast("Erro ao unificar: " + e.message, "error");
+            }
+        };
+
+        window.confirmarComoNovoAnimal = async () => {
+            if (!animalNovoSelecionadoParaUnificar) return;
+            const novoId = animalNovoSelecionadoParaUnificar;
+
+            if (!confirm(`Confirmar o animal ${novoId} como um NOVO animal oficial no rebanho (adicionando +1 à contagem)?`)) return;
+
+            try {
+                const docRefNovo = doc(db, PATH_ANIMAIS, novoId);
+                await setDoc(docRefNovo, { classificacao: 'DEFINITIVO', status: 'Ativo' }, { merge: true });
+                await addDoc(collection(db, PATH_HISTORICO), {
+                    animal_id: novoId,
+                    evento: "CONFIRMAÇÃO DE NOVO ANIMAL",
+                    data: new Date().toISOString().split('T')[0],
+                    obs: "Confirmado como animal independente no rebanho.",
+                    created_at: new Date()
+                });
+
+                document.getElementById('modal-unificar-brinco').classList.add('hidden');
+                showToast(`Animal ${novoId} confirmado no rebanho!`, "success");
+                carregarDados();
+            } catch (e) {
+                showToast("Erro: " + e.message, "error");
+            }
+        };
+
+        // --- SUBMIT CADASTROS ---
+        document.getElementById('formNascimento').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idBez = document.getElementById('cad-idBezerro').value.toUpperCase().trim();
+            const idMae = document.getElementById('cad-idMae').value.toUpperCase().trim();
+            const data = document.getElementById('cad-data').value;
+            const sexo = document.getElementById('cad-sexo').value;
+
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, idBez), { id: idBez, tipo: sexo, nascimento: data, id_mae: idMae, status: 'Ativo' });
+                await setDoc(doc(db, PATH_ANIMAIS, idMae), { id: idMae, status_produtivo: 'LACTAÇÃO', data_evento: data }, { merge: true });
+                await addDoc(collection(db, PATH_HISTORICO), { animal_id: idMae, evento: "PARTO", data, obs: `Pariu ${idBez}`, created_at: new Date() });
+
+                showToast(`Parto registrado! Bezerro ${idBez} cadastrado.`, "success");
+                document.getElementById('formNascimento').reset();
+                carregarDados();
+            } catch (err) {
+                showToast(err.message, "error");
+            }
+        });
+
+        document.getElementById('formAdulto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('adulto-id').value.toUpperCase().trim();
+            const data = document.getElementById('adulto-data').value;
+            const sexo = document.getElementById('adulto-sexo').value;
+            const status = document.getElementById('adulto-status').value;
+            const obs = document.getElementById('adulto-obs').value.trim();
+            const tipoReg = document.getElementById('adulto-tipo-registro').value;
+
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, id), {
+                    id: id,
+                    tipo: sexo,
+                    status_produtivo: status,
+                    data_evento: data,
+                    status: 'Ativo',
+                    categoria_manual: 'ADULTO',
+                    classificacao: tipoReg
+                }, { merge: true });
+
+                let eventoNome = "CADASTRO/COMPRA";
+                let toastMsg = `Animal ${id} cadastrado com sucesso!`;
+                if (tipoReg === 'PROVISORIO') {
+                    eventoNome = "REGISTRO PROVISÓRIO";
+                    toastMsg = `Animal ${id} cadastrado como provisório!`;
+                } else if (tipoReg === 'SUBSTITUICAO') {
+                    eventoNome = "SUBSTITUIÇÃO DE BRINCO (PENDENTE)";
+                    toastMsg = `Brinco substituto ${id} registrado! Não somado ao rebanho até vincular.`;
+                }
+
+                await addDoc(collection(db, PATH_HISTORICO), {
+                    animal_id: id,
+                    evento: eventoNome,
+                    data: data,
+                    obs: obs || (tipoReg === 'SUBSTITUICAO' ? "Brinco colocado por perda no campo. Aguarda vínculo." : "Cadastro Avulso"),
+                    created_at: new Date()
+                });
+
+                showToast(toastMsg, "success");
+                document.getElementById('formAdulto').reset();
+                document.getElementById('info-substituicao-aviso').classList.add('hidden');
+                carregarDados();
+            } catch (err) {
+                showToast(err.message, "error");
+            }
+        });
+
+        // --- BACKUP & CSV ---
+        window.exportarDados = async () => {
+            if (!window.todosAnimais || window.todosAnimais.length === 0) {
+                const snap = await getDocs(collection(db, PATH_ANIMAIS));
+                window.todosAnimais = [];
+                snap.forEach(d => window.todosAnimais.push(d.data()));
+            }
+            if (window.todosAnimais.length === 0) return showToast("Nenhum dado para exportar.", "error");
+
+            const csv = Papa.unparse(window.todosAnimais, { quotes: false, delimiter: ";" });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `backup_gado_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Backup baixado com sucesso!", "success");
+        };
+
+        window.importarBackupCompleto = () => {
+            const f = document.getElementById('fileBackupCompleto').files[0];
+            if (!f) return;
+            if (!confirm("Isso irá adicionar/atualizar os animais do backup. Continuar?")) {
+                document.getElementById('fileBackupCompleto').value = '';
+                return;
+            }
+
+            document.getElementById('import-status').innerText = "Lendo backup...";
+            Papa.parse(f, {
+                header: true, skipEmptyLines: true, encoding: "UTF-8", complete: async (results) => {
+                    document.getElementById('import-status').innerText = `Processando ${results.data.length} registros...`;
+                    let batch = writeBatch(db);
+                    let count = 0;
+                    let totalProcessado = 0;
+
+                    for (let row of results.data) {
+                        if (!row.id) continue;
+                        Object.keys(row).forEach(key => { if (row[key] === "" || row[key] === null) delete row[key]; });
+                        const docRef = doc(db, PATH_ANIMAIS, row.id);
+                        batch.set(docRef, row, { merge: true });
+                        count++;
+                        totalProcessado++;
+                        if (count >= 400) {
+                            await batch.commit();
+                            batch = writeBatch(db);
+                            count = 0;
+                            document.getElementById('import-status').innerText = `Salvando... (${totalProcessado})`;
+                        }
+                    }
+                    if (count > 0) await batch.commit();
+                    document.getElementById('import-status').innerText = "Restauração concluída!";
+                    showToast(`${totalProcessado} animais restaurados!`, "success");
+                    document.getElementById('fileBackupCompleto').value = '';
+                    carregarDados();
+                }, error: (err) => { showToast("Erro: " + err.message, "error"); }
+            });
+        };
+
+        // --- HELPERS ---
+        function calcularMeses(d) { return (new Date() - new Date(d)) / 2629746000; }
+        function calcularIdade(d) { if (!d) return '-'; const m = Math.floor(calcularMeses(d)); return m < 12 ? m + "m" : Math.floor(m / 12) + "a"; }
+        function formatarDataBr(d) { if (!d) return '-'; const p = d.split('-'); return `${p[2]}/${p[1]}/${p[0].slice(2)}`; }
+
+        // Inicia na aba Dashboard
+        nav('dashboard');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Despesas WM">
+    <meta name="theme-color" content="#064E3B">
+    <title>Despesas & Custos • Fazenda WM de Jesus</title>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Google Fonts & FontAwesome 6 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Toastify & Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e'
+                        },
+                        stone: {
+                            50: '#fbfbfa',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F7F6F2;
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .agro-card {
+            background: #ffffff;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(231, 229, 228, 0.85);
+            box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #059669 100%);
+        }
+
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.9);
+        }
+
+        .tab-btn.active {
+            background-color: #064e3b;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.25);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .safe-bottom {
+            padding-bottom: max(env(safe-area-inset-bottom, 16px), 72px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F7F6F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 999px;
+        }
+    </style>
+    <script src="firebase-config.js"></script>
+</head>
+
+<body class="min-h-full flex flex-col antialiased selection:bg-emerald-200">
+
+    <!-- ═══════════════════════════════════════════════════════
+         TELA DE LOGIN UNIFICADA
+         ═══════════════════════════════════════════════════════ -->
+    <div id="tela-login" class="fixed inset-0 z-50 bg-[#F7F6F2] flex items-center justify-center p-4">
+        <div class="agro-card p-6 max-w-sm w-full text-center space-y-5 shadow-2xl border border-stone-200">
+            <div class="w-16 h-16 rounded-2xl hero-gradient mx-auto flex items-center justify-center text-white text-3xl shadow-lg shadow-emerald-900/20">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold text-stone-900">Despesas da Fazenda</h1>
+                <p class="text-xs text-stone-500 mt-1">Gestão de Custos, Insumos & Conciliação</p>
+            </div>
+            <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 text-left text-xs text-stone-600 space-y-1">
+                <p class="flex items-center gap-2"><i class="fas fa-shield-halved text-emerald-700"></i> Acesso seguro e unificado</p>
+                <p class="flex items-center gap-2"><i class="fas fa-database text-emerald-700"></i> Banco de dados em nuvem</p>
+            </div>
+            <button id="btn-login-google" onclick="fazerLoginGoogle()" class="w-full py-3.5 px-4 bg-white hover:bg-stone-50 text-stone-700 font-bold text-sm rounded-xl border border-stone-300 shadow-sm flex items-center justify-center gap-3 transition active:scale-95">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Entrar com Google</span>
+            </button>
+            <p id="login-error" class="text-xs text-rose-600 font-bold hidden"></p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER SUPERIOR MOBILE-FIRST
+         ═══════════════════════════════════════════════════════ -->
+    <header class="bg-white border-b border-stone-200/80 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="w-9 h-9 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition active:scale-95">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                </a>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                        <h1 class="text-sm font-extrabold text-stone-900 leading-tight">Despesas & Custos</h1>
+                    </div>
+                    <p class="text-[10px] text-stone-500 font-medium">Fazenda WM de Jesus</p>
+                </div>
+            </div>
+
+            <!-- Ações Direita (Sincronizar + Perfil) -->
+            <div class="flex items-center gap-2">
+                <button onclick="carregarDados(true)" class="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 hover:text-emerald-800 hover:bg-emerald-50 flex items-center justify-center transition" title="Sincronizar">
+                    <i id="icon-sync" class="fas fa-arrows-rotate text-sm"></i>
+                </button>
+                <div class="flex items-center gap-2 pl-1 border-l border-stone-200">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=WM&background=064E3B&color=fff" class="w-8 h-8 rounded-xl object-cover border border-emerald-900/10 shadow-sm" alt="User">
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Abas / Segmentos de Navegação -->
+        <div class="max-w-4xl mx-auto px-3 pb-2 pt-1">
+            <div class="grid grid-cols-4 gap-1.5 p-1 bg-stone-100 rounded-xl text-xs font-semibold">
+                <button id="tab-nav-resumo" onclick="nav('resumo')" class="tab-btn active py-2 rounded-lg text-center transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-chart-pie text-[11px]"></i> <span>Resumo</span>
+                </button>
+                <button id="tab-nav-despesas" onclick="nav('despesas')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-list-check text-[11px]"></i> <span>Extrato</span>
+                </button>
+                <button id="tab-nav-novo" onclick="nav('novo')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-plus-circle text-[11px]"></i> <span>Lançar</span>
+                </button>
+                <button id="tab-nav-conciliacao" onclick="nav('conciliacao')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5 relative">
+                    <i class="fas fa-building-columns text-[11px]"></i> <span>Banco</span>
+                    <span id="badge-conciliacao" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full ring-2 ring-white">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTEÚDO PRINCIPAL (ABAS DINÂMICAS)
+         ═══════════════════════════════════════════════════════ -->
+    <main class="max-w-4xl w-full mx-auto p-4 space-y-4 flex-1 safe-bottom">
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 1: RESUMO & KPIS FINANCEIROS
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-resumo" class="space-y-4 fade-in">
+            <!-- Barra de Seleção de Período Rápido -->
+            <div class="agro-card p-3 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-calendar-alt text-emerald-800 text-sm"></i>
+                    <span class="text-xs font-bold text-stone-700">Período de Análise:</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="filtro-ano" onchange="filtrarDados()" class="bg-stone-50 border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                        <!-- Preenchido via JS -->
+                    </select>
+                    <select id="filtro-mes" onchange="filtrarDados()" class="bg-stone-50 border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                        <option value="all">Ano Todo</option>
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grade de 4 KPIs Financeiros -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <!-- KPI 1: Total Filtrado -->
+                <div class="agro-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-stone-500">
+                        <span class="text-[11px] font-bold uppercase tracking-wider">Total Gasto</span>
+                        <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-total-gasto" class="text-lg font-black text-rose-700 font-mono tracking-tight">R$ 0,00</p>
+                    <p id="kpi-qtd-lancamentos" class="text-[10px] text-stone-400 font-medium">0 lançamentos</p>
+                </div>
+
+                <!-- KPI 2: Média Diária -->
+                <div class="agro-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-stone-500">
+                        <span class="text-[11px] font-bold uppercase tracking-wider">Média / Dia</span>
+                        <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-xs">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-media-dia" class="text-lg font-black text-stone-800 font-mono tracking-tight">R$ 0,00</p>
+                    <p class="text-[10px] text-stone-400 font-medium">No período selecionado</p>
+                </div>
+
+                <!-- KPI 3: Maior Categoria -->
+                <div class="agro-card p-3.5 space-y-1">
+                    <div class="flex items-center justify-between text-stone-500">
+                        <span class="text-[11px] font-bold uppercase tracking-wider">Maior Custo</span>
+                        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center text-xs">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-maior-categoria" class="text-sm font-black text-stone-900 truncate">--</p>
+                    <p id="kpi-maior-categoria-val" class="text-[10px] text-emerald-800 font-bold font-mono">R$ 0,00</p>
+                </div>
+
+                <!-- KPI 4: Pendências Extrato -->
+                <div class="agro-card p-3.5 space-y-1 cursor-pointer hover:border-amber-300" onclick="nav('conciliacao')">
+                    <div class="flex items-center justify-between text-stone-500">
+                        <span class="text-[11px] font-bold uppercase tracking-wider">Extrato Pend.</span>
+                        <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center text-xs">
+                            <i class="fas fa-building-columns"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-pendentes-extrato" class="text-lg font-black text-sky-800 font-mono tracking-tight">0</p>
+                    <p class="text-[10px] text-stone-400 font-medium flex items-center gap-1">
+                        <span>Ver no Banco</span> <i class="fas fa-chevron-right text-[8px]"></i>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Gráficos Responsivos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Gráfico 1: Despesas por Categoria (Donut) -->
+                <div class="agro-card p-4 space-y-2">
+                    <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                        <h3 class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                            <i class="fas fa-chart-pie text-emerald-800"></i> Distribuição por Categoria
+                        </h3>
+                        <span class="text-[10px] text-stone-400 font-mono" id="chart-cat-total">R$ 0,00</span>
+                    </div>
+                    <div class="relative h-56 w-full flex items-center justify-center">
+                        <canvas id="chartCategoria"></canvas>
+                        <p id="msg-sem-dados-cat" class="hidden text-xs text-stone-400 text-center">Nenhuma despesa para exibir o gráfico.</p>
+                    </div>
+                </div>
+
+                <!-- Gráfico 2: Evolução Mensal (Barras) -->
+                <div class="agro-card p-4 space-y-2">
+                    <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                        <h3 class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                            <i class="fas fa-chart-column text-emerald-800"></i> Despesas Mês a Mês
+                        </h3>
+                        <span class="text-[10px] text-stone-400 font-mono" id="lbl-ano-grafico">--</span>
+                    </div>
+                    <div class="relative h-56 w-full flex items-center justify-center">
+                        <canvas id="chartMensal"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico Comparativo de 2 Anos -->
+            <div class="agro-card p-4 space-y-2">
+                <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <h3 class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-amber-600"></i> Comparativo Anual (Ano Atual vs Anterior)
+                    </h3>
+                </div>
+                <div class="relative h-56 w-full">
+                    <canvas id="chartComparativo"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 2: LISTA / EXTRATO DE DESPESAS LANÇADAS
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-despesas" class="hidden space-y-4 fade-in">
+            <!-- Barra de Filtros Rápidos & Busca -->
+            <div class="agro-card p-3.5 space-y-3">
+                <!-- Linha 1: Campo de Busca com Ícone -->
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+                    <input type="text" id="filtro-busca" oninput="filtrarDados()" placeholder="Buscar por descrição, tipo ou fornecedor..." class="w-full pl-9 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 placeholder-stone-400 focus:outline-none focus:border-emerald-600">
+                </div>
+
+                <!-- Linha 2: Filtros de Categoria e Subcategoria -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Categoria</label>
+                        <select id="filtro-categoria" onchange="atualizarFiltroSubcategorias(); filtrarDados();" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs font-bold text-stone-800 focus:outline-none">
+                            <option value="all">Todas as Categorias</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Subcategoria</label>
+                        <select id="filtro-subcategoria" onchange="filtrarDados()" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2 text-xs font-bold text-stone-800 focus:outline-none">
+                            <option value="all">Todas as Subcategorias</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Resumo dos Resultados Filtrados -->
+                <div class="flex items-center justify-between text-xs pt-2 border-t border-stone-100">
+                    <span id="lbl-qtd-despesas" class="font-bold text-stone-600">0 despesas encontradas</span>
+                    <span id="lbl-soma-despesas" class="font-black text-rose-700 font-mono">Total: R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- Visualização 1: Cards Táteis no Mobile -->
+            <div id="mobile-expenses-list" class="space-y-2.5 sm:hidden">
+                <!-- Renderizado dinamicamente via JS -->
+            </div>
+
+            <!-- Visualização 2: Tabela Estruturada para Telas Maiores -->
+            <div class="hidden sm:block agro-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-stone-50 border-b border-stone-200 text-stone-500 uppercase text-[10px] font-black">
+                            <tr>
+                                <th class="px-4 py-3">Data</th>
+                                <th class="px-4 py-3">Categoria</th>
+                                <th class="px-4 py-3">Subcategoria</th>
+                                <th class="px-4 py-3">Descrição / Fornecedor</th>
+                                <th class="px-4 py-3 text-right">Valor Total</th>
+                                <th class="px-4 py-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-despesas" class="divide-y divide-stone-100">
+                            <!-- Preenchido dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="msg-sem-despesas" class="hidden p-8 text-center agro-card">
+                <i class="fas fa-receipt text-3xl text-stone-300 mb-2"></i>
+                <p class="text-xs text-stone-500 font-medium">Nenhuma despesa encontrada com estes filtros.</p>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 3: LANÇAR / EDITAR DESPESA (FORMULÁRIO ÁGIL)
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-novo" class="hidden space-y-4 fade-in">
+            <div class="agro-card p-4 sm:p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl hero-gradient text-white flex items-center justify-center text-sm shadow-sm">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div>
+                            <h2 id="form-titulo" class="text-sm font-extrabold text-stone-900">Novo Lançamento de Despesa</h2>
+                            <p class="text-[11px] text-stone-500">Preencha os dados do custo da fazenda</p>
+                        </div>
+                    </div>
+                    <button type="button" id="btn-cancelar-edicao" onclick="cancelarEdicao()" class="hidden px-3 py-1.5 bg-stone-100 text-stone-600 rounded-xl text-xs font-bold hover:bg-stone-200">
+                        Cancelar Edição
+                    </button>
+                </div>
+
+                <form id="formDespesa" class="space-y-3.5">
+                    <input type="hidden" id="edit-doc-id">
+                    <input type="hidden" id="conciliando-extrato-id">
+
+                    <!-- Linha 1: Data e Tipo de Pagamento -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-stone-600 uppercase mb-1">Data do Pagamento *</label>
+                            <input type="date" id="inputData" required class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-stone-600 uppercase mb-1">Forma / Tipo</label>
+                            <input type="text" id="inputTipo" placeholder="Ex: Pix, Boleto, Dinheiro, Cartão" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-600">
+                        </div>
+                    </div>
+
+                    <!-- Linha 2: Categoria e Subcategoria -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-stone-600 uppercase mb-1">Categoria *</label>
+                            <select id="inputCategoria" required onchange="aoMudarCategoriaForm()" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                                <option value="">Selecione a categoria</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-stone-600 uppercase mb-1">Subcategoria *</label>
+                            <select id="inputSubCategoria" required class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                                <option value="">Selecione a categoria primeiro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Linha 3: Descrição Detalhada -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-stone-600 uppercase mb-1">Descrição / Finalidade *</label>
+                        <input type="text" id="inputDescricao" required placeholder="Ex: Ração para vacas em lactação (50 sacos)" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-600">
+                    </div>
+
+                    <!-- Linha 4: Quantidade, Preço Unitário e Total (Cálculo Automático) -->
+                    <div class="grid grid-cols-3 gap-2 bg-stone-50 p-3 rounded-xl border border-stone-200">
+                        <div>
+                            <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Qtd</label>
+                            <input type="number" step="any" id="inputQuantidade" value="1" inputmode="decimal" oninput="calcularTotalForm()" class="w-full bg-white border border-stone-300 rounded-lg p-2 text-xs font-bold text-center font-mono text-stone-800 focus:outline-none focus:border-emerald-600">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Unitário (R$)</label>
+                            <input type="number" step="any" id="inputPrecoUnitario" inputmode="decimal" oninput="calcularTotalForm()" placeholder="0,00" required class="w-full bg-white border border-stone-300 rounded-lg p-2 text-xs font-bold text-center font-mono text-stone-800 focus:outline-none focus:border-emerald-600">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Total (R$)</label>
+                            <input type="number" step="any" id="inputTotal" readonly class="w-full bg-stone-200 border border-stone-300 rounded-lg p-2 text-xs font-black text-center font-mono text-rose-700">
+                        </div>
+                    </div>
+
+                    <!-- Linha 5: Observações Opcionais -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-stone-600 uppercase mb-1">Observações Adicionais</label>
+                        <textarea id="inputObservacoes" rows="2" placeholder="Ex: Fornecedor Agropecuária São José, NF 4521" class="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 resize-none focus:outline-none focus:border-emerald-600"></textarea>
+                    </div>
+
+                    <!-- Botão de Ação Principal -->
+                    <div class="pt-2">
+                        <button type="submit" id="btn-submit-despesa" class="w-full py-3.5 hero-gradient text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-950/20 flex items-center justify-center gap-2 active:scale-95 transition">
+                            <i class="fas fa-check"></i> <span id="lbl-submit-text">Registrar Despesa</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+             ABA 4: CONCILIAÇÃO BANCÁRIA & EXTRATO CSV
+             ═══════════════════════════════════════════════════ -->
+        <section id="tela-conciliacao" class="hidden space-y-4 fade-in">
+            <!-- Box de Importação de Extrato CSV -->
+            <div class="agro-card p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center text-sm shadow-sm">
+                            <i class="fas fa-file-csv"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-extrabold text-stone-900">Importador de Extrato Bancário</h3>
+                            <p class="text-[11px] text-stone-500">Carregue o CSV do seu banco para conciliar</p>
+                        </div>
+                    </div>
+                    <input type="file" id="input-extrato-csv" accept=".csv" class="hidden" onchange="processarArquivoExtrato(event)">
+                    <button onclick="document.getElementById('input-extrato-csv').click()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm active:scale-95 transition">
+                        <i class="fas fa-upload"></i> Subir Extrato
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Lançamentos Pendentes do Extrato -->
+            <div class="agro-card p-4 space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <div>
+                        <h3 class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                            <i class="fas fa-hourglass-half text-amber-600"></i> Transações Bancárias Pendentes
+                        </h3>
+                        <p class="text-[10px] text-stone-400">Clique em "Categorizar" para registrar como despesa</p>
+                    </div>
+                    <button onclick="apagarTodosExtratosPendentes()" class="px-2.5 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                        <i class="fas fa-trash"></i> Limpar Tudo
+                    </button>
+                </div>
+
+                <div id="lista-extrato-pendente" class="space-y-2">
+                    <!-- Preenchido via JS -->
+                </div>
+
+                <div id="msg-sem-extrato" class="hidden py-8 text-center text-stone-400 text-xs">
+                    <i class="fas fa-circle-check text-2xl text-emerald-600 mb-1 block"></i>
+                    Tudo conciliado! Não há transações pendentes no extrato.
+                </div>
+            </div>
+
+            <!-- Bloco de Backup e Exportação -->
+            <div class="agro-card p-4 space-y-3">
+                <h3 class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                    <i class="fas fa-cloud-arrow-down text-emerald-800"></i> Backup & Exportação Geral
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button onclick="exportarDespesasCSV()" class="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition">
+                        <i class="fas fa-download text-emerald-800"></i> Baixar CSV Despesas
+                    </button>
+                    <input type="file" id="input-backup-despesas" accept=".csv" class="hidden" onchange="importarBackupDespesas(event)">
+                    <button onclick="document.getElementById('input-backup-despesas').click()" class="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition">
+                        <i class="fas fa-upload text-sky-700"></i> Importar CSV Despesas
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV BAR)
+         ═══════════════════════════════════════════════════════ -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bottom-nav-blur px-2 py-2 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-house"></i>
+                </div>
+                <span class="text-[10px] mt-1">Início</span>
+            </a>
+
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <button onclick="nav('novo'); window.scrollTo({top: 0, behavior: 'smooth'});" class="flex flex-col items-center justify-center -mt-5 transition active:scale-95" title="Nova Despesa">
+                <div class="w-12 h-12 rounded-full hero-gradient text-white flex items-center justify-center text-xl shadow-lg border-2 border-white">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-900 mt-0.5">Lançar</span>
+            </button>
+
+            <a href="registro_animais.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-cow"></i>
+                </div>
+                <span class="text-[10px] mt-1">Rebanho</span>
+            </a>
+
+            <a href="despesas.html" class="flex flex-col items-center justify-center w-14 py-1 text-emerald-800 font-bold transition">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-base shadow-sm">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <span class="text-[10px] mt-1">Despesas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FIREBASE MODULAR (V10) SCRIPT
+         ═══════════════════════════════════════════════════════ -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, writeBatch, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Configuração Centralizada
+        const firebaseConfig = window.globalFirebaseConfig || {
+            apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
+            authDomain: "fazendawm-83f34.firebaseapp.com",
+            projectId: "fazendawm-83f34",
+            storageBucket: "fazendawm-83f34.firebasestorage.app",
+            messagingSenderId: "40894938435",
+            appId: "1:40894938435:web:1d8bdaf8f7869ecf7183f6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        const categoriasSubcategorias = {
+            "Pecuária": ["Alimentação", "Medicamentos", "Sanidade", "Reprodução", "Sal Mineral", "Vacinas"],
+            "Agricultura": ["Insumos", "Fertilizantes", "Sementes", "Mão de Obra", "Herbicidas"],
+            "Infraestrutura": ["Manutenção Predial", "Equipamentos", "Veículos / Trator", "Combustível", "Ferramentas", "Cercas"],
+            "Administrativo": ["Impostos / ITR", "Serviços", "Salários / Diárias", "Energia Elétrica", "Internet / Telefonia"],
+            "Outros": ["Diversos", "Frete / Transporte"]
+        };
+
+        window.todasDespesas = [];
+        window.extratoPendente = [];
+        let chartCatInstance = null;
+        let chartMesInstance = null;
+        let chartCompInstance = null;
+
+        // Toast Helper
+        function showToast(msg, type = "info") {
+            const colors = { success: "#064e3b", error: "#dc2626", info: "#0284c7", warning: "#d97706" };
+            Toastify({
+                text: msg,
+                duration: 3500,
+                gravity: "top",
+                position: "center",
+                style: { background: colors[type] || "#064e3b", borderRadius: "12px", fontWeight: "600", fontSize: "13px" }
+            }).showToast();
+        }
+
+        // Login Google
+        window.fazerLoginGoogle = () => {
+            signInWithPopup(auth, provider).catch(err => {
+                console.error("Erro auth:", err);
+                const el = document.getElementById('login-error');
+                el.innerText = err.message;
+                el.classList.remove('hidden');
+            });
+        };
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('tela-login').classList.add('hidden');
+                const avatarEl = document.getElementById('user-avatar');
+                if (avatarEl && user.photoURL) avatarEl.src = user.photoURL;
+                popularCategoriasForm();
+                popularFiltrosCategorias();
+                carregarDados();
+            } else {
+                document.getElementById('tela-login').classList.remove('hidden');
+            }
+        });
+
+        // Navegação de Abas
+        window.nav = (tela) => {
+            ['resumo', 'despesas', 'novo', 'conciliacao'].forEach(t => {
+                const sec = document.getElementById('tela-' + t);
+                if (sec) sec.classList.add('hidden');
+                const btn = document.getElementById('tab-nav-' + t);
+                if (btn) btn.classList.remove('active');
+            });
+
+            const targetSec = document.getElementById('tela-' + tela);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            const targetBtn = document.getElementById('tab-nav-' + tela);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            if (tela === 'resumo' || tela === 'despesas') {
+                filtrarDados();
+            }
+        };
+
+        // Formatação e Auxiliares Numéricos
+        function parseDate(dateStr) {
+            if (!dateStr) return new Date();
+            if (dateStr instanceof Date) return dateStr;
+            if (typeof dateStr === 'string') {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return new Date(dateStr + 'T00:00:00');
+            }
+            return new Date();
+        }
+
+        function formatToFloat(currencyStr) {
+            if (typeof currencyStr === 'number') return currencyStr;
+            if (!currencyStr) return 0;
+            return parseFloat(String(currencyStr).replace('R$', '').trim().replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        function formatBRL(val) {
+            return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatDataBr(d) {
+            if (!d) return '--';
+            const date = parseDate(d);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Carregar Dados do Firestore
+        window.carregarDados = async (manual = false) => {
+            const icon = document.getElementById('icon-sync');
+            if (icon) icon.classList.add('fa-spin');
+
+            try {
+                // 1. Despesas
+                const snapDespesas = await getDocs(query(collection(db, "despesas"), orderBy("Timestamp", "desc")));
+                let despesas = [];
+                snapDespesas.forEach(d => {
+                    const data = d.data();
+                    despesas.push({
+                        docId: d.id,
+                        ...data,
+                        DataObj: parseDate(data.Data),
+                        TotalNum: formatToFloat(data.Total)
+                    });
+                });
+
+                despesas.sort((a, b) => b.DataObj - a.DataObj);
+                window.todasDespesas = despesas;
+
+                // 2. Extrato Bancário
+                const snapExtrato = await getDocs(collection(db, "extrato_bancario"));
+                let extratos = [];
+                snapExtrato.forEach(d => {
+                    const data = d.data();
+                    if (!data.conciliado) {
+                        extratos.push({ docId: d.id, ...data });
+                    }
+                });
+                window.extratoPendente = extratos;
+
+                // Atualizar Anos Disponíveis no Filtro
+                popularAnosFiltro();
+
+                // Atualizar Badges e Telas
+                atualizarBadges();
+                filtrarDados();
+                renderizarExtratoPendentes();
+
+                if (manual) showToast("Dados de despesas atualizados!", "success");
+            } catch (err) {
+                console.error("Erro ao carregar despesas:", err);
+                showToast("Erro ao sincronizar: " + err.message, "error");
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        };
+
+        function popularAnosFiltro() {
+            const anos = [...new Set(window.todasDespesas.map(d => d.DataObj.getFullYear()))].filter(Boolean).sort((a, b) => b - a);
+            const selectAno = document.getElementById('filtro-ano');
+            const anoAtual = new Date().getFullYear();
+            if (!anos.includes(anoAtual)) anos.unshift(anoAtual);
+
+            const valAtual = selectAno.value;
+            selectAno.innerHTML = '<option value="all">Todos os Anos</option>';
+            anos.forEach(a => {
+                selectAno.innerHTML += `<option value="${a}" ${a === anoAtual ? 'selected' : ''}>${a}</option>`;
+            });
+            if (valAtual && anos.includes(Number(valAtual))) selectAno.value = valAtual;
+        }
+
+        function popularCategoriasForm() {
+            const selectCat = document.getElementById('inputCategoria');
+            selectCat.innerHTML = '<option value="">Selecione a categoria</option>';
+            Object.keys(categoriasSubcategorias).sort().forEach(cat => {
+                selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+            document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+        }
+
+        window.aoMudarCategoriaForm = () => {
+            const cat = document.getElementById('inputCategoria').value;
+            const selectSub = document.getElementById('inputSubCategoria');
+            selectSub.innerHTML = '<option value="">Selecione</option>';
+            if (cat && categoriasSubcategorias[cat]) {
+                categoriasSubcategorias[cat].forEach(sub => {
+                    selectSub.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            }
+        };
+
+        function popularFiltrosCategorias() {
+            const selectCat = document.getElementById('filtro-categoria');
+            selectCat.innerHTML = '<option value="all">Todas as Categorias</option>';
+            Object.keys(categoriasSubcategorias).sort().forEach(cat => {
+                selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+
+        window.atualizarFiltroSubcategorias = () => {
+            const cat = document.getElementById('filtro-categoria').value;
+            const selectSub = document.getElementById('filtro-subcategoria');
+            selectSub.innerHTML = '<option value="all">Todas as Subcategorias</option>';
+            if (cat !== 'all' && categoriasSubcategorias[cat]) {
+                categoriasSubcategorias[cat].forEach(sub => {
+                    selectSub.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            }
+        };
+
+        window.calcularTotalForm = () => {
+            const qtd = parseFloat(document.getElementById('inputQuantidade').value) || 0;
+            const pu = parseFloat(document.getElementById('inputPrecoUnitario').value) || 0;
+            const total = (qtd * pu).toFixed(2);
+            document.getElementById('inputTotal').value = total;
+        };
+
+        // Filtros e Renderização
+        window.filtrarDados = () => {
+            const ano = document.getElementById('filtro-ano').value;
+            const mes = document.getElementById('filtro-mes').value;
+            const busca = (document.getElementById('filtro-busca')?.value || '').toLowerCase().trim();
+            const cat = document.getElementById('filtro-categoria')?.value || 'all';
+            const sub = document.getElementById('filtro-subcategoria')?.value || 'all';
+
+            let filtradas = window.todasDespesas.filter(d => {
+                if (ano !== 'all' && d.DataObj.getFullYear() != ano) return false;
+                if (mes !== 'all' && d.DataObj.getMonth() != mes) return false;
+                if (cat !== 'all' && d.Categoria !== cat) return false;
+                if (sub !== 'all' && d['Sub Categoria'] !== sub) return false;
+                if (busca) {
+                    const desc = (d.Descrição || '').toLowerCase();
+                    const tipo = (d.Tipo || '').toLowerCase();
+                    const obs = (d.Observações || '').toLowerCase();
+                    if (!desc.includes(busca) && !tipo.includes(busca) && !obs.includes(busca)) return false;
+                }
+                return true;
+            });
+
+            atualizarKPIsEResumo(filtradas);
+            renderizarListaDespesas(filtradas);
+            renderizarGraficos(filtradas);
+        };
+
+        function atualizarKPIsEResumo(lista) {
+            const total = lista.reduce((acc, d) => acc + d.TotalNum, 0);
+            const qtd = lista.length;
+
+            document.getElementById('kpi-total-gasto').innerText = formatBRL(total);
+            document.getElementById('kpi-qtd-lancamentos').innerText = `${qtd} lançamento${qtd === 1 ? '' : 's'}`;
+
+            // Média por dia
+            const anoVal = document.getElementById('filtro-ano').value;
+            const mesVal = document.getElementById('filtro-mes').value;
+            let diasPeriodo = 30;
+            if (mesVal !== 'all') {
+                const ano = anoVal === 'all' ? new Date().getFullYear() : Number(anoVal);
+                diasPeriodo = new Date(ano, Number(mesVal) + 1, 0).getDate();
+            } else {
+                diasPeriodo = 365;
+            }
+            const mediaDia = total > 0 ? (total / diasPeriodo) : 0;
+            document.getElementById('kpi-media-dia').innerText = formatBRL(mediaDia);
+
+            // Maior Categoria
+            const catMap = {};
+            lista.forEach(d => {
+                const c = d.Categoria || 'Outros';
+                catMap[c] = (catMap[c] || 0) + d.TotalNum;
+            });
+            const topCat = Object.entries(catMap).sort((a, b) => b[1] - a[1])[0];
+            if (topCat) {
+                document.getElementById('kpi-maior-categoria').innerText = topCat[0];
+                document.getElementById('kpi-maior-categoria-val').innerText = formatBRL(topCat[1]);
+            } else {
+                document.getElementById('kpi-maior-categoria').innerText = '--';
+                document.getElementById('kpi-maior-categoria-val').innerText = 'R$ 0,00';
+            }
+
+            // Pendentes
+            document.getElementById('kpi-pendentes-extrato').innerText = window.extratoPendente.length;
+            document.getElementById('lbl-qtd-despesas').innerText = `${qtd} despesas encontradas`;
+            document.getElementById('lbl-soma-despesas').innerText = `Total: ${formatBRL(total)}`;
+        }
+
+        function atualizarBadges() {
+            const badge = document.getElementById('badge-conciliacao');
+            const qtd = window.extratoPendente.length;
+            if (qtd > 0) {
+                badge.innerText = qtd;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderizarListaDespesas(lista) {
+            const tbody = document.getElementById('tbody-despesas');
+            const mobileList = document.getElementById('mobile-expenses-list');
+            const msgSem = document.getElementById('msg-sem-despesas');
+
+            tbody.innerHTML = '';
+            mobileList.innerHTML = '';
+
+            if (lista.length === 0) {
+                msgSem.classList.remove('hidden');
+                return;
+            }
+            msgSem.classList.add('hidden');
+
+            lista.forEach(d => {
+                const dataFormatada = formatDataBr(d.Data || d.DataObj);
+                const valorFormatado = formatBRL(d.TotalNum);
+
+                // Linha Desktop
+                tbody.innerHTML += `
+                    <tr class="hover:bg-stone-50/80 transition">
+                        <td class="px-4 py-3 font-mono font-bold text-stone-700 whitespace-nowrap">${dataFormatada}</td>
+                        <td class="px-4 py-3"><span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md font-bold text-[10px]">${d.Categoria || 'Geral'}</span></td>
+                        <td class="px-4 py-3 text-stone-600 font-medium">${d['Sub Categoria'] || '-'}</td>
+                        <td class="px-4 py-3 font-bold text-stone-900">${d.Descrição || '-'} ${d.Tipo ? `<span class="text-[10px] text-stone-400 font-normal">(${d.Tipo})</span>` : ''}</td>
+                        <td class="px-4 py-3 text-right font-black font-mono text-rose-700 whitespace-nowrap">${valorFormatado}</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <button onclick="editarDespesa('${d.docId}')" class="p-1.5 text-stone-500 hover:text-emerald-800 transition mr-1" title="Editar"><i class="fas fa-pen text-xs"></i></button>
+                            <button onclick="excluirDespesa('${d.docId}')" class="p-1.5 text-stone-400 hover:text-rose-600 transition" title="Excluir"><i class="fas fa-trash text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+
+                // Card Mobile
+                mobileList.innerHTML += `
+                    <div class="agro-card p-3.5 space-y-2 border border-stone-200">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-start gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center text-xs mt-0.5 shrink-0 border border-rose-100">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-xs text-stone-900 leading-tight">${d.Descrição || 'Sem descrição'}</h4>
+                                    <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                                        <span class="px-2 py-0.2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[9px] font-black uppercase">${d.Categoria || 'Geral'}</span>
+                                        ${d['Sub Categoria'] ? `<span class="text-[10px] text-stone-500 font-semibold">• ${d['Sub Categoria']}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="font-black text-sm text-rose-700 font-mono">${valorFormatado}</span>
+                                <span class="block text-[10px] text-stone-400 font-mono">${dataFormatada}</span>
+                            </div>
+                        </div>
+
+                        ${d.Observações ? `<p class="text-[11px] text-stone-500 bg-stone-50 p-2 rounded-lg border border-stone-100 font-medium">${d.Observações}</p>` : ''}
+
+                        <div class="flex items-center justify-end gap-2 pt-1.5 border-t border-stone-100">
+                            <button onclick="editarDespesa('${d.docId}')" class="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                                <i class="fas fa-pen text-[10px]"></i> Editar
+                            </button>
+                            <button onclick="excluirDespesa('${d.docId}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                                <i class="fas fa-trash text-[10px]"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Gráficos Chart.js
+        function renderizarGraficos(lista) {
+            // 1. Donut Categorias
+            const ctxCat = document.getElementById('chartCategoria');
+            const catMap = {};
+            lista.forEach(d => {
+                const c = d.Categoria || 'Outros';
+                catMap[c] = (catMap[c] || 0) + d.TotalNum;
+            });
+            const labelsCat = Object.keys(catMap);
+            const dataCat = Object.values(catMap);
+            const totalGeral = dataCat.reduce((a, b) => a + b, 0);
+
+            document.getElementById('chart-cat-total').innerText = formatBRL(totalGeral);
+
+            if (chartCatInstance) chartCatInstance.destroy();
+            if (labelsCat.length === 0) {
+                document.getElementById('msg-sem-dados-cat').classList.remove('hidden');
+            } else {
+                document.getElementById('msg-sem-dados-cat').classList.add('hidden');
+                chartCatInstance = new Chart(ctxCat, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labelsCat,
+                        datasets: [{
+                            data: dataCat,
+                            backgroundColor: ['#064e3b', '#047857', '#d97706', '#0284c7', '#dc2626', '#4f46e5', '#84cc16', '#64748b'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Plus Jakarta Sans' } } }
+                        }
+                    }
+                });
+            }
+
+            // 2. Barras Mensais
+            const ctxMes = document.getElementById('chartMensal');
+            const anoSel = document.getElementById('filtro-ano').value;
+            const anoAlvo = anoSel === 'all' ? new Date().getFullYear() : Number(anoSel);
+            document.getElementById('lbl-ano-grafico').innerText = `Ano ${anoAlvo}`;
+
+            const gastosMensais = Array(12).fill(0);
+            window.todasDespesas.forEach(d => {
+                if (d.DataObj.getFullYear() === anoAlvo) {
+                    gastosMensais[d.DataObj.getMonth()] += d.TotalNum;
+                }
+            });
+
+            if (chartMesInstance) chartMesInstance.destroy();
+            chartMesInstance = new Chart(ctxMes, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        label: `Despesas ${anoAlvo}`,
+                        data: gastosMensais,
+                        backgroundColor: '#047857',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { ticks: { callback: v => 'R$' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v), font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // 3. Comparativo 2 Anos
+            const ctxComp = document.getElementById('chartComparativo');
+            const anoAtual = new Date().getFullYear();
+            const anoAnterior = anoAtual - 1;
+
+            const dadosAtual = Array(12).fill(0);
+            const dadosAnterior = Array(12).fill(0);
+
+            window.todasDespesas.forEach(d => {
+                const y = d.DataObj.getFullYear();
+                const m = d.DataObj.getMonth();
+                if (y === anoAtual) dadosAtual[m] += d.TotalNum;
+                else if (y === anoAnterior) dadosAnterior[m] += d.TotalNum;
+            });
+
+            if (chartCompInstance) chartCompInstance.destroy();
+            chartCompInstance = new Chart(ctxComp, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [
+                        { label: `${anoAnterior}`, data: dadosAnterior, backgroundColor: '#94a3b8', borderRadius: 4 },
+                        { label: `${anoAtual}`, data: dadosAtual, backgroundColor: '#d97706', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { ticks: { callback: v => 'R$' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v), font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // Submissão do Formulário de Despesa
+        document.getElementById('formDespesa').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('edit-doc-id').value;
+            const extratoId = document.getElementById('conciliando-extrato-id').value;
+
+            const dataOriginal = document.getElementById('inputData').value;
+            const [year, month, day] = dataOriginal.split('-');
+            const dataDisplay = `${day}/${month}/${year}`;
+
+            const totalVal = parseFloat(document.getElementById('inputTotal').value) || 0;
+            const puVal = parseFloat(document.getElementById('inputPrecoUnitario').value) || 0;
+            const qtdVal = document.getElementById('inputQuantidade').value || '1';
+
+            const payload = {
+                Data: dataDisplay,
+                Categoria: document.getElementById('inputCategoria').value,
+                "Sub Categoria": document.getElementById('inputSubCategoria').value,
+                Tipo: document.getElementById('inputTipo').value.trim(),
+                Descrição: document.getElementById('inputDescricao').value.trim(),
+                Quantidade: qtdVal,
+                "Preço Unitário": puVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+                Total: totalVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                Observações: document.getElementById('inputObservacoes').value.trim(),
+                Timestamp: serverTimestamp()
+            };
+
+            const btnSubmit = document.getElementById('btn-submit-despesa');
+            btnSubmit.disabled = true;
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "despesas", editId), payload);
+                    showToast("Despesa atualizada com sucesso!", "success");
+                } else if (extratoId) {
+                    const batch = writeBatch(db);
+                    const newDoc = doc(collection(db, "despesas"));
+                    batch.set(newDoc, payload);
+                    batch.update(doc(db, "extrato_bancario", extratoId), { conciliado: true });
+                    await batch.commit();
+                    showToast("Despesa conciliada e salva!", "success");
+                } else {
+                    await addDoc(collection(db, "despesas"), payload);
+                    showToast("Despesa lançada com sucesso!", "success");
+                }
+
+                cancelarEdicao();
+                carregarDados();
+                nav('despesas');
+            } catch (err) {
+                console.error("Erro ao salvar:", err);
+                showToast("Erro ao salvar: " + err.message, "error");
+            } finally {
+                btnSubmit.disabled = false;
+            }
+        });
+
+        // Edição de Despesa
+        window.editarDespesa = (docId) => {
+            const despesa = window.todasDespesas.find(d => d.docId === docId);
+            if (!despesa) return;
+
+            cancelarEdicao();
+            document.getElementById('edit-doc-id').value = docId;
+            document.getElementById('form-titulo').innerText = 'Editar Despesa Lançada';
+            document.getElementById('lbl-submit-text').innerText = 'Salvar Alterações';
+            document.getElementById('btn-cancelar-edicao').classList.remove('hidden');
+
+            const dateObj = despesa.DataObj || parseDate(despesa.Data);
+            document.getElementById('inputData').value = dateObj.toISOString().split('T')[0];
+            document.getElementById('inputCategoria').value = despesa.Categoria || '';
+            aoMudarCategoriaForm();
+            document.getElementById('inputSubCategoria').value = despesa['Sub Categoria'] || '';
+            document.getElementById('inputTipo').value = despesa.Tipo || '';
+            document.getElementById('inputDescricao').value = despesa.Descrição || '';
+            document.getElementById('inputQuantidade').value = formatToFloat(despesa.Quantidade) || 1;
+
+            const qtd = formatToFloat(despesa.Quantidade) || 1;
+            const total = despesa.TotalNum || formatToFloat(despesa.Total);
+            const pu = (qtd > 0 && total > 0) ? (total / qtd) : formatToFloat(despesa['Preço Unitário']);
+
+            document.getElementById('inputPrecoUnitario').value = pu.toFixed(2);
+            document.getElementById('inputTotal').value = total.toFixed(2);
+            document.getElementById('inputObservacoes').value = despesa.Observações || '';
+
+            nav('novo');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cancelarEdicao = () => {
+            document.getElementById('edit-doc-id').value = '';
+            document.getElementById('conciliando-extrato-id').value = '';
+            document.getElementById('formDespesa').reset();
+            document.getElementById('form-titulo').innerText = 'Novo Lançamento de Despesa';
+            document.getElementById('lbl-submit-text').innerText = 'Registrar Despesa';
+            document.getElementById('btn-cancelar-edicao').classList.add('hidden');
+            document.getElementById('inputQuantidade').value = '1';
+            document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('inputSubCategoria').innerHTML = '<option value="">Selecione a categoria primeiro</option>';
+        };
+
+        // Exclusão de Despesa
+        window.excluirDespesa = async (docId) => {
+            if (!confirm("Deseja realmente EXCLUIR esta despesa?")) return;
+            try {
+                await deleteDoc(doc(db, "despesas", docId));
+                showToast("Despesa excluída!", "info");
+                carregarDados();
+            } catch (err) {
+                showToast("Erro ao excluir: " + err.message, "error");
+            }
+        };
+
+        // Conciliação de Extrato Bancário
+        function renderizarExtratoPendentes() {
+            const container = document.getElementById('lista-extrato-pendente');
+            const msgSem = document.getElementById('msg-sem-extrato');
+            container.innerHTML = '';
+
+            if (window.extratoPendente.length === 0) {
+                msgSem.classList.remove('hidden');
+                return;
+            }
+            msgSem.classList.add('hidden');
+
+            window.extratoPendente.forEach(item => {
+                const valorFloat = Math.abs(formatToFloat(item.Valor));
+                const valorFormatado = formatBRL(valorFloat);
+
+                container.innerHTML += `
+                    <div class="p-3 bg-stone-50 hover:bg-stone-100 rounded-xl border border-stone-200 flex items-center justify-between gap-2 transition">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-bold text-stone-400 font-mono">${item.Data || '--'}</span>
+                                <span class="text-[9px] bg-sky-100 text-sky-800 font-black px-1.5 py-0.2 rounded">BANCO</span>
+                            </div>
+                            <p class="text-xs font-bold text-stone-900 truncate mt-0.5">${item.Detalhes || item.Lancamento || 'Sem descrição'}</p>
+                            <p class="text-xs font-black text-rose-700 font-mono">${valorFormatado}</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="categorizarDoExtrato('${item.docId}')" class="px-2.5 py-1.5 hero-gradient text-white rounded-lg text-xs font-bold shadow-sm active:scale-95 transition">
+                                Categorizar
+                            </button>
+                            <button onclick="apagarItemExtrato('${item.docId}')" class="p-1.5 text-stone-400 hover:text-rose-600 transition" title="Descartar">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.categorizarDoExtrato = (docId) => {
+            const item = window.extratoPendente.find(d => d.docId === docId);
+            if (!item) return;
+
+            cancelarEdicao();
+            document.getElementById('conciliando-extrato-id').value = docId;
+            document.getElementById('form-titulo').innerText = 'Conciliar Transação Bancária';
+            document.getElementById('lbl-submit-text').innerText = 'Salvar Despesa Conciliada';
+            document.getElementById('btn-cancelar-edicao').classList.remove('hidden');
+
+            // Data
+            const parts = (item.Data || '').split('/');
+            if (parts.length === 3) {
+                document.getElementById('inputData').value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+
+            const valorFloat = Math.abs(formatToFloat(item.Valor));
+            document.getElementById('inputDescricao').value = item.Detalhes || item.Lancamento || '';
+            document.getElementById('inputQuantidade').value = 1;
+            document.getElementById('inputPrecoUnitario').value = valorFloat.toFixed(2);
+            document.getElementById('inputTotal').value = valorFloat.toFixed(2);
+
+            nav('novo');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.apagarItemExtrato = async (docId) => {
+            if (!confirm("Deseja descartar este item do extrato?")) return;
+            try {
+                await deleteDoc(doc(db, "extrato_bancario", docId));
+                showToast("Item do extrato descartado.", "info");
+                carregarDados();
+            } catch (err) {
+                showToast("Erro: " + err.message, "error");
+            }
+        };
+
+        window.apagarTodosExtratosPendentes = async () => {
+            if (window.extratoPendente.length === 0) return showToast("Nenhum item para apagar.", "info");
+            if (!confirm(`Deseja apagar TODOS os ${window.extratoPendente.length} itens do extrato?`)) return;
+
+            try {
+                const batch = writeBatch(db);
+                window.extratoPendente.forEach(i => {
+                    batch.delete(doc(db, "extrato_bancario", i.docId));
+                });
+                await batch.commit();
+                showToast("Extrato limpo com sucesso!", "success");
+                carregarDados();
+            } catch (err) {
+                showToast("Erro ao limpar extrato: " + err.message, "error");
+            }
+        };
+
+        // Upload do Extrato CSV
+        window.processarArquivoExtrato = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const text = e.target.result;
+                    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+                    if (lines.length === 0) return showToast("Arquivo vazio.", "error");
+
+                    const sample = lines[0];
+                    const delimiter = (sample.split(';').length > sample.split(',').length) ? ';' : ',';
+
+                    let headerIndex = -1;
+                    let headers = [];
+                    for (let i = 0; i < Math.min(lines.length, 20); i++) {
+                        const lineLower = lines[i].toLowerCase();
+                        if (lineLower.includes('valor') && (lineLower.includes('documento') || lineLower.includes('doc') || lineLower.includes('data'))) {
+                            headerIndex = i;
+                            headers = lines[i].split(delimiter).map(h => h.replace(/"/g, '').trim().toLowerCase());
+                            break;
+                        }
+                    }
+
+                    if (headerIndex === -1) {
+                        return showToast("Não foi possível identificar as colunas do extrato.", "error");
+                    }
+
+                    const idxData = headers.findIndex(h => h.includes('data'));
+                    const idxValor = headers.findIndex(h => h.includes('valor'));
+                    const idxDoc = headers.findIndex(h => h.includes('documento') || h.includes('doc'));
+                    const idxDesc = headers.findIndex(h => h.includes('histórico') || h.includes('descrição') || h.includes('lançamento') || h.includes('detalhes'));
+
+                    const batch = writeBatch(db);
+                    let count = 0;
+
+                    for (let i = headerIndex + 1; i < lines.length; i++) {
+                        const vals = lines[i].split(delimiter).map(v => v ? v.replace(/"/g, '').trim() : '');
+                        if (vals.length <= Math.max(idxData, idxValor)) continue;
+
+                        const valorNum = formatToFloat(vals[idxValor]);
+                        if (valorNum < 0) { // Somente saídas/despesas
+                            const docId = idxDoc !== -1 && vals[idxDoc] ? vals[idxDoc] : 'ext_' + Date.now() + '_' + count;
+                            const docRef = doc(db, "extrato_bancario", docId);
+                            batch.set(docRef, {
+                                Data: vals[idxData],
+                                Lancamento: idxDesc !== -1 ? vals[idxDesc].substring(0, 50) : 'Lançamento',
+                                Detalhes: idxDesc !== -1 ? vals[idxDesc] : 'Sem detalhes',
+                                Valor: vals[idxValor],
+                                conciliado: false
+                            }, { merge: true });
+                            count++;
+                        }
+                    }
+
+                    if (count > 0) {
+                        await batch.commit();
+                        showToast(`${count} transações do extrato importadas!`, "success");
+                        carregarDados();
+                    } else {
+                        showToast("Nenhuma transação de despesa identificada no CSV.", "warning");
+                    }
+                } catch (err) {
+                    showToast("Erro ao processar CSV: " + err.message, "error");
+                }
+            };
+            reader.readAsText(file, 'ISO-8859-1');
+            event.target.value = '';
+        };
+
+        // Exportação e Importação de Despesas CSV
+        window.exportarDespesasCSV = () => {
+            if (window.todasDespesas.length === 0) return showToast("Nenhum dado para exportar.", "info");
+
+            const fields = ["Data", "Categoria", "Sub Categoria", "Tipo", "Descrição", "Quantidade", "Preço Unitário", "Total", "Observações"];
+            let csv = fields.join(';') + '\r\n';
+
+            window.todasDespesas.forEach(r => {
+                csv += fields.map(k => {
+                    let v = r[k];
+                    if (k === 'Data') v = formatDataBr(r.Data || r.DataObj);
+                    else if (k === 'Total' || k === 'Preço Unitário') v = v ? formatToFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00';
+                    return `"${String(v || '').replace(/"/g, '""')}"`;
+                }).join(';') + '\r\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=ISO-8859-1;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `despesas_fazendawm_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Backup CSV exportado!", "success");
+        };
+
+        window.importarBackupDespesas = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm("Deseja importar as despesas deste CSV?")) {
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim() !== '');
+                    let headerIndex = -1;
+                    for (let i = 0; i < lines.length; i++) {
+                        if (lines[i].toLowerCase().includes('data')) { headerIndex = i; break; }
+                    }
+                    if (headerIndex === -1) return showToast("Cabeçalho 'Data' não encontrado no CSV.", "error");
+
+                    const headers = lines[headerIndex].split(';').map(h => h.replace(/"/g, '').trim());
+                    let batch = writeBatch(db);
+                    let count = 0;
+                    let total = 0;
+
+                    for (let i = headerIndex + 1; i < lines.length; i++) {
+                        const vals = lines[i].split(';').map(v => v ? v.replace(/"/g, '').trim() : '');
+                        if (!vals[0]) continue;
+
+                        let obj = {};
+                        headers.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
+                        obj.Timestamp = serverTimestamp();
+
+                        const docRef = doc(collection(db, "despesas"));
+                        batch.set(docRef, obj);
+                        count++;
+                        total++;
+
+                        if (count >= 400) {
+                            await batch.commit();
+                            batch = writeBatch(db);
+                            count = 0;
+                        }
+                    }
+                    if (count > 0) await batch.commit();
+                    showToast(`${total} despesas restauradas com sucesso!`, "success");
+                    carregarDados();
+                } catch (err) {
+                    showToast("Erro na importação: " + err.message, "error");
+                }
+            };
+            reader.readAsText(file, 'ISO-8859-1');
+            event.target.value = '';
+        };
+
+        // Iniciar na aba Resumo
+        nav('resumo');
+    </script>
+</body>
+
+</html>

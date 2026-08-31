@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#064e3b">
+    <meta name="description" content="Gestão e Controle de Produção de Leite - Fazenda WM de Jesus">
+
+    <link rel="icon" type="image/svg+xml" href="./leite/favicon.svg">
+    <link rel="apple-touch-icon" href="./leite/apple-touch-icon.png">
+
+    <title>Leite Colaborativo • Fazenda WM de Jesus</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <!-- Global Firebase Config -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e'
+                        },
+                        stone: {
+                            850: '#1c1917',
+                            900: '#141210',
+                            950: '#0c0a09'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f7f6f2;
+            padding-bottom: env(safe-area-inset-bottom, 24px);
+        }
+
+        .agro-card {
+            background: #ffffff;
+            border: 1px solid #e7e5e4;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 20px -2px rgba(6, 78, 59, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #0f766e 100%);
+        }
+
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.8);
+        }
+
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 280px;
+            width: 100%;
+        }
+
+        input[type="date"],
+        input[type="number"] {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-full flex flex-col text-stone-800 antialiased select-none pb-28">
+
+    <!-- TOPBAR / CABEÇALHO COMPACTO MOBILE -->
+    <header class="hero-gradient text-white sticky top-0 z-40 shadow-lg px-4 pt-3 pb-5 rounded-b-[2rem] border-b border-emerald-700/50">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+            <!-- Botão Voltar & Título -->
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-emerald-100 text-base border border-white/15 transition backdrop-blur-md">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-base tracking-tight leading-tight">Leite Colaborativo</span>
+                        <span class="text-[10px] bg-emerald-400/20 text-emerald-200 font-semibold px-2 py-0.5 rounded-full border border-emerald-300/30">Produção</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-100/70 font-medium">Controle diário de ordenha e faturamento</p>
+                </div>
+            </div>
+
+            <!-- Painel de Login / Usuário -->
+            <div id="auth-box" class="flex items-center gap-2">
+                <button id="googleSignInBtn"
+                    class="bg-white/15 hover:bg-white/25 active:bg-white/30 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2 border border-white/20 transition backdrop-blur-md shadow-sm">
+                    <i class="fab fa-google text-amber-300"></i>
+                    <span>Entrar</span>
+                </button>
+
+                <div id="user-profile" class="hidden flex items-center gap-2 bg-black/20 backdrop-blur-md py-1 px-2.5 rounded-full border border-white/15">
+                    <img id="user-avatar" class="w-7 h-7 rounded-full object-cover border border-emerald-400" src="" alt="Usuário">
+                    <button id="btnLogout" title="Sair da conta" class="text-emerald-200/80 hover:text-white text-xs p-1">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TELA DE LOGIN BLOQUEADA (SE DESLOGADO) -->
+    <div id="loginScreen" class="hidden max-w-md mx-auto my-12 px-4 w-full">
+        <div class="agro-card p-6 text-center space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl mx-auto shadow-inner">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-stone-800">Acesso Restrito ao Módulo</h2>
+                <p class="text-xs text-stone-500 mt-1">Conecte sua conta autorizada para visualizar e lançar a produção de leite da fazenda.</p>
+            </div>
+            <div id="loginError" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 p-3 rounded-xl"></div>
+            <button onclick="document.getElementById('googleSignInBtn').click()"
+                class="w-full hero-gradient text-white font-extrabold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center gap-2.5 transition active:scale-98">
+                <i class="fab fa-google text-amber-300"></i>
+                <span>Entrar com Google</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL (QUANDO AUTENTICADO) -->
+    <main id="mainContent" class="max-w-5xl mx-auto px-4 -mt-2 w-full flex-grow space-y-5">
+
+        <!-- 📊 1. CARDS DE KPIS CONSOLIDADOS (PRODUÇÃO GERAL) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Card 1: Total Litros -->
+            <div class="agro-card p-3.5 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Total Produzido</span>
+                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardTotalLitros">--</p>
+                <span class="text-[10px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
+                    <i class="fas fa-droplet text-[9px]"></i> Histórico completo
+                </span>
+            </div>
+
+            <!-- Card 2: Receita Total -->
+            <div class="agro-card p-3.5 border-l-4 border-l-teal-600 flex flex-col justify-between">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Receita Total</span>
+                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardReceita">R$ --</p>
+                <span class="text-[10px] text-teal-700 font-semibold mt-1 flex items-center gap-1">
+                    <i class="fas fa-money-bill-wave text-[9px]"></i> Faturamento bruto
+                </span>
+            </div>
+
+            <!-- Card 3: Média Diária -->
+            <div class="agro-card p-3.5 border-l-4 border-l-sky-600 flex flex-col justify-between">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Média Diária</span>
+                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardMedia">--</p>
+                <span class="text-[10px] text-sky-700 font-semibold mt-1 flex items-center gap-1">
+                    <i class="fas fa-chart-line text-[9px]"></i> Rendimento médio
+                </span>
+            </div>
+
+            <!-- Card 4: Preço Médio -->
+            <div class="agro-card p-3.5 border-l-4 border-l-amber-600 flex flex-col justify-between">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Preço Médio</span>
+                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardPrecoMedio">R$ --</p>
+                <span class="text-[10px] text-amber-700 font-semibold mt-1 flex items-center gap-1">
+                    <i class="fas fa-tag text-[9px]"></i> Por litro entregue
+                </span>
+            </div>
+        </section>
+
+        <!-- 📝 2. FORMULÁRIO DE REGISTRO / EDIÇÃO DE LEITE -->
+        <section class="agro-card p-4 sm:p-5 border border-stone-200">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
+                <h2 class="text-sm font-extrabold text-stone-800 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-pen-to-square text-emerald-700"></i>
+                    <span id="formTitle">Lançar Produção do Dia</span>
+                </h2>
+                <span id="formModeLabel" class="hidden text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-200 animate-pulse">
+                    MODO EDIÇÃO
+                </span>
+            </div>
+
+            <form id="milkForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <!-- Data -->
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">Data</label>
+                    <input type="date" id="inputData" required
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2.5 text-sm font-semibold text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none h-[44px]">
+                </div>
+
+                <!-- Manhã -->
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">Manhã (Litros)</label>
+                    <input type="number" step="0.01" inputmode="decimal" id="inputManha" required placeholder="0.00"
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2.5 text-base font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none h-[44px]">
+                </div>
+
+                <!-- Tarde -->
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">Tarde (Opcional)</label>
+                    <input type="number" step="0.01" inputmode="decimal" id="inputTarde" placeholder="0.00"
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2.5 text-base font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none h-[44px]">
+                </div>
+
+                <!-- Preço -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-stone-600">Preço (R$/L)</label>
+                        <button type="button" id="btnSaveDefaultPrice"
+                            class="text-[10px] text-emerald-700 hover:text-emerald-900 font-bold underline"
+                            title="Salvar este valor como padrão para futuros lançamentos">Salvar padrão</button>
+                    </div>
+                    <input type="number" step="0.01" inputmode="decimal" id="inputPreco" required placeholder="2.50"
+                        class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2.5 text-base font-bold font-mono text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none h-[44px]">
+                </div>
+
+                <!-- Botão Salvar -->
+                <div class="flex items-end">
+                    <button type="submit" id="btnSalvar"
+                        class="w-full h-[44px] hero-gradient text-white font-extrabold text-sm rounded-xl shadow-md active:scale-98 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>
+                        <span id="btnSalvarText">Salvar Registro</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 🔍 3. HISTÓRICO DE REGISTROS & FILTROS -->
+        <section class="agro-card overflow-hidden border border-stone-200">
+            <!-- Header dos Filtros -->
+            <div class="p-4 bg-stone-50/80 border-b border-stone-200">
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-3">
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-800 flex items-center gap-2">
+                            <i class="fas fa-history text-emerald-700"></i> Histórico de Coletas
+                        </h3>
+                        <p class="text-[11px] text-stone-500">Filtrar por período ou mês</p>
+                    </div>
+                    <div class="text-xs font-bold text-emerald-900 bg-emerald-100 px-3.5 py-1.5 rounded-xl border border-emerald-300 self-start md:self-auto flex items-center gap-2 shadow-sm font-mono"
+                        id="filteredTotalDisplay">Total: 0 L • R$ 0,00</div>
+                </div>
+
+                <!-- Grid dos Inputs de Filtro -->
+                <div class="grid grid-cols-2 md:flex md:flex-wrap items-end gap-2.5 mt-3 pt-3 border-t border-stone-200/60">
+                    <div class="col-span-1 md:w-auto">
+                        <label class="block text-[11px] font-bold text-stone-500 mb-1">De</label>
+                        <input type="date" id="filterStartDate"
+                            class="w-full bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="col-span-1 md:w-auto">
+                        <label class="block text-[11px] font-bold text-stone-500 mb-1">Até</label>
+                        <input type="date" id="filterEndDate"
+                            class="w-full bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <button id="btnFilter"
+                        class="col-span-1 md:w-auto hero-gradient text-white text-xs font-bold py-2 px-4 rounded-xl transition h-[34px] flex items-center justify-center gap-1.5 active:scale-95 shadow-sm">
+                        <i class="fas fa-filter text-[10px]"></i>
+                        <span>Filtrar</span>
+                    </button>
+                    <button id="btnClearFilter"
+                        class="col-span-1 md:w-auto bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold py-2 px-4 rounded-xl transition h-[34px] flex items-center justify-center gap-1.5"
+                        title="Mostrar Mês Atual">
+                        <i class="fas fa-rotate-left text-[10px]"></i>
+                        <span>Mês Atual</span>
+                    </button>
+                </div>
+
+                <!-- Resumo dos Resultados do Filtro (Cards de Destaque) -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3 pt-3 border-t border-stone-200/60">
+                    <div class="p-2.5 bg-white rounded-xl border border-stone-200 flex flex-col justify-between">
+                        <span class="text-[10px] font-black uppercase text-stone-400 block tracking-wider">Volume Filtrado</span>
+                        <span class="text-base font-black text-stone-900 font-mono mt-0.5" id="filtro-total-litros">0,0 L</span>
+                    </div>
+                    <div class="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 flex flex-col justify-between">
+                        <span class="text-[10px] font-black uppercase text-emerald-800 block tracking-wider">Valor Total (Faturamento)</span>
+                        <span class="text-base font-black text-emerald-900 font-mono mt-0.5" id="filtro-total-valor">R$ 0,00</span>
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-stone-200 col-span-2 sm:col-span-1 flex flex-col justify-between">
+                        <span class="text-[10px] font-black uppercase text-stone-400 block tracking-wider">Média no Período</span>
+                        <span class="text-xs font-bold text-stone-700 font-mono mt-0.5" id="filtro-media-dia">0,0 L/dia</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LISTAGEM: MOBILE EM CARDS / DESKTOP EM TABELA -->
+            <!-- 1. Visão Mobile (Cards Táteis) -->
+            <div id="mobileRecordsList" class="md:hidden divide-y divide-stone-100 max-h-[520px] overflow-y-auto p-2 space-y-2">
+                <!-- Inserido dinamicamente via JS -->
+            </div>
+
+            <!-- 2. Visão Desktop (Tabela Estruturada) -->
+            <div class="hidden md:block overflow-x-auto max-h-[520px] overflow-y-auto">
+                <table class="w-full text-xs text-left text-stone-600">
+                    <thead class="text-[11px] text-stone-500 uppercase bg-stone-100/80 sticky top-0 border-b border-stone-200">
+                        <tr>
+                            <th class="px-5 py-3 font-bold">Data</th>
+                            <th class="px-5 py-3 font-bold text-sky-700">Manhã</th>
+                            <th class="px-5 py-3 font-bold text-amber-700">Tarde</th>
+                            <th class="px-5 py-3 font-bold text-stone-900">Total</th>
+                            <th class="px-5 py-3 font-bold">Preço</th>
+                            <th class="px-5 py-3 font-bold text-emerald-700">Valor Total</th>
+                            <th class="px-5 py-3 text-right font-bold">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentRecordsTable" class="divide-y divide-stone-100 font-mono text-xs">
+                        <!-- Inserido dinamicamente via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 📈 4. GRÁFICOS & ANÁLISES DE PRODUÇÃO -->
+        <section class="agro-card overflow-hidden border border-stone-200">
+            <details class="group" open>
+                <summary class="flex justify-between items-center p-4 cursor-pointer list-none bg-stone-50/80 hover:bg-stone-100/60 transition">
+                    <h3 class="font-extrabold text-sm text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-chart-simple text-emerald-700"></i> Gráficos e Curvas de Produção
+                    </h3>
+                    <span class="transition group-open:rotate-180 text-stone-400 text-xs">
+                        <i class="fas fa-chevron-down"></i>
+                    </span>
+                </summary>
+                <div class="p-4 space-y-6 border-t border-stone-100">
+                    <!-- Gráfico 1: Produção Diária (Linha) -->
+                    <div>
+                        <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Produção Diária (Litros)
+                        </h4>
+                        <div class="chart-container">
+                            <canvas id="productionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 2: Receita Diária (Barras) -->
+                    <div>
+                        <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-teal-600"></span> Faturamento Diário (R$)
+                        </h4>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 3 & 4: Comparativo Mensal e Proporção Manhã/Tarde -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-sky-600"></span> Produção Mensal Consolidada
+                            </h4>
+                            <div class="chart-container">
+                                <canvas id="comparisonChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-600"></span> Proporção: Manhã vs Tarde
+                            </h4>
+                            <div class="chart-container">
+                                <canvas id="proportionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <!-- 📅 5. DESEMPENHO ANUAL CONSOLIDADO -->
+        <section class="agro-card overflow-hidden border border-stone-200">
+            <details class="group">
+                <summary class="flex justify-between items-center p-4 cursor-pointer list-none bg-stone-50/80 hover:bg-stone-100/60 transition">
+                    <h3 class="font-extrabold text-sm text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-calendar-days text-emerald-700"></i> Histórico Consolidado por Ano
+                    </h3>
+                    <span class="transition group-open:rotate-180 text-stone-400 text-xs">
+                        <i class="fas fa-chevron-down"></i>
+                    </span>
+                </summary>
+                <div class="overflow-x-auto border-t border-stone-100">
+                    <table class="w-full text-xs text-left text-stone-600">
+                        <thead class="text-[11px] text-stone-500 uppercase bg-stone-100/80 border-b border-stone-200">
+                            <tr>
+                                <th class="px-5 py-3 font-bold text-stone-900">Ano</th>
+                                <th class="px-5 py-3 font-bold text-emerald-700">Média Diária</th>
+                                <th class="px-5 py-3 font-bold">Total Produzido</th>
+                                <th class="px-5 py-3 font-bold text-teal-700">Receita Anual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="yearSummaryTable" class="divide-y divide-stone-100 font-mono text-xs">
+                            <!-- Inserido dinamicamente via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+
+        <!-- ⚙️ 6. OPÇÕES AVANÇADAS: IMPORTAR / EXPORTAR CSV -->
+        <section class="agro-card overflow-hidden border border-stone-200 mb-6">
+            <details class="group">
+                <summary class="flex justify-between items-center p-4 cursor-pointer list-none bg-stone-50/80 hover:bg-stone-100/60 transition">
+                    <h3 class="font-extrabold text-sm text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-file-excel text-emerald-700"></i> Importar e Exportar Dados (CSV)
+                    </h3>
+                    <span class="transition group-open:rotate-180 text-stone-400 text-xs">
+                        <i class="fas fa-chevron-down"></i>
+                    </span>
+                </summary>
+                <div class="p-4 border-t border-stone-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Exportar CSV -->
+                    <div class="p-4 rounded-xl bg-stone-50 border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-extrabold text-xs text-stone-800 mb-1 flex items-center gap-1.5">
+                                <i class="fas fa-download text-emerald-600"></i> Exportar Dados
+                            </h4>
+                            <p class="text-[11px] text-stone-500">Baixe todo o histórico de produção em formato CSV compatível com Excel.</p>
+                        </div>
+                        <button id="btnExportCsv"
+                            class="mt-4 w-full hero-gradient text-white font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-98">
+                            <i class="fas fa-file-arrow-down"></i>
+                            <span>Baixar CSV Completo</span>
+                        </button>
+                    </div>
+
+                    <!-- Importar CSV -->
+                    <div class="p-4 rounded-xl bg-stone-50 border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-extrabold text-xs text-stone-800 mb-1 flex items-center gap-1.5">
+                                <i class="fas fa-upload text-sky-600"></i> Importar CSV
+                            </h4>
+                            <p class="text-[11px] text-stone-500 mb-2">Importe planilhas de histórico diretamente para o Firebase.</p>
+                            <input id="csvFile" type="file" accept=".csv" class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300">
+                        </div>
+                        <button id="analyzeBtn" disabled
+                            class="mt-4 w-full bg-stone-300 text-stone-500 font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fas fa-gear"></i>
+                            <span>Processar Importação</span>
+                        </button>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+    </main>
+
+    <!-- 📲 BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM BAR) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bottom-nav-blur px-2 py-2 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-house"></i>
+                </div>
+                <span class="text-[10px] mt-1">Início</span>
+            </a>
+
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-emerald-800 font-bold transition">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-base shadow-sm">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <button onclick="document.getElementById('inputManha').focus(); window.scrollTo({top: 150, behavior: 'smooth'});" class="flex flex-col items-center justify-center -mt-5 transition active:scale-95" title="Novo Registro">
+                <div class="w-12 h-12 rounded-full hero-gradient text-white flex items-center justify-center text-xl shadow-lg border-2 border-white">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-900 mt-0.5">Lançar</span>
+            </button>
+
+            <a href="registro_animais.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-cow"></i>
+                </div>
+                <span class="text-[10px] mt-1">Rebanho</span>
+            </a>
+
+            <a href="despesas.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <span class="text-[10px] mt-1">Despesas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 🔥 FIREBASE MODULAR (V10) SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getAuth,
+            onAuthStateChanged,
+            GoogleAuthProvider,
+            signInWithPopup,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            getDoc,
+            setDoc,
+            deleteDoc,
+            onSnapshot,
+            writeBatch
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Configuração
+        const firebaseConfig = window.globalFirebaseConfig;
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = firebaseConfig.projectId;
+
+        // Referências DOM
+        const dom = {
+            loginScreen: document.getElementById('loginScreen'),
+            mainContent: document.getElementById('mainContent'),
+            userProfile: document.getElementById('user-profile'),
+            userAvatar: document.getElementById('user-avatar'),
+            signInBtn: document.getElementById('googleSignInBtn'),
+            btnLogout: document.getElementById('btnLogout'),
+            loginError: document.getElementById('loginError'),
+
+            // Form
+            form: document.getElementById('milkForm'),
+            inputData: document.getElementById('inputData'),
+            inputManha: document.getElementById('inputManha'),
+            inputTarde: document.getElementById('inputTarde'),
+            inputPreco: document.getElementById('inputPreco'),
+            btnSaveDefaultPrice: document.getElementById('btnSaveDefaultPrice'),
+            formModeLabel: document.getElementById('formModeLabel'),
+            formTitle: document.getElementById('formTitle'),
+            btnSalvarText: document.getElementById('btnSalvarText'),
+
+            // Listas
+            recentTable: document.getElementById('recentRecordsTable'),
+            mobileList: document.getElementById('mobileRecordsList'),
+            filteredTotalDisplay: document.getElementById('filteredTotalDisplay'),
+
+            // Cards de Resumo
+            cardTotal: document.getElementById('cardTotalLitros'),
+            cardReceita: document.getElementById('cardReceita'),
+            cardMedia: document.getElementById('cardMedia'),
+            cardPreco: document.getElementById('cardPrecoMedio'),
+            yearSummaryTable: document.getElementById('yearSummaryTable'),
+
+            // Filtros
+            filterStart: document.getElementById('filterStartDate'),
+            filterEnd: document.getElementById('filterEndDate'),
+            btnFilter: document.getElementById('btnFilter'),
+            btnClearFilter: document.getElementById('btnClearFilter'),
+
+            // CSV
+            csvInput: document.getElementById('csvFile'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            btnExportCsv: document.getElementById('btnExportCsv')
+        };
+
+        let currentUser = null;
+        let productionRef = null;
+        let settingsRef = null;
+        let unsubscribeData = null;
+        let chartInstances = {};
+        let allDataCache = [];
+
+        // --- Autenticação ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                currentUser = user;
+                dom.loginScreen.classList.add('hidden');
+                dom.mainContent.classList.remove('hidden');
+                dom.signInBtn.classList.add('hidden');
+                dom.userProfile.classList.remove('hidden');
+                dom.userAvatar.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+                productionRef = collection(db, `artifacts/${appId}/public/data/production_records`);
+                settingsRef = doc(db, `artifacts/${appId}/public/config_geral`);
+
+                initSystem();
+            } else {
+                currentUser = null;
+                dom.loginScreen.classList.remove('hidden');
+                dom.mainContent.classList.add('hidden');
+                dom.signInBtn.classList.remove('hidden');
+                dom.userProfile.classList.add('hidden');
+                if (unsubscribeData) unsubscribeData();
+            }
+        });
+
+        dom.signInBtn.onclick = async () => {
+            try {
+                await signInWithPopup(auth, new GoogleAuthProvider());
+                showToast("Login realizado!", "success");
+            } catch (e) {
+                dom.loginError.textContent = "Erro no login: " + e.message;
+                dom.loginError.classList.remove('hidden');
+            }
+        };
+
+        dom.btnLogout.onclick = async () => {
+            await signOut(auth);
+            showToast("Sessão finalizada", "info");
+        };
+
+        // --- Inicialização ---
+        async function initSystem() {
+            try {
+                await loadDefaultPrice();
+                dom.inputData.value = new Date().toISOString().split('T')[0];
+                listenToData();
+            } catch (e) {
+                console.error("Erro na inicialização:", e);
+                showToast("Erro ao iniciar: " + e.message, "error");
+            }
+        }
+
+        // --- Preço Padrão ---
+        async function loadDefaultPrice() {
+            try {
+                const docSnap = await getDoc(settingsRef);
+                if (docSnap.exists() && docSnap.data().defaultMilkPrice) {
+                    dom.inputPreco.value = docSnap.data().defaultMilkPrice;
+                } else {
+                    dom.inputPreco.value = "2.50";
+                }
+            } catch (e) {
+                dom.inputPreco.value = "2.50";
+            }
+        }
+
+        dom.btnSaveDefaultPrice.onclick = async () => {
+            const newPrice = parseFloat(dom.inputPreco.value);
+            if (!newPrice || newPrice <= 0) return showToast("Insira um preço válido", "error");
+
+            try {
+                await setDoc(settingsRef, { defaultMilkPrice: newPrice }, { merge: true });
+                showToast("Preço padrão atualizado!", "success");
+            } catch (e) {
+                showToast("Erro ao salvar padrão: " + e.message, "error");
+            }
+        };
+
+        // --- Listener em Tempo Real (Firestore) ---
+        function listenToData() {
+            unsubscribeData = onSnapshot(productionRef, (snapshot) => {
+                const data = [];
+                snapshot.forEach(docSnap => {
+                    const d = docSnap.data();
+                    d.docId = docSnap.id;
+                    d.Data = d.Data && d.Data.toDate ? d.Data.toDate() : new Date(d.Data);
+                    data.push(d);
+                });
+
+                allDataCache = data.sort((a, b) => a.Data - b.Data);
+
+                updateDashboard(allDataCache);
+
+                if (!dom.filterStart.value) {
+                    const today = new Date();
+                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+                    dom.filterStart.value = firstDay.toISOString().split('T')[0];
+                    dom.filterEnd.value = lastDay.toISOString().split('T')[0];
+                }
+
+                applyFiltersAndRender();
+            }, (error) => {
+                console.error("Erro no listener:", error);
+                showToast("Erro ao conectar com Firebase", "error");
+            });
+        }
+
+        // --- Formulário Submit (Salvar/Editar) ---
+        dom.form.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = dom.form.querySelector('button[type="submit"]');
+            const originalText = dom.btnSalvarText.textContent;
+            btn.disabled = true;
+            dom.btnSalvarText.textContent = "Salvando...";
+
+            try {
+                const dateVal = dom.inputData.value;
+                const manha = parseFloat(dom.inputManha.value) || 0;
+                const tarde = parseFloat(dom.inputTarde.value) || 0;
+                const price = parseFloat(dom.inputPreco.value) || 2.50;
+
+                const [ano, mes, dia] = dateVal.split('-').map(Number);
+                const dataObj = new Date(ano, mes - 1, dia, 12, 0, 0);
+
+                const total = manha + tarde;
+                const receita = total * price;
+
+                const payload = {
+                    Data: dataObj,
+                    Manha: manha,
+                    Tarde: tarde,
+                    Preco_Venda: price,
+                    Producao_Total: total,
+                    Total_Venda: receita,
+                    Total_Laticinio: receita,
+                    Mes: mes,
+                    Ano: ano,
+                    Joza: 0,
+                    Observacoes: "Inserido via Sistema"
+                };
+
+                await setDoc(doc(productionRef, dateVal), payload);
+                showToast("Registro de leite salvo com sucesso!", "success");
+
+                dom.inputManha.value = "";
+                dom.inputTarde.value = "";
+                dom.formModeLabel.classList.add('hidden');
+                dom.formTitle.textContent = "Lançar Produção do Dia";
+                dom.btnSalvarText.textContent = "Salvar Registro";
+
+            } catch (error) {
+                showToast("Erro ao salvar: " + error.message, "error");
+            } finally {
+                btn.disabled = false;
+                dom.btnSalvarText.textContent = originalText;
+            }
+        };
+
+        // --- Filtros & Renderização ---
+        function applyFiltersAndRender() {
+            if (!allDataCache) return;
+
+            const startVal = dom.filterStart.value;
+            const endVal = dom.filterEnd.value;
+
+            let filtered = [...allDataCache];
+
+            if (startVal) {
+                const startDate = new Date(startVal + "T00:00:00");
+                filtered = filtered.filter(d => d.Data >= startDate);
+            }
+            if (endVal) {
+                const endDate = new Date(endVal + "T23:59:59.999");
+                filtered = filtered.filter(d => d.Data <= endDate);
+            }
+
+            const forList = [...filtered].sort((a, b) => b.Data - a.Data);
+
+            const sumTotal = forList.reduce((acc, curr) => acc + (curr.Producao_Total || 0), 0);
+            const sumValor = forList.reduce((acc, curr) => acc + (curr.Total_Venda || ((curr.Producao_Total || 0) * (curr.Preco_Venda || 0)) || 0), 0);
+            const mediaDia = forList.length > 0 ? (sumTotal / forList.length) : 0;
+
+            if (dom.filteredTotalDisplay) {
+                dom.filteredTotalDisplay.innerHTML = `
+                    <span><i class="fas fa-droplet text-emerald-700"></i> ${sumTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} L</span>
+                    <span class="text-stone-300 mx-1">|</span>
+                    <span class="text-emerald-950 font-black">${sumValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                `;
+            }
+
+            const elLitros = document.getElementById('filtro-total-litros');
+            if (elLitros) elLitros.textContent = `${sumTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} L`;
+
+            const elValor = document.getElementById('filtro-total-valor');
+            if (elValor) elValor.textContent = sumValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const elMedia = document.getElementById('filtro-media-dia');
+            if (elMedia) elMedia.textContent = `${mediaDia.toFixed(1)} L/dia (${forList.length} ${forList.length === 1 ? 'dia' : 'dias'})`;
+
+            renderRecords(forList);
+        }
+
+        dom.btnFilter.onclick = applyFiltersAndRender;
+
+        dom.btnClearFilter.onclick = () => {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            dom.filterStart.value = firstDay.toISOString().split('T')[0];
+            dom.filterEnd.value = lastDay.toISOString().split('T')[0];
+            applyFiltersAndRender();
+        };
+
+        // --- Renderização de Registros (Mobile Cards & Desktop Table) ---
+        function renderRecords(data) {
+            // 1. Tabela Desktop
+            dom.recentTable.innerHTML = '';
+            // 2. Cards Mobile
+            dom.mobileList.innerHTML = '';
+
+            if (data.length === 0) {
+                const emptyMsg = '<p class="text-center py-6 text-xs text-stone-400">Nenhum registro encontrado no período selecionado.</p>';
+                dom.mobileList.innerHTML = emptyMsg;
+                dom.recentTable.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-xs text-stone-400">Nenhum registro encontrado.</td></tr>`;
+                return;
+            }
+
+            data.forEach(row => {
+                const dateStr = row.Data.toISOString().split('T')[0];
+                const diaSemana = row.Data.toLocaleDateString('pt-BR', { weekday: 'short' }).toUpperCase().replace('.', '');
+                const dataFormatada = row.Data.toLocaleDateString('pt-BR');
+
+                // Linha Desktop
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-emerald-50/50 transition";
+                tr.innerHTML = `
+                    <td class="px-5 py-3.5 font-bold text-stone-900 whitespace-nowrap">
+                        ${dataFormatada} <span class="text-[10px] text-stone-400 font-normal">(${diaSemana})</span>
+                    </td>
+                    <td class="px-5 py-3.5 text-sky-700 font-bold">${row.Manha.toFixed(1)} L</td>
+                    <td class="px-5 py-3.5 text-amber-700">${row.Tarde ? row.Tarde.toFixed(1) + ' L' : '-'}</td>
+                    <td class="px-5 py-3.5 font-extrabold text-stone-900">${row.Producao_Total.toFixed(1)} L</td>
+                    <td class="px-5 py-3.5">R$ ${row.Preco_Venda.toFixed(2)}</td>
+                    <td class="px-5 py-3.5 text-emerald-700 font-bold">R$ ${row.Total_Venda.toFixed(2)}</td>
+                    <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                        <button class="btn-edit text-sky-700 hover:text-sky-900 font-bold mr-3" data-date="${dateStr}">
+                            <i class="fas fa-pen-to-square"></i> Editar
+                        </button>
+                        <button class="btn-del text-red-600 hover:text-red-800 font-bold" data-date="${dateStr}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                dom.recentTable.appendChild(tr);
+
+                // Card Mobile
+                const card = document.createElement('div');
+                card.className = "p-3 bg-stone-50/90 rounded-xl border border-stone-200/80 flex flex-col gap-2";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black text-stone-900">${dataFormatada}</span>
+                            <span class="text-[9px] bg-stone-200 text-stone-600 font-bold px-1.5 py-0.5 rounded">${diaSemana}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-mono font-black text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-lg">
+                                ${row.Producao_Total.toFixed(1)} L
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-stone-600 pt-1 border-t border-stone-200/60 font-mono">
+                        <div>
+                            <span class="text-sky-700 font-bold">M: ${row.Manha.toFixed(1)}L</span>
+                            <span class="text-stone-400 mx-1">•</span>
+                            <span class="text-amber-700 font-bold">T: ${row.Tarde ? row.Tarde.toFixed(1) + 'L' : '0L'}</span>
+                        </div>
+                        <div class="font-bold text-emerald-700">
+                            R$ ${row.Total_Venda.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1 border-t border-stone-200/40">
+                        <button class="btn-edit px-2.5 py-1 text-xs bg-sky-50 text-sky-800 rounded-lg font-bold flex items-center gap-1 border border-sky-100 active:scale-95" data-date="${dateStr}">
+                            <i class="fas fa-pen-to-square text-[10px]"></i> Editar
+                        </button>
+                        <button class="btn-del px-2.5 py-1 text-xs bg-red-50 text-red-700 rounded-lg font-bold flex items-center gap-1 border border-red-100 active:scale-95" data-date="${dateStr}">
+                            <i class="fas fa-trash text-[10px]"></i> Excluir
+                        </button>
+                    </div>
+                `;
+                dom.mobileList.appendChild(card);
+            });
+
+            // Handlers de exclusão e edição
+            document.querySelectorAll('.btn-del').forEach(btn => {
+                btn.onclick = async () => {
+                    if (confirm(`Tem certeza que deseja excluir o registro de ${btn.dataset.date}?`)) {
+                        await deleteDoc(doc(productionRef, btn.dataset.date));
+                        showToast("Registro excluído com sucesso!", "success");
+                    }
+                };
+            });
+
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.onclick = () => {
+                    const record = data.find(d => d.Data.toISOString().split('T')[0] === btn.dataset.date);
+                    if (record) {
+                        dom.inputData.value = btn.dataset.date;
+                        dom.inputManha.value = record.Manha;
+                        dom.inputTarde.value = record.Tarde || "";
+                        dom.inputPreco.value = record.Preco_Venda;
+                        dom.formModeLabel.classList.remove('hidden');
+                        dom.formTitle.textContent = `Editando Coleta (${btn.dataset.date})`;
+                        dom.btnSalvarText.textContent = "Atualizar Registro";
+                        dom.inputManha.focus();
+                        window.scrollTo({ top: 150, behavior: 'smooth' });
+                    }
+                };
+            });
+        }
+
+        // --- Gráficos & Dashboard Consolidado ---
+        function updateDashboard(data) {
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            const validData = data.filter(d => d.Data <= today);
+
+            if (validData.length === 0) return;
+
+            const totalProd = validData.reduce((acc, curr) => acc + curr.Producao_Total, 0);
+            const totalRev = validData.reduce((acc, curr) => acc + curr.Total_Venda, 0);
+
+            dom.cardTotal.textContent = totalProd.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + " L";
+            dom.cardReceita.textContent = totalRev.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            dom.cardMedia.textContent = (totalProd / validData.length).toFixed(1) + " L/dia";
+
+            const precoMedio = totalProd > 0 ? (totalRev / totalProd) : 0;
+            dom.cardPreco.textContent = precoMedio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            updateYearlySummary(validData);
+            renderCharts(validData);
+        }
+
+        function updateYearlySummary(data) {
+            const years = {};
+            data.forEach(d => {
+                const year = d.Ano;
+                if (!years[year]) {
+                    years[year] = { total: 0, revenue: 0, count: 0 };
+                }
+                years[year].total += d.Producao_Total;
+                years[year].revenue += d.Total_Venda;
+                years[year].count += 1;
+            });
+
+            const sortedYears = Object.keys(years).sort((a, b) => b - a);
+            dom.yearSummaryTable.innerHTML = '';
+
+            sortedYears.forEach(year => {
+                const stats = years[year];
+                const avg = stats.total / stats.count;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-emerald-50/50 transition";
+                tr.innerHTML = `
+                    <td class="px-5 py-3 font-bold text-stone-900">${year}</td>
+                    <td class="px-5 py-3 text-emerald-700 font-bold">${avg.toFixed(1)} L/dia</td>
+                    <td class="px-5 py-3">${stats.total.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} L</td>
+                    <td class="px-5 py-3 text-teal-700 font-bold">${stats.revenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                `;
+                dom.yearSummaryTable.appendChild(tr);
+            });
+        }
+
+        function renderCharts(data) {
+            Object.values(chartInstances).forEach(c => c.destroy());
+
+            const labels = data.map(d => d.Data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+            const values = data.map(d => d.Producao_Total);
+            const revenues = data.map(d => d.Total_Venda);
+
+            // 1. Linha Produção
+            chartInstances.production = new Chart(document.getElementById('productionChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Litros',
+                        data: values,
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 2. Faturamento Diário
+            chartInstances.revenue = new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Receita (R$)', data: revenues, backgroundColor: '#047857' },
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 3. Produção Mensal
+            const monthly = {};
+            data.forEach(d => {
+                const key = `${d.Ano}-${d.Mes.toString().padStart(2, '0')}`;
+                if (!monthly[key]) monthly[key] = 0;
+                monthly[key] += d.Producao_Total;
+            });
+
+            const sortedMonths = Object.keys(monthly).sort();
+
+            chartInstances.comparison = new Chart(document.getElementById('comparisonChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{ label: 'Total Mensal (L)', data: sortedMonths.map(m => monthly[m]), backgroundColor: '#0284c7', borderRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 4. Proporção Manhã vs Tarde
+            const totalM = data.reduce((a, b) => a + b.Manha, 0);
+            const totalT = data.reduce((a, b) => a + (b.Tarde || 0), 0);
+
+            chartInstances.proportion = new Chart(document.getElementById('proportionChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Manhã', 'Tarde'],
+                    datasets: [{ data: [totalM, totalT], backgroundColor: ['#0284c7', '#d97706'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+        }
+
+        // --- Exportar CSV ---
+        dom.btnExportCsv.onclick = () => {
+            if (!allDataCache || allDataCache.length === 0) {
+                return showToast("Sem dados para exportar.", "error");
+            }
+
+            let csvContent = "Data;Manha;Tarde;Total;Preco;Receita;Observacoes\n";
+
+            allDataCache.forEach(row => {
+                const dataFormatada = row.Data.toLocaleDateString('pt-BR');
+                const linha = [
+                    dataFormatada,
+                    row.Manha.toString().replace('.', ','),
+                    (row.Tarde || 0).toString().replace('.', ','),
+                    row.Producao_Total.toString().replace('.', ','),
+                    row.Preco_Venda.toString().replace('.', ','),
+                    row.Total_Venda.toString().replace('.', ','),
+                    row.Observacoes || ''
+                ].join(';');
+                csvContent += linha + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `leite_wm_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // --- Importar CSV ---
+        dom.csvInput.onchange = () => {
+            if (dom.csvInput.files[0]) {
+                dom.analyzeBtn.disabled = false;
+                dom.analyzeBtn.classList.replace('bg-stone-300', 'hero-gradient');
+                dom.analyzeBtn.classList.replace('text-stone-500', 'text-white');
+            }
+        };
+
+        dom.analyzeBtn.onclick = async () => {
+            const file = dom.csvInput.files[0];
+            if (!file) return;
+
+            dom.analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            const text = await file.text();
+
+            const lines = text.split('\n').slice(1);
+            const batch = writeBatch(db);
+            let count = 0;
+
+            lines.forEach(line => {
+                const cols = line.split(';');
+                if (cols.length < 5) return;
+
+                const [d, m, y] = cols[0].split('/');
+                if (!y) return;
+
+                const dateIso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                const manha = parseFloat(cols[1].replace(',', '.')) || 0;
+                const tarde = parseFloat(cols[2].replace(',', '.')) || 0;
+                const preco = parseFloat(cols[4].replace(',', '.')) || 0;
+
+                const ref = doc(productionRef, dateIso);
+                batch.set(ref, {
+                    Data: new Date(y, m - 1, d, 12),
+                    Manha: manha,
+                    Tarde: tarde,
+                    Preco_Venda: preco,
+                    Producao_Total: manha + tarde,
+                    Total_Venda: (manha + tarde) * preco,
+                    Mes: parseInt(m),
+                    Ano: parseInt(y),
+                    Observacoes: "Importado via CSV"
+                });
+                count++;
+            });
+
+            await batch.commit();
+            showToast(`${count} registros importados com sucesso!`, "success");
+            dom.analyzeBtn.innerHTML = '<i class="fas fa-gear"></i> <span>Processar Importação</span>';
+            dom.analyzeBtn.disabled = true;
+        };
+
+        function showToast(msg, type = "info") {
+            const colors = { success: "#064e3b", error: "#dc2626", info: "#0284c7" };
+            Toastify({
+                text: msg,
+                duration: 3500,
+                gravity: "top",
+                position: "center",
+                style: { background: colors[type] || "#064e3b", borderRadius: "12px", fontWeight: "600", fontSize: "13px" }
+            }).showToast();
+        }
+    </script>
+</body>
+
+</html>
