@@ -796,7 +796,11 @@
                 definirDataEntrega('sabado');
                 carregarOvosCompleto();
             } else {
-                signInAnonymously(auth).catch(e => console.log("Anon auth ovos:", e));
+                document.getElementById('tela-login').classList.remove('hidden');
+                ['encomendas', 'nova', 'fidelidade', 'relatorio'].forEach(t => {
+                    const el = document.getElementById('tela-' + t);
+                    if (el) el.classList.add('hidden');
+                });
             }
         });
 

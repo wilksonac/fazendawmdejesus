@@ -687,14 +687,17 @@
                 if (loginScreen) loginScreen.classList.add('hidden');
                 const avatarEl = document.getElementById('user-avatar');
                 if (avatarEl && user.photoURL) avatarEl.src = user.photoURL;
+                popularCategoriasForm();
+                popularFiltrosCategorias();
+                carregarDados();
             } else {
                 const loginScreen = document.getElementById('tela-login');
-                if (loginScreen) loginScreen.classList.add('hidden');
-                signInAnonymously(auth).catch(e => console.log("Anon auth despesas:", e));
+                if (loginScreen) loginScreen.classList.remove('hidden');
+                ['resumo', 'despesas', 'novo', 'conciliacao'].forEach(t => {
+                    const sec = document.getElementById('tela-' + t);
+                    if (sec) sec.classList.add('hidden');
+                });
             }
-            popularCategoriasForm();
-            popularFiltrosCategorias();
-            carregarDados();
         });
 
         window.nav = (tela) => {

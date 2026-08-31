@@ -626,13 +626,24 @@
                 const hora = new Date().getHours();
                 const saudacaoTempo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
                 if (txtSaudacao) txtSaudacao.textContent = `${saudacaoTempo}, ${user.displayName ? user.displayName.split(' ')[0] : 'Produtor'}!`;
+                
+                // Carrega todos os dados apenas se autenticado
+                carregarCockpitCompleto();
             } else {
                 if (btnLogin) btnLogin.classList.remove('hidden');
                 if (userProfile) userProfile.classList.add('hidden');
                 if (txtSaudacao) txtSaudacao.textContent = 'Olá, Fazenda WM de Jesus!';
-                signInAnonymously(authMain).catch(e => console.log("Main anon auth:", e));
+                
+                // Limpa os indicadores quando deslogado (Privacidade Protegida)
+                document.getElementById('kpi-leite-hoje').textContent = '--';
+                document.getElementById('kpi-leite-mes').textContent = 'Bloqueado';
+                document.getElementById('kpi-leite-media').textContent = 'Faça login';
+                document.getElementById('kpi-vacas-lactacao').textContent = '--';
+                document.getElementById('kpi-vacas-pct').textContent = 'Faça login';
+                document.getElementById('kpi-total-rebanho').textContent = '--';
+                document.getElementById('kpi-despesas-mes').textContent = 'R$ --';
+                document.getElementById('kpi-despesas-qtd').textContent = 'Faça login';
             }
-            carregarCockpitCompleto();
         });
 
         // Autentica anonimamente no banco de animais para leitura rápida
@@ -984,9 +995,6 @@
                 btn.innerHTML = '<i class="fas fa-check"></i> <span>Salvar Registro</span>';
             }
         };
-
-        // Carrega os dados ao abrir a página
-        carregarCockpitCompleto();
     </script>
 </body>
 

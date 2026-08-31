@@ -622,14 +622,14 @@
                 if (dom.signInBtn) dom.signInBtn.classList.add('hidden');
                 if (dom.userProfile) dom.userProfile.classList.remove('hidden');
                 if (dom.userAvatar && user.photoURL) dom.userAvatar.src = user.photoURL;
+                initSystem();
             } else {
                 currentUser = null;
-                if (dom.loginScreen) dom.loginScreen.classList.add('hidden');
-                if (dom.mainContent) dom.mainContent.classList.remove('hidden');
+                if (dom.loginScreen) dom.loginScreen.classList.remove('hidden');
+                if (dom.mainContent) dom.mainContent.classList.add('hidden');
                 if (dom.signInBtn) dom.signInBtn.classList.remove('hidden');
                 if (dom.userProfile) dom.userProfile.classList.add('hidden');
-                // Tenta autenticação anônima sem bloquear visualização
-                signInAnonymously(auth).catch(e => console.log("Anon auth leite:", e));
+                if (unsubscribeData) unsubscribeData();
             }
         });
 
@@ -762,9 +762,6 @@
                 console.error("Erro no listener leite:", error);
             });
         }
-
-        // Inicia o sistema imediatamente
-        initSystem();
 
         // --- Formulário Submit (Salvar/Editar) ---
         dom.form.onsubmit = async (e) => {
