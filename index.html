@@ -641,12 +641,20 @@
         window.fazerLoginGoogle = async () => {
             try {
                 const provider = new GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
                 await signInWithPopup(authMain, provider);
                 showToast("Login realizado com sucesso!", "success");
                 carregarCockpitCompleto();
             } catch (err) {
                 console.error("Erro login:", err);
-                showToast("Erro ao fazer login: " + err.message, "error");
+                let msg = err.message;
+                if (err.code === 'auth/unauthorized-domain') {
+                    msg = `O domínio atual (${window.location.hostname}) não está autorizado no Firebase Console. Adicione ${window.location.hostname} em Authentication > Configurações > Domínios Autorizados.`;
+                    alert("⚠️ Configuração Necessária no Firebase:\n\n" + msg);
+                } else if (err.code === 'auth/popup-blocked') {
+                    msg = "O popup de login foi bloqueado pelo seu navegador. Por favor, permita popups.";
+                }
+                showToast("Erro ao fazer login: " + msg, "error");
             }
         };
 

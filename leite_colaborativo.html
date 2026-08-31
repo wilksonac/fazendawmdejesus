@@ -636,14 +636,24 @@
         if (dom.signInBtn) {
             dom.signInBtn.onclick = async () => {
                 try {
-                    await signInWithPopup(auth, new GoogleAuthProvider());
+                    const provider = new GoogleAuthProvider();
+                    provider.setCustomParameters({ prompt: 'select_account' });
+                    await signInWithPopup(auth, provider);
                     showToast("Login realizado!", "success");
                 } catch (e) {
+                    console.error("Erro auth Google:", e);
+                    let msg = e.message;
+                    if (e.code === 'auth/unauthorized-domain') {
+                        msg = `O domínio atual (${window.location.hostname}) não está autorizado no Firebase Console. Adicione ${window.location.hostname} em Authentication > Configurações > Domínios Autorizados.`;
+                        alert("⚠️ Configuração Necessária no Firebase:\n\n" + msg);
+                    } else if (e.code === 'auth/popup-blocked') {
+                        msg = "O popup de login foi bloqueado pelo navegador. Por favor, permita popups.";
+                    }
                     if (dom.loginError) {
-                        dom.loginError.textContent = "Erro no login: " + e.message;
+                        dom.loginError.textContent = msg;
                         dom.loginError.classList.remove('hidden');
                     }
-                    showToast("Erro ao autenticar: " + e.message, "error");
+                    showToast("Erro ao autenticar: " + msg, "error");
                 }
             };
         }

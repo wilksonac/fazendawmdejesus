@@ -660,13 +660,24 @@
         }
 
         window.fazerLoginGoogle = () => {
-            signInWithPopup(auth, provider).catch(err => {
+            provider.setCustomParameters({ prompt: 'select_account' });
+            signInWithPopup(auth, provider).then(() => {
+                showToast("Login realizado com sucesso!", "success");
+            }).catch(err => {
                 console.error("Erro auth:", err);
+                let msg = err.message;
+                if (err.code === 'auth/unauthorized-domain') {
+                    msg = `O domínio atual (${window.location.hostname}) não está autorizado no Firebase Console. Adicione ${window.location.hostname} em Authentication > Configurações > Domínios Autorizados.`;
+                    alert("⚠️ Configuração Necessária no Firebase:\n\n" + msg);
+                } else if (err.code === 'auth/popup-blocked') {
+                    msg = "O popup de login foi bloqueado pelo seu navegador. Por favor, permita popups.";
+                }
                 const el = document.getElementById('login-error');
                 if (el) {
-                    el.innerText = err.message;
+                    el.innerText = msg;
                     el.classList.remove('hidden');
                 }
+                showToast("Erro no login: " + msg, "error");
             });
         };
 
