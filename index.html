@@ -618,19 +618,21 @@
             const txtSaudacao = document.getElementById('txt-saudacao');
 
             if (user) {
-                btnLogin.classList.add('hidden');
-                userProfile.classList.remove('hidden');
-                userAvatar.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-                userName.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Produtor';
+                if (btnLogin) btnLogin.classList.add('hidden');
+                if (userProfile) userProfile.classList.remove('hidden');
+                if (userAvatar) userAvatar.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                if (userName) userName.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Produtor';
                 
                 const hora = new Date().getHours();
                 const saudacaoTempo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
-                txtSaudacao.textContent = `${saudacaoTempo}, ${user.displayName ? user.displayName.split(' ')[0] : 'Produtor'}!`;
+                if (txtSaudacao) txtSaudacao.textContent = `${saudacaoTempo}, ${user.displayName ? user.displayName.split(' ')[0] : 'Produtor'}!`;
             } else {
-                btnLogin.classList.remove('hidden');
-                userProfile.classList.add('hidden');
-                txtSaudacao.textContent = 'Olá, Fazenda WM de Jesus!';
+                if (btnLogin) btnLogin.classList.remove('hidden');
+                if (userProfile) userProfile.classList.add('hidden');
+                if (txtSaudacao) txtSaudacao.textContent = 'Olá, Fazenda WM de Jesus!';
+                signInAnonymously(authMain).catch(e => console.log("Main anon auth:", e));
             }
+            carregarCockpitCompleto();
         });
 
         // Autentica anonimamente no banco de animais para leitura rápida
@@ -710,15 +712,36 @@
         // KPI 1: Produção de Leite
         async function carregarKpiLeite() {
             try {
-                const appId = mainFirebaseConfig.projectId;
+                const appId = mainFirebaseConfig.projectId || "fazendawm-83f34";
                 const colRef = collection(dbMain, `artifacts/${appId}/public/data/production_records`);
                 
                 const snap = await getDocs(colRef);
                 let registros = [];
                 snap.forEach(d => {
-                    const dataObj = d.data();
-                    dataObj.Data = dataObj.Data && dataObj.Data.toDate ? dataObj.Data.toDate() : new Date(dataObj.Data);
-                    registros.push(dataObj);
+                    const raw = d.data();
+                    let dt = null;
+                    if (raw.Data && raw.Data.toDate) dt = raw.Data.toDate();
+                    else if (raw.Data && typeof raw.Data === 'string') {
+                        if (raw.Data.match(/^\d{4}-\d{2}-\d{2}$/)) dt = new Date(raw.Data + 'T00:00:00');
+                        else {
+                            const p = raw.Data.split('/');
+                            if (p.length === 3) dt = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+                        }
+                    } else if (raw.date) dt = new Date(raw.date + 'T00:00:00');
+                    else if (d.id && d.id.match(/^\d{4}-\d{2}-\d{2}$/)) dt = new Date(d.id + 'T00:00:00');
+                    
+                    if (!dt || isNaN(dt.getTime())) dt = new Date();
+
+                    const manha = Number(raw.Manha !== undefined ? raw.Manha : (raw.morningLiters || 0));
+                    const tarde = Number(raw.Tarde !== undefined ? raw.Tarde : (raw.afternoonLiters || 0));
+                    const total = Number(raw.Producao_Total !== undefined ? raw.Producao_Total : (raw.totalLiters || (manha + tarde)));
+
+                    registros.push({
+                        Data: dt,
+                        Manha: manha,
+                        Tarde: tarde,
+                        Total: total
+                    });
                 });
 
                 if (registros.length === 0) {
@@ -744,18 +767,30 @@
                 });
 
                 if (registroHoje) {
-                    leiteHoje = (registroHoje.Manha || 0) + (registroHoje.Tarde || 0);
+                    leiteHoje = registroHoje.Total || (registroHoje.Manha + registroHoje.Tarde);
                 } else if (registros[0]) {
-                    leiteHoje = (registros[0].Manha || 0) + (registros[0].Tarde || 0);
+                    leiteHoje = registros[0].Total || (registros[0].Manha + registros[0].Tarde);
                 }
 
                 registros.forEach(r => {
                     if (r.Data.getMonth() === mesAtual && r.Data.getFullYear() === anoAtual) {
-                        const tot = (r.Manha || 0) + (r.Tarde || 0);
+                        const tot = r.Total || (r.Manha + r.Tarde);
                         leiteMes += tot;
                         diasComProducaoMes++;
                     }
                 });
+
+                // Se o mês atual ainda não tem coletas, busca o acumulado do mês mais recente
+                if (leiteMes === 0 && registros.length > 0) {
+                    const ultMes = registros[0].Data.getMonth();
+                    const ultAno = registros[0].Data.getFullYear();
+                    registros.forEach(r => {
+                        if (r.Data.getMonth() === ultMes && r.Data.getFullYear() === ultAno) {
+                            leiteMes += (r.Total || (r.Manha + r.Tarde));
+                            diasComProducaoMes++;
+                        }
+                    });
+                }
 
                 const mediaMes = diasComProducaoMes > 0 ? (leiteMes / diasComProducaoMes) : 0;
 
@@ -765,7 +800,6 @@
 
             } catch (err) {
                 console.error("Erro KPI Leite:", err);
-                document.getElementById('kpi-leite-hoje').textContent = "--";
             }
         }
 
@@ -797,7 +831,6 @@
 
             } catch (err) {
                 console.error("Erro KPI Rebanho:", err);
-                document.getElementById('kpi-vacas-lactacao').textContent = "--";
             }
         }
 
@@ -810,42 +843,63 @@
 
                 let totalDespesasMes = 0;
                 let qtdDespesasMes = 0;
+                let despesas = [];
 
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
                     let dataItem = null;
 
-                    if (data.Data) {
-                        if (data.Data.toDate) {
-                            dataItem = data.Data.toDate();
-                        } else if (typeof data.Data === 'string') {
-                            const partes = data.Data.split('/');
-                            if (partes.length === 3) {
-                                dataItem = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
-                            } else if (data.Data.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                dataItem = new Date(data.Data + 'T00:00:00');
-                            }
+                    if (data.Data && data.Data.toDate) {
+                        dataItem = data.Data.toDate();
+                    } else if (data.Timestamp && data.Timestamp.toDate) {
+                        dataItem = data.Timestamp.toDate();
+                    } else if (typeof data.Data === 'string') {
+                        const partes = data.Data.split('/');
+                        if (partes.length === 3) {
+                            dataItem = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
+                        } else if (data.Data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            dataItem = new Date(data.Data + 'T00:00:00');
                         }
+                    } else if (data.date) {
+                        dataItem = new Date(data.date + 'T00:00:00');
                     }
 
-                    if (dataItem && dataItem.getMonth() === mesAtual && dataItem.getFullYear() === anoAtual) {
-                        let valor = 0;
-                        if (typeof data.Total === 'number') {
-                            valor = data.Total;
-                        } else if (typeof data.Total === 'string') {
-                            valor = parseFloat(data.Total.replace('R$', '').trim().replace(/\./g, '').replace(',', '.')) || 0;
-                        }
-                        totalDespesasMes += valor;
+                    if (!dataItem || isNaN(dataItem.getTime())) dataItem = new Date();
+
+                    let valor = 0;
+                    if (typeof data.Total === 'number') valor = data.Total;
+                    else if (typeof data.Total === 'string') valor = parseFloat(data.Total.replace('R$', '').trim().replace(/\./g, '').replace(',', '.')) || 0;
+                    else if (typeof data.valor === 'number') valor = data.valor;
+                    else if (typeof data.amount === 'number') valor = data.amount;
+
+                    despesas.push({ Data: dataItem, Valor: valor });
+                });
+
+                despesas.forEach(d => {
+                    if (d.Data.getMonth() === mesAtual && d.Data.getFullYear() === anoAtual) {
+                        totalDespesasMes += d.Valor;
                         qtdDespesasMes++;
                     }
                 });
+
+                // Se o mês atual não tiver lançamentos, busca o acumulado do mês mais recente
+                if (totalDespesasMes === 0 && despesas.length > 0) {
+                    despesas.sort((a, b) => b.Data - a.Data);
+                    const ultMes = despesas[0].Data.getMonth();
+                    const ultAno = despesas[0].Data.getFullYear();
+                    despesas.forEach(d => {
+                        if (d.Data.getMonth() === ultMes && d.Data.getFullYear() === ultAno) {
+                            totalDespesasMes += d.Valor;
+                            qtdDespesasMes++;
+                        }
+                    });
+                }
 
                 document.getElementById('kpi-despesas-mes').textContent = formatMoneyBRL(totalDespesasMes);
                 document.getElementById('kpi-despesas-qtd').textContent = `${qtdDespesasMes} lançamentos`;
 
             } catch (err) {
                 console.error("Erro KPI Despesas:", err);
-                document.getElementById('kpi-despesas-mes').textContent = "R$ --";
             }
         }
 

@@ -478,7 +478,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, doc, getDocs, addDoc, deleteDoc, serverTimestamp, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, signInAnonymously, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = window.globalFirebaseConfig || {
             apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
@@ -527,10 +527,11 @@
                 document.getElementById('tela-login').classList.add('hidden');
                 if (user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
                 document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
-                carregarFinanceiroCompleto();
             } else {
-                document.getElementById('tela-login').classList.remove('hidden');
+                document.getElementById('tela-login').classList.add('hidden');
+                signInAnonymously(auth).catch(e => console.log("Anon auth fin:", e));
             }
+            carregarFinanceiroCompleto();
         });
 
         window.nav = (tela) => {

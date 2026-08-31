@@ -532,6 +532,7 @@
             onAuthStateChanged,
             GoogleAuthProvider,
             signInWithPopup,
+            signInAnonymously,
             signOut
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import {
@@ -539,6 +540,7 @@
             collection,
             doc,
             getDoc,
+            getDocs,
             setDoc,
             deleteDoc,
             onSnapshot,
@@ -546,11 +548,18 @@
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Configuração
-        const firebaseConfig = window.globalFirebaseConfig;
+        const firebaseConfig = window.globalFirebaseConfig || {
+            apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
+            authDomain: "fazendawm-83f34.firebaseapp.com",
+            projectId: "fazendawm-83f34",
+            storageBucket: "fazendawm-83f34.firebasestorage.app",
+            messagingSenderId: "40894938435",
+            appId: "1:40894938435:web:1d8bdaf8f7869ecf7183f6"
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = firebaseConfig.projectId;
+        const appId = firebaseConfig.projectId || "fazendawm-83f34";
 
         // Referências DOM
         const dom = {
@@ -598,8 +607,8 @@
         };
 
         let currentUser = null;
-        let productionRef = null;
-        let settingsRef = null;
+        let productionRef = collection(db, `artifacts/${appId}/public/data/production_records`);
+        let settingsRef = doc(db, `artifacts/${appId}/public/config_geral`);
         let unsubscribeData = null;
         let chartInstances = {};
         let allDataCache = [];
@@ -608,42 +617,45 @@
         onAuthStateChanged(auth, user => {
             if (user) {
                 currentUser = user;
-                dom.loginScreen.classList.add('hidden');
-                dom.mainContent.classList.remove('hidden');
-                dom.signInBtn.classList.add('hidden');
-                dom.userProfile.classList.remove('hidden');
-                dom.userAvatar.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-
-                productionRef = collection(db, `artifacts/${appId}/public/data/production_records`);
-                settingsRef = doc(db, `artifacts/${appId}/public/config_geral`);
-
-                initSystem();
+                if (dom.loginScreen) dom.loginScreen.classList.add('hidden');
+                if (dom.mainContent) dom.mainContent.classList.remove('hidden');
+                if (dom.signInBtn) dom.signInBtn.classList.add('hidden');
+                if (dom.userProfile) dom.userProfile.classList.remove('hidden');
+                if (dom.userAvatar && user.photoURL) dom.userAvatar.src = user.photoURL;
             } else {
                 currentUser = null;
-                dom.loginScreen.classList.remove('hidden');
-                dom.mainContent.classList.add('hidden');
-                dom.signInBtn.classList.remove('hidden');
-                dom.userProfile.classList.add('hidden');
-                if (unsubscribeData) unsubscribeData();
+                if (dom.loginScreen) dom.loginScreen.classList.add('hidden');
+                if (dom.mainContent) dom.mainContent.classList.remove('hidden');
+                if (dom.signInBtn) dom.signInBtn.classList.remove('hidden');
+                if (dom.userProfile) dom.userProfile.classList.add('hidden');
+                // Tenta autenticação anônima sem bloquear visualização
+                signInAnonymously(auth).catch(e => console.log("Anon auth leite:", e));
             }
         });
 
-        dom.signInBtn.onclick = async () => {
-            try {
-                await signInWithPopup(auth, new GoogleAuthProvider());
-                showToast("Login realizado!", "success");
-            } catch (e) {
-                dom.loginError.textContent = "Erro no login: " + e.message;
-                dom.loginError.classList.remove('hidden');
-            }
-        };
+        if (dom.signInBtn) {
+            dom.signInBtn.onclick = async () => {
+                try {
+                    await signInWithPopup(auth, new GoogleAuthProvider());
+                    showToast("Login realizado!", "success");
+                } catch (e) {
+                    if (dom.loginError) {
+                        dom.loginError.textContent = "Erro no login: " + e.message;
+                        dom.loginError.classList.remove('hidden');
+                    }
+                    showToast("Erro ao autenticar: " + e.message, "error");
+                }
+            };
+        }
 
-        dom.btnLogout.onclick = async () => {
-            await signOut(auth);
-            showToast("Sessão finalizada", "info");
-        };
+        if (dom.btnLogout) {
+            dom.btnLogout.onclick = async () => {
+                await signOut(auth);
+                showToast("Sessão finalizada", "info");
+            };
+        }
 
-        // --- Inicialização ---
+        // --- Inicialização Imediata ---
         async function initSystem() {
             try {
                 await loadDefaultPrice();
@@ -651,7 +663,6 @@
                 listenToData();
             } catch (e) {
                 console.error("Erro na inicialização:", e);
-                showToast("Erro ao iniciar: " + e.message, "error");
             }
         }
 
@@ -669,26 +680,57 @@
             }
         }
 
-        dom.btnSaveDefaultPrice.onclick = async () => {
-            const newPrice = parseFloat(dom.inputPreco.value);
-            if (!newPrice || newPrice <= 0) return showToast("Insira um preço válido", "error");
+        if (dom.btnSaveDefaultPrice) {
+            dom.btnSaveDefaultPrice.onclick = async () => {
+                const newPrice = parseFloat(dom.inputPreco.value);
+                if (!newPrice || newPrice <= 0) return showToast("Insira um preço válido", "error");
 
-            try {
-                await setDoc(settingsRef, { defaultMilkPrice: newPrice }, { merge: true });
-                showToast("Preço padrão atualizado!", "success");
-            } catch (e) {
-                showToast("Erro ao salvar padrão: " + e.message, "error");
-            }
-        };
+                try {
+                    await setDoc(settingsRef, { defaultMilkPrice: newPrice }, { merge: true });
+                    showToast("Preço padrão atualizado!", "success");
+                } catch (e) {
+                    showToast("Erro ao salvar padrão: " + e.message, "error");
+                }
+            };
+        }
 
-        // --- Listener em Tempo Real (Firestore) ---
+        // --- Listener em Tempo Real (Firestore com Múltiplos Formatos) ---
         function listenToData() {
+            if (unsubscribeData) unsubscribeData();
+
             unsubscribeData = onSnapshot(productionRef, (snapshot) => {
                 const data = [];
                 snapshot.forEach(docSnap => {
-                    const d = docSnap.data();
-                    d.docId = docSnap.id;
-                    d.Data = d.Data && d.Data.toDate ? d.Data.toDate() : new Date(d.Data);
+                    const raw = docSnap.data();
+                    const d = { ...raw, docId: docSnap.id };
+
+                    // Parse da Data
+                    if (raw.Data && raw.Data.toDate) {
+                        d.Data = raw.Data.toDate();
+                    } else if (raw.Data && typeof raw.Data === 'string') {
+                        if (raw.Data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            d.Data = new Date(raw.Data + 'T00:00:00');
+                        } else {
+                            const parts = raw.Data.split('/');
+                            if (parts.length === 3) d.Data = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                            else d.Data = new Date(raw.Data);
+                        }
+                    } else if (raw.date && typeof raw.date === 'string') {
+                        d.Data = new Date(raw.date + 'T00:00:00');
+                    } else if (docSnap.id && docSnap.id.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                        d.Data = new Date(docSnap.id + 'T00:00:00');
+                    } else {
+                        d.Data = new Date();
+                    }
+
+                    // Parse dos Litros e Preço
+                    d.Manha = Number(raw.Manha !== undefined ? raw.Manha : (raw.morningLiters || 0));
+                    d.Tarde = Number(raw.Tarde !== undefined ? raw.Tarde : (raw.afternoonLiters || 0));
+                    d.Producao_Total = Number(raw.Producao_Total !== undefined ? raw.Producao_Total : (raw.totalLiters || (d.Manha + d.Tarde)));
+                    d.Preco_Venda = Number(raw.Preco_Venda !== undefined ? raw.Preco_Venda : (raw.milkPrice || raw.preco || 2.50));
+                    d.Total_Venda = Number(raw.Total_Venda !== undefined ? raw.Total_Venda : (raw.revenue || (d.Producao_Total * d.Preco_Venda)));
+                    d.Ano = d.Ano || d.Data.getFullYear();
+
                     data.push(d);
                 });
 
@@ -707,10 +749,12 @@
 
                 applyFiltersAndRender();
             }, (error) => {
-                console.error("Erro no listener:", error);
-                showToast("Erro ao conectar com Firebase", "error");
+                console.error("Erro no listener leite:", error);
             });
         }
+
+        // Inicia o sistema imediatamente
+        initSystem();
 
         // --- Formulário Submit (Salvar/Editar) ---
         dom.form.onsubmit = async (e) => {

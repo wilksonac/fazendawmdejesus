@@ -771,7 +771,7 @@
                 definirDataEntrega('sabado');
                 carregarOvosCompleto();
             } else {
-                document.getElementById('tela-login').classList.remove('hidden');
+                signInAnonymously(auth).catch(e => console.log("Anon auth ovos:", e));
             }
         });
 

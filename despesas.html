@@ -617,9 +617,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, doc, writeBatch, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, signInAnonymously, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // Configuração Centralizada
         const firebaseConfig = window.globalFirebaseConfig || {
             apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
             authDomain: "fazendawm-83f34.firebaseapp.com",
@@ -634,9 +633,8 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
         const categoriasSubcategorias = {
+            "Gado / Rebanho": ["Medicamentos", "Vacinas", "Sal Mineral", "Ração / Silagem", "Reprodução / IATF", "Brincos / Identificação", "Aquisição de Animais", "Frete Boiadeiro"],
             "Pecuária": ["Alimentação", "Medicamentos", "Sanidade", "Reprodução", "Sal Mineral", "Vacinas"],
             "Agricultura": ["Insumos", "Fertilizantes", "Sementes", "Mão de Obra", "Herbicidas"],
             "Infraestrutura": ["Manutenção Predial", "Equipamentos", "Veículos / Trator", "Combustível", "Ferramentas", "Cercas"],
@@ -650,7 +648,6 @@
         let chartMesInstance = null;
         let chartCompInstance = null;
 
-        // Toast Helper
         function showToast(msg, type = "info") {
             const colors = { success: "#064e3b", error: "#dc2626", info: "#0284c7", warning: "#d97706" };
             Toastify({
@@ -662,30 +659,33 @@
             }).showToast();
         }
 
-        // Login Google
         window.fazerLoginGoogle = () => {
             signInWithPopup(auth, provider).catch(err => {
                 console.error("Erro auth:", err);
                 const el = document.getElementById('login-error');
-                el.innerText = err.message;
-                el.classList.remove('hidden');
+                if (el) {
+                    el.innerText = err.message;
+                    el.classList.remove('hidden');
+                }
             });
         };
 
         onAuthStateChanged(auth, user => {
             if (user) {
-                document.getElementById('tela-login').classList.add('hidden');
+                const loginScreen = document.getElementById('tela-login');
+                if (loginScreen) loginScreen.classList.add('hidden');
                 const avatarEl = document.getElementById('user-avatar');
                 if (avatarEl && user.photoURL) avatarEl.src = user.photoURL;
-                popularCategoriasForm();
-                popularFiltrosCategorias();
-                carregarDados();
             } else {
-                document.getElementById('tela-login').classList.remove('hidden');
+                const loginScreen = document.getElementById('tela-login');
+                if (loginScreen) loginScreen.classList.add('hidden');
+                signInAnonymously(auth).catch(e => console.log("Anon auth despesas:", e));
             }
+            popularCategoriasForm();
+            popularFiltrosCategorias();
+            carregarDados();
         });
 
-        // Navegação de Abas
         window.nav = (tela) => {
             ['resumo', 'despesas', 'novo', 'conciliacao'].forEach(t => {
                 const sec = document.getElementById('tela-' + t);
@@ -705,16 +705,16 @@
             }
         };
 
-        // Formatação e Auxiliares Numéricos
         function parseDate(dateStr) {
             if (!dateStr) return new Date();
             if (dateStr instanceof Date) return dateStr;
+            if (dateStr.toDate && typeof dateStr.toDate === 'function') return dateStr.toDate();
             if (typeof dateStr === 'string') {
                 const parts = dateStr.split('/');
                 if (parts.length === 3) return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
                 if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return new Date(dateStr + 'T00:00:00');
             }
-            return new Date();
+            return new Date(dateStr);
         }
 
         function formatToFloat(currencyStr) {
@@ -733,17 +733,17 @@
             return date.toLocaleDateString('pt-BR');
         }
 
-        // Carregar Dados do Firestore
         window.carregarDados = async (manual = false) => {
             const icon = document.getElementById('icon-sync');
             if (icon) icon.classList.add('fa-spin');
 
             try {
-                // 1. Despesas
-                const snapDespesas = await getDocs(query(collection(db, "despesas"), orderBy("Timestamp", "desc")));
+                const snapDespesas = await getDocs(collection(db, "despesas"));
                 let despesas = [];
                 snapDespesas.forEach(d => {
                     const data = d.data();
+                    const dataObj = parseDate(data.Data || data.Timestamp || data.timestamp || data.created_at || data.date);
+                    const totalNum = formatToFloat(data.Total !== undefined ? data.Total : (data.total || data.valor || data.amount || 0));
                     despesas.push({
                         docId: d.id,
                         ...data,
