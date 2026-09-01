@@ -337,21 +337,37 @@
                 <form id="formPedido" class="space-y-3.5">
                     <input type="hidden" id="pedido-edit-id">
 
-                    <!-- Dados do Comprador -->
+                    <!-- Dados do Comprador com Autocomplete Inteligente -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
+                        <div class="relative">
                             <label class="block text-xs font-bold text-stone-700 mb-1">
                                 Nome do Comprador <span class="text-rose-500">*</span>
                             </label>
-                            <input type="text" id="pedido-cliente" required list="lista-sugestao-clientes" placeholder="Ex: Dona Maria, Seu João..."
-                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500">
-                            <datalist id="lista-sugestao-clientes"></datalist>
+                            <div class="relative">
+                                <input type="text" id="pedido-cliente" required autocomplete="off"
+                                    oninput="sugerirClientes(this.value)"
+                                    onfocus="sugerirClientes(this.value)"
+                                    placeholder="Comece a digitar o nome do cliente..."
+                                    class="w-full bg-stone-50 border border-stone-300 rounded-xl pl-3 pr-8 py-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-amber-500 shadow-sm transition">
+                                <i class="fas fa-search absolute right-3 top-3 text-stone-400 text-xs pointer-events-none"></i>
+                            </div>
+                            
+                            <!-- Dropdown Flutuante de Sugestões de Clientes Cadastrados -->
+                            <div id="dropdown-sugestoes-clientes" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-amber-300 rounded-2xl shadow-2xl z-50 max-h-56 overflow-y-auto divide-y divide-stone-100">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-stone-700 mb-1">WhatsApp / Telefone (Opcional)</label>
-                            <input type="tel" id="pedido-whatsapp" placeholder="Ex: (63) 99999-9999"
-                                class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-amber-500">
+                            <label class="block text-xs font-bold text-stone-700 mb-1 flex items-center justify-between">
+                                <span>WhatsApp / Telefone</span>
+                                <span class="text-[10px] text-emerald-700 font-bold" id="badge-preenchimento-whats"></span>
+                            </label>
+                            <div class="relative">
+                                <input type="tel" id="pedido-whatsapp" placeholder="Ex: (63) 99999-9999"
+                                    class="w-full bg-stone-50 border border-stone-300 rounded-xl pl-3 pr-8 py-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-amber-500 shadow-sm transition">
+                                <i class="fab fa-whatsapp absolute right-3 top-3 text-emerald-600 text-xs pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -1297,7 +1313,144 @@
             }
         });
 
+        // ═══════════════════════════════════════════════════════
+        // AUTOCOMPLETE & SUGESTÃO INTELIGENTE DE CLIENTES
+        // ═══════════════════════════════════════════════════════
+        window.sugerirClientes = (termo = '') => {
+            const dropdown = document.getElementById('dropdown-sugestoes-clientes');
+            if (!dropdown) return;
+
+            const termoUpper = (termo || '').toUpperCase().trim();
+            const termoDigits = (termo || '').replace(/\D/g, '');
+
+            // Unifica todos os clientes conhecidos (de egg_customers e egg_sales)
+            const mapaUnificado = {};
+
+            // 1. De clientes cadastrados no Firestore
+            window.clientesFidelidade.forEach(c => {
+                if (!c.nome) return;
+                const chave = c.nome.toUpperCase().trim();
+                mapaUnificado[chave] = {
+                    nome: c.nome,
+                    whatsapp: c.whatsapp || '',
+                    saldo_30: c.saldo_30 || 0,
+                    saldo_12: c.saldo_12 || 0,
+                    saldo_10: c.saldo_10 || 0
+                };
+            });
+
+            // 2. De histórico de vendas
+            window.vendasOvos.forEach(v => {
+                if (!v.cliente) return;
+                const chave = v.cliente.toUpperCase().trim();
+                if (!mapaUnificado[chave]) {
+                    mapaUnificado[chave] = {
+                        nome: v.cliente,
+                        whatsapp: v.whatsapp || '',
+                        saldo_30: 0,
+                        saldo_12: 0,
+                        saldo_10: 0
+                    };
+                } else if (v.whatsapp && !mapaUnificado[chave].whatsapp) {
+                    mapaUnificado[chave].whatsapp = v.whatsapp;
+                }
+            });
+
+            let lista = Object.values(mapaUnificado);
+
+            if (termoUpper) {
+                lista = lista.filter(c => {
+                    const matchNome = c.nome.toUpperCase().includes(termoUpper);
+                    const matchWhats = termoDigits && c.whatsapp && c.whatsapp.replace(/\D/g, '').includes(termoDigits);
+                    return matchNome || matchWhats;
+                });
+            }
+
+            if (lista.length === 0) {
+                dropdown.innerHTML = '';
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            dropdown.innerHTML = `
+                <div class="p-2 bg-amber-50 border-b border-amber-200 text-[10px] font-extrabold text-amber-900 flex items-center justify-between">
+                    <span><i class="fas fa-address-book text-amber-600"></i> Clientes Sugeridos (${lista.length})</span>
+                    <span class="text-stone-400 font-normal">Toque para preencher</span>
+                </div>
+            `;
+
+            lista.slice(0, 8).forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'p-2.5 hover:bg-amber-50 cursor-pointer flex items-center justify-between transition active:bg-amber-100';
+
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selecionarClienteSugestao(c.nome, c.whatsapp || '');
+                };
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-black shadow-sm">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div>
+                            <span class="font-extrabold text-xs text-stone-900 block leading-tight">${c.nome}</span>
+                            <span class="text-[10px] text-stone-500 flex items-center gap-1">
+                                ${c.whatsapp ? `<i class="fab fa-whatsapp text-emerald-600"></i> ${c.whatsapp}` : '<span class="text-stone-400 italic">Sem telefone cadastrado</span>'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] bg-amber-200 text-amber-950 font-bold px-2 py-0.5 rounded-lg shadow-sm">
+                            Preencher
+                        </span>
+                    </div>
+                `;
+                dropdown.appendChild(item);
+            });
+
+            dropdown.classList.remove('hidden');
+        };
+
+        window.selecionarClienteSugestao = (nome, whatsapp) => {
+            const inputNome = document.getElementById('pedido-cliente');
+            const inputWhats = document.getElementById('pedido-whatsapp');
+            const badgeWhats = document.getElementById('badge-preenchimento-whats');
+            const dropdown = document.getElementById('dropdown-sugestoes-clientes');
+
+            if (inputNome) inputNome.value = nome;
+            if (inputWhats) {
+                inputWhats.value = whatsapp;
+                inputWhats.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50');
+                if (badgeWhats && whatsapp) {
+                    badgeWhats.innerText = '✓ Preenchido do cadastro';
+                }
+                setTimeout(() => {
+                    inputWhats.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50');
+                }, 2000);
+            }
+            if (dropdown) dropdown.classList.add('hidden');
+            showToast(`Cliente "${nome}" carregado com sucesso!`, "info");
+        };
+
+        // Fechar dropdown de sugestões ao clicar fora ou pressionar ESC
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('dropdown-sugestoes-clientes');
+            const inputNome = document.getElementById('pedido-cliente');
+            if (dropdown && !dropdown.contains(e.target) && e.target !== inputNome) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('dropdown-sugestoes-clientes');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
         async function atualizarFichaClienteFidelidade(nomeCliente, whatsapp) {
+            if (!nomeCliente) return;
             const clienteId = nomeCliente.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
             const docRef = doc(db, PATH_CLIENTES, clienteId);
             const docSnap = await getDoc(docRef);
@@ -1305,21 +1458,15 @@
             let dados = {
                 id: clienteId,
                 nome: nomeCliente,
-                whatsapp: whatsapp || '',
                 updated_at: new Date()
             };
+            if (whatsapp) dados.whatsapp = whatsapp;
 
-            if (docSnap.exists()) {
-                const d = docSnap.data();
-                if (whatsapp) dados.whatsapp = whatsapp;
-                dados.pontos_atuais = d.pontos_atuais || 0;
-                dados.total_historico_embalagens = d.total_historico_embalagens || 0;
-                dados.total_gasto = d.total_gasto || 0;
-                dados.historico_brindes = d.historico_brindes || [];
-            } else {
-                dados.pontos_atuais = 0;
-                dados.total_historico_embalagens = 0;
-                dados.total_gasto = 0;
+            if (!docSnap.exists()) {
+                dados.created_at = new Date();
+                dados.saldo_30 = 0;
+                dados.saldo_12 = 0;
+                dados.saldo_10 = 0;
                 dados.historico_brindes = [];
             }
 
@@ -1330,6 +1477,11 @@
             document.getElementById('pedido-edit-id').value = '';
             document.getElementById('pedido-cliente').value = '';
             document.getElementById('pedido-whatsapp').value = '';
+            const badgeWhats = document.getElementById('badge-preenchimento-whats');
+            if (badgeWhats) badgeWhats.innerText = '';
+            const dropdown = document.getElementById('dropdown-sugestoes-clientes');
+            if (dropdown) dropdown.classList.add('hidden');
+
             document.getElementById('qtd-cartela-30').value = '0';
             document.getElementById('qtd-duzia-12').value = '0';
             document.getElementById('qtd-dezena-10').value = '0';
@@ -1392,6 +1544,7 @@
             // Calcular pontos e histórico de cada cliente a partir de suas vendas
             const mapaClientes = {};
 
+            // 1. Processar todas as vendas existentes
             window.vendasOvos.forEach(v => {
                 if (!v.cliente) return;
                 const chave = v.cliente.toUpperCase().trim();
@@ -1401,17 +1554,44 @@
                         whatsapp: v.whatsapp || '',
                         totalGasto: 0,
                         totalPedidos: 0,
+                        pedidosConcluidos: 0,
                         comprados_30: 0,
                         comprados_12: 0,
                         comprados_10: 0
                     };
                 }
-                mapaClientes[chave].totalGasto += (v.valor_total || 0);
                 mapaClientes[chave].totalPedidos += 1;
-                mapaClientes[chave].comprados_30 += (v.qtd_cartela_30 || 0);
-                mapaClientes[chave].comprados_12 += (v.qtd_duzia_12 || 0);
-                mapaClientes[chave].comprados_10 += (v.qtd_dezena_10 || 0);
                 if (v.whatsapp && !mapaClientes[chave].whatsapp) mapaClientes[chave].whatsapp = v.whatsapp;
+
+                // Regra de Negócio: Somente pedidos ENTREGUES e PAGOS pontuam para a fidelidade e faturamento efetivo
+                const isEntregueEPago = (v.status_entrega === 'ENTREGUE' && v.status_pagamento === 'PAGO');
+                if (isEntregueEPago) {
+                    mapaClientes[chave].pedidosConcluidos += 1;
+                    mapaClientes[chave].totalGasto += (v.valor_total || 0);
+                    mapaClientes[chave].comprados_30 += (v.qtd_cartela_30 || 0);
+                    mapaClientes[chave].comprados_12 += (v.qtd_duzia_12 || 0);
+                    mapaClientes[chave].comprados_10 += (v.qtd_dezena_10 || 0);
+                }
+            });
+
+            // 2. Mesclar clientes cadastrados no Firestore (egg_customers)
+            window.clientesFidelidade.forEach(cf => {
+                if (!cf.nome) return;
+                const chave = cf.nome.toUpperCase().trim();
+                if (!mapaClientes[chave]) {
+                    mapaClientes[chave] = {
+                        nome: cf.nome,
+                        whatsapp: cf.whatsapp || '',
+                        totalGasto: 0,
+                        totalPedidos: 0,
+                        pedidosConcluidos: 0,
+                        comprados_30: 0,
+                        comprados_12: 0,
+                        comprados_10: 0
+                    };
+                } else if (cf.whatsapp && !mapaClientes[chave].whatsapp) {
+                    mapaClientes[chave].whatsapp = cf.whatsapp;
+                }
             });
 
             let clientesArray = Object.values(mapaClientes);
