@@ -174,42 +174,54 @@
     <!-- CONTEÚDO PRINCIPAL (QUANDO AUTENTICADO) -->
     <main id="mainContent" class="max-w-5xl mx-auto px-4 -mt-2 w-full flex-grow space-y-5">
 
-        <!-- 📊 1. CARDS DE KPIS CONSOLIDADOS (PRODUÇÃO GERAL) -->
-        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <!-- Card 1: Total Litros -->
-            <div class="agro-card p-3.5 border-l-4 border-l-emerald-600 flex flex-col justify-between">
-                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Total Produzido</span>
-                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardTotalLitros">--</p>
-                <span class="text-[10px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
-                    <i class="fas fa-droplet text-[9px]"></i> Histórico completo
-                </span>
+        <!-- 📊 1. CARDS DE KPIS CONSOLIDADOS (PRODUÇÃO DO ANO & COMPARATIVO) -->
+        <section class="space-y-2">
+            <div class="flex items-center justify-between px-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-black text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-chart-pie text-emerald-700"></i> Desempenho Anual
+                    </span>
+                    <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200" id="badgeAnoReferencia">Ano 2026</span>
+                </div>
+                <span class="text-[10px] font-bold text-stone-400" id="labelPeriodoComparativo">Comparativo mesmo período</span>
             </div>
 
-            <!-- Card 2: Receita Total -->
-            <div class="agro-card p-3.5 border-l-4 border-l-teal-600 flex flex-col justify-between">
-                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Receita Total</span>
-                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardReceita">R$ --</p>
-                <span class="text-[10px] text-teal-700 font-semibold mt-1 flex items-center gap-1">
-                    <i class="fas fa-money-bill-wave text-[9px]"></i> Faturamento bruto
-                </span>
-            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Card 1: Total Produzido no Ano -->
+                <div class="agro-card p-3 sm:p-4 border-l-4 border-l-emerald-600 flex flex-col justify-between overflow-hidden">
+                    <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-stone-500 block truncate" id="lblTotalAno">Produção do Ano</span>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-black text-stone-900 font-mono mt-1 truncate" id="cardTotalLitros">--</p>
+                    <div class="mt-1 flex items-center gap-1 text-[10px] font-bold" id="badgeCompProducao">
+                        <span class="text-stone-400">Calculando...</span>
+                    </div>
+                </div>
 
-            <!-- Card 3: Média Diária -->
-            <div class="agro-card p-3.5 border-l-4 border-l-sky-600 flex flex-col justify-between">
-                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Média Diária</span>
-                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardMedia">--</p>
-                <span class="text-[10px] text-sky-700 font-semibold mt-1 flex items-center gap-1">
-                    <i class="fas fa-chart-line text-[9px]"></i> Rendimento médio
-                </span>
-            </div>
+                <!-- Card 2: Receita Total do Ano -->
+                <div class="agro-card p-3 sm:p-4 border-l-4 border-l-teal-600 flex flex-col justify-between overflow-hidden">
+                    <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-stone-500 block truncate" id="lblReceitaAno">Receita do Ano</span>
+                    <p class="text-base sm:text-xl lg:text-2xl font-black text-stone-900 font-mono mt-1 truncate" id="cardReceita">R$ --</p>
+                    <div class="mt-1 flex items-center gap-1 text-[10px] font-bold" id="badgeCompReceita">
+                        <span class="text-stone-400">Calculando...</span>
+                    </div>
+                </div>
 
-            <!-- Card 4: Preço Médio -->
-            <div class="agro-card p-3.5 border-l-4 border-l-amber-600 flex flex-col justify-between">
-                <span class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Preço Médio</span>
-                <p class="text-2xl font-black text-stone-900 font-mono mt-1" id="cardPrecoMedio">R$ --</p>
-                <span class="text-[10px] text-amber-700 font-semibold mt-1 flex items-center gap-1">
-                    <i class="fas fa-tag text-[9px]"></i> Por litro entregue
-                </span>
+                <!-- Card 3: Média Diária no Ano -->
+                <div class="agro-card p-3 sm:p-4 border-l-4 border-l-sky-600 flex flex-col justify-between overflow-hidden">
+                    <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-stone-500 block truncate" id="lblMediaAno">Média Diária</span>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-black text-stone-900 font-mono mt-1 truncate" id="cardMedia">--</p>
+                    <div class="mt-1 flex items-center gap-1 text-[10px] font-bold" id="badgeCompMedia">
+                        <span class="text-stone-400">Calculando...</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Comparativo com o Mesmo Período do Ano Anterior -->
+                <div class="agro-card p-3 sm:p-4 border-l-4 border-l-amber-600 flex flex-col justify-between overflow-hidden">
+                    <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-stone-500 block truncate" id="lblYoY">Vs. Ano Anterior</span>
+                    <p class="text-base sm:text-xl lg:text-2xl font-black font-mono mt-1 truncate" id="cardComparativoYoY">--</p>
+                    <div class="mt-1 text-[10px] font-semibold text-stone-500 truncate" id="subComparativoYoY">
+                        Mesmo período anterior
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -979,7 +991,7 @@
             });
         }
 
-        // --- Gráficos & Dashboard Consolidado ---
+        // --- Gráficos & Dashboard Consolidado Anual & YoY ---
         function updateDashboard(data) {
             const today = new Date();
             today.setHours(23, 59, 59, 999);
@@ -987,15 +999,138 @@
 
             if (validData.length === 0) return;
 
-            const totalProd = validData.reduce((acc, curr) => acc + curr.Producao_Total, 0);
-            const totalRev = validData.reduce((acc, curr) => acc + curr.Total_Venda, 0);
+            // Identificar o ano mais recente nos dados (ex: 2026)
+            const anosDisponiveis = [...new Set(validData.map(d => d.Ano))].sort((a, b) => b - a);
+            const anoAtual = anosDisponiveis[0] || today.getFullYear();
+            const anoAnterior = anoAtual - 1;
 
-            dom.cardTotal.textContent = totalProd.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + " L";
-            dom.cardReceita.textContent = totalRev.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            dom.cardMedia.textContent = (totalProd / validData.length).toFixed(1) + " L/dia";
+            // Filtrar dados do ano atual
+            const dadosAnoAtual = validData.filter(d => d.Ano === anoAtual);
+            
+            // Métricas do Ano Atual
+            const totalProdAno = dadosAnoAtual.reduce((acc, curr) => acc + (curr.Producao_Total || 0), 0);
+            const totalRevAno = dadosAnoAtual.reduce((acc, curr) => acc + (curr.Total_Venda || 0), 0);
+            const diasProdAno = dadosAnoAtual.filter(d => (d.Producao_Total || 0) > 0).length || dadosAnoAtual.length;
+            const mediaDiariaAno = diasProdAno > 0 ? (totalProdAno / diasProdAno) : 0;
 
-            const precoMedio = totalProd > 0 ? (totalRev / totalProd) : 0;
-            dom.cardPreco.textContent = precoMedio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // Encontrar o dia/mês máximo registrado no ano atual para corte justo
+            let maxMes = today.getMonth();
+            let maxDia = today.getDate();
+            if (dadosAnoAtual.length > 0) {
+                const ultDataAno = new Date(Math.max(...dadosAnoAtual.map(d => d.Data.getTime())));
+                maxMes = ultDataAno.getMonth();
+                maxDia = ultDataAno.getDate();
+            }
+
+            // Filtrar dados do ano anterior no MESMO PERÍODO (até o mesmo mês e dia)
+            const dadosAnoAnteriorPeriodo = validData.filter(d => {
+                if (d.Ano !== anoAnterior) return false;
+                const m = d.Data.getMonth();
+                const dia = d.Data.getDate();
+                return m < maxMes || (m === maxMes && dia <= maxDia);
+            });
+
+            const totalProdAntPeriodo = dadosAnoAnteriorPeriodo.reduce((acc, curr) => acc + (curr.Producao_Total || 0), 0);
+            const totalRevAntPeriodo = dadosAnoAnteriorPeriodo.reduce((acc, curr) => acc + (curr.Total_Venda || 0), 0);
+            const diasAntPeriodo = dadosAnoAnteriorPeriodo.filter(d => (d.Producao_Total || 0) > 0).length || dadosAnoAnteriorPeriodo.length;
+            const mediaDiariaAntPeriodo = diasAntPeriodo > 0 ? (totalProdAntPeriodo / diasAntPeriodo) : 0;
+
+            // Atualiza Títulos e Badges
+            const badgeAno = document.getElementById('badgeAnoReferencia');
+            if (badgeAno) badgeAno.textContent = `Ano ${anoAtual}`;
+
+            const lblPeriodo = document.getElementById('labelPeriodoComparativo');
+            const dataCorteStr = `${String(maxDia).padStart(2, '0')}/${String(maxMes + 1).padStart(2, '0')}`;
+            if (lblPeriodo) {
+                if (anosDisponiveis.includes(anoAnterior)) {
+                    lblPeriodo.textContent = `Comparado a ${anoAnterior} (até ${dataCorteStr})`;
+                } else {
+                    lblPeriodo.textContent = `Histórico anual consolidado`;
+                }
+            }
+
+            const lblTotalAno = document.getElementById('lblTotalAno');
+            if (lblTotalAno) lblTotalAno.textContent = `Produção ${anoAtual}`;
+            const lblReceitaAno = document.getElementById('lblReceitaAno');
+            if (lblReceitaAno) lblReceitaAno.textContent = `Receita ${anoAtual}`;
+            const lblMediaAno = document.getElementById('lblMediaAno');
+            if (lblMediaAno) lblMediaAno.textContent = `Média Diária ${anoAtual}`;
+
+            // 1. Total Litros Ano
+            dom.cardTotal.textContent = totalProdAno.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + " L";
+            
+            // 2. Receita do Ano (Formatação com proteção contra overflow)
+            dom.cardReceita.textContent = totalRevAno.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // 3. Média Diária no Ano
+            dom.cardMedia.textContent = mediaDiariaAno.toFixed(1) + " L/dia";
+
+            // Variação % de Produção
+            const badgeProd = document.getElementById('badgeCompProducao');
+            if (badgeProd) {
+                if (totalProdAntPeriodo > 0) {
+                    const diffPct = ((totalProdAno - totalProdAntPeriodo) / totalProdAntPeriodo) * 100;
+                    const sinal = diffPct >= 0 ? '+' : '';
+                    const cor = diffPct >= 0 ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50';
+                    const icone = diffPct >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                    badgeProd.innerHTML = `<span class="px-1.5 py-0.5 rounded ${cor} flex items-center gap-1"><i class="fas ${icone}"></i> ${sinal}${diffPct.toFixed(1)}% vs ${anoAnterior}</span>`;
+                } else {
+                    badgeProd.innerHTML = `<span class="text-stone-400">${diasProdAno} dias coletados</span>`;
+                }
+            }
+
+            // Variação % de Receita
+            const badgeRev = document.getElementById('badgeCompReceita');
+            if (badgeRev) {
+                if (totalRevAntPeriodo > 0) {
+                    const diffPct = ((totalRevAno - totalRevAntPeriodo) / totalRevAntPeriodo) * 100;
+                    const sinal = diffPct >= 0 ? '+' : '';
+                    const cor = diffPct >= 0 ? 'text-teal-700 bg-teal-50' : 'text-rose-700 bg-rose-50';
+                    const icone = diffPct >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                    badgeRev.innerHTML = `<span class="px-1.5 py-0.5 rounded ${cor} flex items-center gap-1"><i class="fas ${icone}"></i> ${sinal}${diffPct.toFixed(1)}% vs ${anoAnterior}</span>`;
+                } else {
+                    const precoMedio = totalProdAno > 0 ? (totalRevAno / totalProdAno) : 0;
+                    badgeRev.innerHTML = `<span class="text-stone-500 font-medium">Méd. ${precoMedio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/L</span>`;
+                }
+            }
+
+            // Média Diária Sub-badge
+            const badgeMed = document.getElementById('badgeCompMedia');
+            if (badgeMed) {
+                if (mediaDiariaAntPeriodo > 0) {
+                    const diffMedia = mediaDiariaAno - mediaDiariaAntPeriodo;
+                    const sinal = diffMedia >= 0 ? '+' : '';
+                    const cor = diffMedia >= 0 ? 'text-sky-700 bg-sky-50' : 'text-rose-700 bg-rose-50';
+                    badgeMed.innerHTML = `<span class="px-1.5 py-0.5 rounded ${cor}">${sinal}${diffMedia.toFixed(1)} L/dia vs ${anoAnterior}</span>`;
+                } else {
+                    badgeMed.innerHTML = `<span class="text-stone-400">Rendimento anual</span>`;
+                }
+            }
+
+            // 4. Card Comparativo YoY
+            const cardYoY = document.getElementById('cardComparativoYoY');
+            const subYoY = document.getElementById('subComparativoYoY');
+            if (cardYoY && subYoY) {
+                if (totalProdAntPeriodo > 0) {
+                    const diffLitros = totalProdAno - totalProdAntPeriodo;
+                    const diffPct = (diffLitros / totalProdAntPeriodo) * 100;
+                    const sinalLitros = diffLitros >= 0 ? '+' : '';
+                    const sinalPct = diffPct >= 0 ? '+' : '';
+                    
+                    if (diffLitros >= 0) {
+                        cardYoY.className = "text-base sm:text-xl lg:text-2xl font-black font-mono mt-1 text-emerald-700 truncate";
+                        cardYoY.textContent = `${sinalLitros}${Math.round(diffLitros).toLocaleString('pt-BR')} L`;
+                    } else {
+                        cardYoY.className = "text-base sm:text-xl lg:text-2xl font-black font-mono mt-1 text-rose-600 truncate";
+                        cardYoY.textContent = `${Math.round(diffLitros).toLocaleString('pt-BR')} L`;
+                    }
+                    subYoY.innerHTML = `<span><strong>${sinalPct}${diffPct.toFixed(1)}%</strong> vs ${anoAnterior} (${Math.round(totalProdAntPeriodo).toLocaleString('pt-BR')} L)</span>`;
+                } else {
+                    cardYoY.className = "text-base sm:text-xl lg:text-2xl font-black font-mono mt-1 text-stone-700 truncate";
+                    cardYoY.textContent = "1º Ano";
+                    subYoY.textContent = "Sem dados anteriores para comparar";
+                }
+            }
 
             updateYearlySummary(validData);
             renderCharts(validData);
