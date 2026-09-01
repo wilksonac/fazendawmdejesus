@@ -1076,13 +1076,6 @@
                     window.clientesFidelidade.push({ id: d.id, ...d.data() });
                 });
 
-                // Atualiza Datalist de Sugestão de Clientes
-                const datalist = document.getElementById('lista-sugestao-clientes');
-                datalist.innerHTML = '';
-                window.clientesFidelidade.forEach(c => {
-                    datalist.innerHTML += `<option value="${c.nome}">${c.whatsapp ? '(' + c.whatsapp + ')' : ''}</option>`;
-                });
-
                 // Processar KPIs e Renderizar
                 atualizarKPIsEncomendas();
                 aplicarFiltrosEncomendas();
