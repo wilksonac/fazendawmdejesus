@@ -337,13 +337,14 @@
                     </a>
                 </div>
 
-                <!-- CARD 4: CHECKLIST & MANEJO DIÁRIO -->
+                <!-- CARD 4: CHECKLIST & INSUMOS OPERACIONAIS -->
                 <div class="agro-card p-4 relative overflow-hidden flex flex-col justify-between border-l-4 border-l-teal-600 group">
                     <div class="flex items-start justify-between">
                         <div>
-                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-teal-700 block">Rotina & Manejo</span>
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-teal-700 block">Insumos & Estoque</span>
                             <div class="flex items-baseline gap-1 mt-1">
-                                <span class="text-2xl font-black text-stone-900">Checklist</span>
+                                <span class="text-3xl font-black text-stone-900 font-mono" id="kpi-insumos-total">--</span>
+                                <span class="text-xs font-bold text-stone-500">itens</span>
                             </div>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-lg shadow-sm">
@@ -351,17 +352,17 @@
                         </div>
                     </div>
 
-                    <!-- Métricas de Apoio do Checklist -->
+                    <!-- Métricas de Apoio do Checklist e Insumos -->
                     <div class="mt-3 pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
                         <div class="flex justify-between items-center">
-                            <span class="text-stone-500 font-medium">Controle de Tarefas:</span>
-                            <strong class="text-emerald-700 font-bold flex items-center gap-1">
-                                <i class="fas fa-circle-check text-[11px]"></i> ADAPEC & Diário
+                            <span class="text-stone-500 font-medium">Itens Críticos (≤2):</span>
+                            <strong class="text-rose-700 font-black font-mono flex items-center gap-1" id="kpi-insumos-criticos">
+                                <i class="fas fa-triangle-exclamation text-[11px] text-rose-500"></i> -- críticos
                             </strong>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-stone-500 font-medium">Próxima Ação:</span>
-                            <span class="text-stone-700 font-bold truncate max-w-[130px]" id="kpi-proxima-tarefa">Conferir rotinas</span>
+                            <span class="text-stone-500 font-medium">Insumos Variáveis:</span>
+                            <strong class="text-teal-800 font-black font-mono" id="kpi-insumos-variaveis">-- variáveis</strong>
                         </div>
                     </div>
 
@@ -648,6 +649,9 @@
                 document.getElementById('kpi-total-rebanho').textContent = '--';
                 document.getElementById('kpi-despesas-mes').textContent = 'R$ --';
                 document.getElementById('kpi-despesas-qtd').textContent = 'Faça login';
+                document.getElementById('kpi-insumos-total').textContent = '--';
+                document.getElementById('kpi-insumos-criticos').textContent = 'Faça login';
+                document.getElementById('kpi-insumos-variaveis').textContent = 'Faça login';
             }
         });
 
@@ -721,7 +725,8 @@
                 await Promise.all([
                     carregarKpiLeite(),
                     carregarKpiRebanho(),
-                    carregarKpiDespesas()
+                    carregarKpiDespesas(),
+                    carregarKpiChecklist()
                 ]);
 
                 if (manual) showToast("Dados atualizados com sucesso!", "success");
@@ -924,6 +929,41 @@
 
             } catch (err) {
                 console.error("Erro KPI Despesas:", err);
+            }
+        }
+
+        // KPI 4: Insumos e Estoque da Fazenda
+        async function carregarKpiChecklist() {
+            try {
+                const appId = mainFirebaseConfig.projectId || "fazendawm-83f34";
+                const snap = await getDocs(collection(dbMain, `artifacts/${appId}/public/data/checklist_insumos`));
+                
+                let criticos = 0;
+                let variaveis = 0;
+                let total = 0;
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    total++;
+                    const qtd = Number(data.quantidade || 0);
+                    const cat = data.categoria || 'permanente';
+
+                    if (cat === 'variavel') {
+                        variaveis++;
+                    } else {
+                        if (qtd <= 2) criticos++;
+                    }
+                });
+
+                document.getElementById('kpi-insumos-total').textContent = total;
+                document.getElementById('kpi-insumos-criticos').innerHTML = `<i class="fas fa-triangle-exclamation text-[11px] text-rose-500"></i> ${criticos} ${criticos === 1 ? 'crítico' : 'críticos'}`;
+                document.getElementById('kpi-insumos-variaveis').textContent = `${variaveis} ${variaveis === 1 ? 'variável' : 'variáveis'}`;
+
+            } catch (err) {
+                console.error("Erro KPI Checklist:", err);
+                document.getElementById('kpi-insumos-total').textContent = '0';
+                document.getElementById('kpi-insumos-criticos').textContent = '0 críticos';
+                document.getElementById('kpi-insumos-variaveis').textContent = '0 variáveis';
             }
         }
 
