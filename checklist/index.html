@@ -8,12 +8,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Checklist WM">
     <meta name="theme-color" content="#064E3B">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Checklist & Insumos • Fazenda WM de Jesus</title>
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" type="image/png" href="favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Global Firebase Config -->
+    <script src="firebase-config.js"></script>
 
     <!-- Google Fonts & FontAwesome 6 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,36 +90,18 @@
 
             <div class="space-y-2.5 pt-2">
                 <button onclick="fazerLoginGoogle()"
-                    class="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2.5 shadow-md transition active:scale-98">
-                    <i class="fab fa-google text-amber-300"></i>
+                    class="w-full py-3.5 bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2.5 shadow-md transition active:scale-98">
+                    <i class="fab fa-google text-amber-300 text-sm"></i>
                     <span>Entrar com Conta Google</span>
                 </button>
 
-                <div class="relative flex py-1 items-center">
-                    <div class="flex-grow border-t border-stone-200"></div>
-                    <span class="flex-shrink mx-2 text-[10px] text-stone-400 font-bold uppercase">ou e-mail/senha</span>
-                    <div class="flex-grow border-t border-stone-200"></div>
+                <p class="text-[11px] text-stone-400">Autenticação oficial segura da Fazenda WM</p>
+
+                <div class="pt-2">
+                    <a href="index.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:underline">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Painel Principal
+                    </a>
                 </div>
-
-                <form id="form-login-email" class="space-y-2 text-left" onsubmit="fazerLoginEmail(event)">
-                    <div>
-                        <input type="email" id="login-email" placeholder="E-mail" required
-                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-600">
-                    </div>
-                    <div>
-                        <input type="password" id="login-senha" placeholder="Senha" required
-                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-600">
-                    </div>
-                    <button type="submit"
-                        class="w-full py-2.5 hero-gradient text-white font-bold text-xs rounded-xl shadow-sm transition active:scale-98">
-                        Entrar com Senha
-                    </button>
-                </form>
-
-                <button onclick="fazerLoginAnonimo()"
-                    class="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs rounded-xl transition">
-                    Acesso Rápido Direto
-                </button>
             </div>
 
             <p id="login-error" class="hidden text-xs font-bold text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-200"></p>
@@ -421,7 +409,7 @@
 
             <div>
                 <label class="block text-[11px] font-bold text-stone-700 mb-1">Observações da Conclusão (Opcional)</label>
-                <textarea id="modal-tarefa-obs" rows="3" placeholder="Ex: Concluído pelo vaqueiro José com 4 mourões trocados..."
+                <textarea id="modal-tarefa-obs" rows="3" placeholder="Ex: Concluído pelo vaqueiro com 4 mourões trocados..."
                     class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-600"></textarea>
             </div>
 
@@ -472,27 +460,31 @@
     </nav>
 
     <!-- ═══════════════════════════════════════════════════════
-         FIREBASE & LÓGICA JAVASCRIPT
+         FIREBASE & LÓGICA JAVASCRIPT UNIFICADA
          ═══════════════════════════════════════════════════════ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, doc, onSnapshot, getDocs, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, signInWithEmailAndPassword, signInAnonymously, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, getDocs, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // Configuração do Firebase dedicada ao Checklist/Insumos
-        const firebaseConfigChecklist = {
-            apiKey: "AIzaSyCvF8SoA2YQrrNOmRFI_IOEiXpRu0ZYu6w",
-            authDomain: "controle-insumos-fazenda.firebaseapp.com",
-            projectId: "controle-insumos-fazenda",
-            storageBucket: "controle-insumos-fazenda.firebasestorage.app",
-            messagingSenderId: "458933835087",
-            appId: "1:458933835087:web:f7762203b30550cfcfa13a"
+        // Usar a mesma configuração global unificada do portal Fazenda WM
+        const firebaseConfig = window.globalFirebaseConfig || {
+            apiKey: "AIzaSyB-B9s9lH62xvt9TKCMwvUbtQFPlwWIU7c",
+            authDomain: "fazendawm-83f34.firebaseapp.com",
+            projectId: "fazendawm-83f34",
+            storageBucket: "fazendawm-83f34.firebasestorage.app",
+            messagingSenderId: "40894938435",
+            appId: "1:40894938435:web:1d8bdaf8f7869ecf7183f6"
         };
 
-        const app = initializeApp(firebaseConfigChecklist);
+        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
+        const appId = firebaseConfig.projectId;
+        const colInsumosRef = collection(db, `artifacts/${appId}/public/data/checklist_insumos`);
+        const colAtividadesRef = collection(db, `artifacts/${appId}/public/data/checklist_atividades`);
 
         window.insumosLista = [];
         window.atividadesLista = [];
@@ -508,44 +500,24 @@
             }).showToast();
         }
 
-        // --- AUTHENTICATION ---
-        window.fazerLoginGoogle = () => {
-            provider.setCustomParameters({ prompt: 'select_account' });
-            signInWithPopup(auth, provider).then(() => {
-                showToast("Login com Google realizado!", "success");
-            }).catch(err => {
-                console.error("Erro Google:", err);
+        // --- AUTHENTICATION OFICIAL UNIFICADA ---
+        window.fazerLoginGoogle = async () => {
+            try {
+                provider.setCustomParameters({ prompt: 'select_account' });
+                await signInWithPopup(auth, provider);
+                showToast("Login realizado com sucesso!", "success");
+            } catch (err) {
+                console.error("Erro Google Login:", err);
                 const el = document.getElementById('login-error');
-                if (el) { el.innerText = err.message; el.classList.remove('hidden'); }
+                if (el) { el.innerText = "Erro ao autenticar: " + err.message; el.classList.remove('hidden'); }
                 showToast("Erro: " + err.message, "error");
-            });
-        };
-
-        window.fazerLoginEmail = (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-senha').value;
-            signInWithEmailAndPassword(auth, email, pass).then(() => {
-                showToast("Login efetuado com sucesso!", "success");
-            }).catch(err => {
-                const el = document.getElementById('login-error');
-                if (el) { el.innerText = err.message; el.classList.remove('hidden'); }
-                showToast("Erro no login: " + err.message, "error");
-            });
-        };
-
-        window.fazerLoginAnonimo = () => {
-            signInAnonymously(auth).then(() => {
-                showToast("Acesso direto ativado!", "success");
-            }).catch(err => {
-                showToast("Erro: " + err.message, "error");
-            });
+            }
         };
 
         window.fazerLogout = () => {
             if (confirm("Deseja sair da sua conta?")) {
                 signOut(auth).then(() => {
-                    showToast("Desconectado.", "info");
+                    showToast("Desconectado com sucesso.", "info");
                 });
             }
         };
@@ -607,18 +579,27 @@
 
         // --- REALTIME SYNC (FIRESTORE) ---
         let unsubs = [];
-        function iniciarSincronizacaoRealtime() {
+        async function iniciarSincronizacaoRealtime() {
+            // Cancelar listeners anteriores
+            unsubs.forEach(u => u());
+
             // 1. Insumos
-            const unsubInsumos = onSnapshot(collection(db, "insumos"), (snapshot) => {
+            const unsubInsumos = onSnapshot(colInsumosRef, async (snapshot) => {
                 window.insumosLista = [];
                 snapshot.forEach(d => {
                     window.insumosLista.push({ id: d.id, ...d.data() });
                 });
-                renderizarListasInsumos();
+
+                // Se banco vazio, sugerir itens padrão da fazenda
+                if (window.insumosLista.length === 0) {
+                    await semearInsumosIniciais();
+                } else {
+                    renderizarListasInsumos();
+                }
             }, (err) => console.error("Erro insumos:", err));
 
             // 2. Atividades
-            const unsubAtividades = onSnapshot(collection(db, "atividades"), (snapshot) => {
+            const unsubAtividades = onSnapshot(colAtividadesRef, async (snapshot) => {
                 window.atividadesLista = [];
                 snapshot.forEach(d => {
                     window.atividadesLista.push({ id: d.id, ...d.data() });
@@ -627,6 +608,31 @@
             }, (err) => console.error("Erro atividades:", err));
 
             unsubs = [unsubInsumos, unsubAtividades];
+        }
+
+        async function semearInsumosIniciais() {
+            const padroes = [
+                { nome: "Sal Mineral 80", categoria: "permanente", quantidade: 15 },
+                { nome: "Ração Lactação 22%", categoria: "permanente", quantidade: 8 },
+                { nome: "Vacina Febre Aftosa", categoria: "permanente", quantidade: 5 },
+                { nome: "Carrapaticida / Pour-on", categoria: "permanente", quantidade: 3 },
+                { nome: "Óleo Diesel S10", categoria: "permanente", quantidade: 12 },
+                { nome: "Brincos de Identificação", categoria: "permanente", quantidade: 25 },
+                { nome: "Arame Farpado (Rolos)", categoria: "variavel", quantidade: 4 },
+                { nome: "Mourões de Eucalipto", categoria: "variavel", quantidade: 30 }
+            ];
+
+            try {
+                for (const p of padroes) {
+                    await addDoc(colInsumosRef, {
+                        ...p,
+                        ultimaAlteracao: serverTimestamp()
+                    });
+                }
+                showToast("Itens operacionais inicializados com sucesso!", "success");
+            } catch (err) {
+                console.error("Erro semeando dados:", err);
+            }
         }
 
         window.carregarTudo = (manual = false) => {
@@ -773,7 +779,7 @@
         window.alterarQtdInsumo = async (id, atual, delta) => {
             const nova = Math.max(0, atual + delta);
             try {
-                await updateDoc(doc(db, "insumos", id), {
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/checklist_insumos`, id), {
                     quantidade: nova,
                     ultimaAlteracao: serverTimestamp()
                 });
@@ -785,7 +791,7 @@
         window.excluirInsumo = async (id, nome) => {
             if (!confirm(`Excluir permanentemente o insumo "${nome}"?`)) return;
             try {
-                await deleteDoc(doc(db, "insumos", id));
+                await deleteDoc(doc(db, `artifacts/${appId}/public/data/checklist_insumos`, id));
                 showToast("Insumo excluído.", "info");
             } catch (err) {
                 showToast("Erro: " + err.message, "error");
@@ -801,7 +807,7 @@
             if (!nome) return;
 
             try {
-                await addDoc(collection(db, "insumos"), {
+                await addDoc(colInsumosRef, {
                     nome: nome,
                     categoria: cat,
                     quantidade: qtd,
@@ -825,13 +831,13 @@
             if (!tit) return;
 
             try {
-                await addDoc(collection(db, "atividades"), {
+                await addDoc(colAtividadesRef, {
                     titulo: tit,
                     descricao: desc,
                     prioridade: pri,
                     status: 'pendente',
                     dataCriacao: serverTimestamp(),
-                    usuario: auth.currentUser ? (auth.currentUser.email || 'Usuário') : 'Anônimo'
+                    usuario: auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email || 'Usuário') : 'Anônimo'
                 });
                 document.getElementById('form-atividade').reset();
                 showToast("Atividade cadastrada!", "success");
@@ -937,7 +943,7 @@
             if (!id) return;
 
             try {
-                await updateDoc(doc(db, "atividades", id), {
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/checklist_atividades`, id), {
                     status: 'concluida',
                     observacoes: obs,
                     dataConclusao: serverTimestamp()
