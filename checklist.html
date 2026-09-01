@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Checklist WM">
+    <meta name="theme-color" content="#064E3B">
+    <title>Checklist & Insumos • Fazenda WM de Jesus</title>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- Google Fonts & FontAwesome 6 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Toastify -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #0f766e 100%);
+        }
+        .agro-card {
+            background: #ffffff;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bottom-nav-blur {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(231, 229, 228, 0.8);
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="min-h-full flex flex-col bg-stone-100 text-stone-800 antialiased select-none pb-36">
+
+    <!-- ═══════════════════════════════════════════════════════
+         TELA DE AUTENTICAÇÃO / LOGIN
+         ═══════════════════════════════════════════════════════ -->
+    <div id="tela-login" class="fixed inset-0 z-50 bg-stone-900/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="agro-card p-6 max-w-sm w-full space-y-5 text-center shadow-2xl border border-stone-200 fade-in">
+            <div class="w-16 h-16 rounded-2xl hero-gradient text-white flex items-center justify-center text-2xl mx-auto shadow-lg shadow-emerald-900/30">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            
+            <div class="space-y-1">
+                <h2 class="font-extrabold text-xl text-stone-900">Checklist & Insumos</h2>
+                <p class="text-xs text-stone-500 font-medium">Controle Operacional • Fazenda WM de Jesus</p>
+            </div>
+
+            <div class="space-y-2.5 pt-2">
+                <button onclick="fazerLoginGoogle()"
+                    class="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2.5 shadow-md transition active:scale-98">
+                    <i class="fab fa-google text-amber-300"></i>
+                    <span>Entrar com Conta Google</span>
+                </button>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-stone-200"></div>
+                    <span class="flex-shrink mx-2 text-[10px] text-stone-400 font-bold uppercase">ou e-mail/senha</span>
+                    <div class="flex-grow border-t border-stone-200"></div>
+                </div>
+
+                <form id="form-login-email" class="space-y-2 text-left" onsubmit="fazerLoginEmail(event)">
+                    <div>
+                        <input type="email" id="login-email" placeholder="E-mail" required
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-600">
+                    </div>
+                    <div>
+                        <input type="password" id="login-senha" placeholder="Senha" required
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-emerald-600">
+                    </div>
+                    <button type="submit"
+                        class="w-full py-2.5 hero-gradient text-white font-bold text-xs rounded-xl shadow-sm transition active:scale-98">
+                        Entrar com Senha
+                    </button>
+                </form>
+
+                <button onclick="fazerLoginAnonimo()"
+                    class="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs rounded-xl transition">
+                    Acesso Rápido Direto
+                </button>
+            </div>
+
+            <p id="login-error" class="hidden text-xs font-bold text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-200"></p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CABEÇALHO OFICIAL FAZENDA WM DE JESUS
+         ═══════════════════════════════════════════════════════ -->
+    <header class="hero-gradient text-white sticky top-0 z-40 shadow-lg px-4 pt-3 pb-5 rounded-b-[2rem] border-b border-emerald-700/50">
+        <div class="max-w-4xl mx-auto space-y-3">
+            <div class="flex items-center justify-between gap-3">
+                
+                <!-- Voltar ao Início & Título -->
+                <div class="flex items-center gap-2.5">
+                    <a href="index.html" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-sm shadow-inner transition">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-extrabold text-base tracking-tight leading-tight">Checklist & Insumos</span>
+                            <span class="text-[9px] bg-emerald-400/20 text-emerald-200 font-semibold px-2 py-0.5 rounded-full border border-emerald-300/30">Manejo</span>
+                        </div>
+                        <p class="text-[11px] text-emerald-100/70 font-medium">Fazenda WM de Jesus</p>
+                    </div>
+                </div>
+
+                <!-- Perfil / Logout / Sincronização -->
+                <div class="flex items-center gap-2">
+                    <button onclick="carregarTudo(true)" title="Sincronizar dados" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-white border border-white/20 transition">
+                        <i class="fas fa-sync-alt" id="icon-sync"></i>
+                    </button>
+                    <div class="flex items-center gap-1.5 bg-black/20 backdrop-blur-md py-1 px-2.5 rounded-full border border-white/15">
+                        <img id="user-avatar" class="w-6 h-6 rounded-full object-cover border border-emerald-400 bg-white/20" src="favicon.svg" alt="User">
+                        <button onclick="fazerLogout()" title="Sair da conta" class="text-emerald-200/80 hover:text-white text-xs p-0.5">
+                            <i class="fas fa-arrow-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegação Superior por Abas -->
+            <div class="flex items-center gap-1.5 p-1 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-x-auto text-xs font-bold no-scrollbar">
+                <button onclick="nav('painel')" id="tab-nav-painel" class="flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-center transition bg-white text-stone-900 shadow-sm">
+                    <i class="fas fa-cubes"></i> Painel
+                </button>
+                <button onclick="nav('permanente')" id="tab-nav-permanente" class="flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-center text-white/80 hover:text-white transition">
+                    <i class="fas fa-boxes-stacked"></i> Perm.
+                </button>
+                <button onclick="nav('variavel')" id="tab-nav-variavel" class="flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-center text-white/80 hover:text-white transition">
+                    <i class="fas fa-tag"></i> Var.
+                </button>
+                <button onclick="nav('tarefas')" id="tab-nav-tarefas" class="flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-center text-white/80 hover:text-white transition">
+                    <i class="fas fa-list-check"></i> Tarefas
+                </button>
+                <button onclick="nav('novo')" id="tab-nav-novo" class="flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-center text-white/80 hover:text-white transition">
+                    <i class="fas fa-plus-circle"></i> Novo
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTEÚDO PRINCIPAL
+         ═══════════════════════════════════════════════════════ -->
+    <main class="max-w-4xl w-full mx-auto p-4 space-y-4 flex-1">
+
+        <!-- ═══════════════════════════════════════════════════
+             1. ABA: PAINEL GERAL (TODOS OS INSUMOS)
+             ═══════════════════════════════════════════════════ -->
+        <div id="tela-painel" class="space-y-4 fade-in">
+            
+            <!-- Cards de Resumo Operacional -->
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="agro-card p-3 border-l-4 border-rose-500 bg-rose-50/40">
+                    <span class="text-[9px] font-black text-rose-800 uppercase block">Crítico (≤2)</span>
+                    <span class="text-lg font-black text-rose-900 font-mono" id="kpi-qtd-critico">0</span>
+                    <span class="text-[9px] text-rose-600 block">Urgente repor</span>
+                </div>
+                <div class="agro-card p-3 border-l-4 border-amber-500 bg-amber-50/40">
+                    <span class="text-[9px] font-black text-amber-800 uppercase block">Alerta (≤5)</span>
+                    <span class="text-lg font-black text-amber-900 font-mono" id="kpi-qtd-alerta">0</span>
+                    <span class="text-[9px] text-amber-600 block">Atenção estoque</span>
+                </div>
+                <div class="agro-card p-3 border-l-4 border-emerald-500 bg-emerald-50/40">
+                    <span class="text-[9px] font-black text-emerald-800 uppercase block">OK (>5)</span>
+                    <span class="text-lg font-black text-emerald-900 font-mono" id="kpi-qtd-ok">0</span>
+                    <span class="text-[9px] text-emerald-600 block">Estoque normal</span>
+                </div>
+            </div>
+
+            <!-- Busca Rápida -->
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-3 text-stone-400 text-xs"></i>
+                <input type="text" id="busca-insumo" oninput="renderizarListasInsumos()" placeholder="Buscar insumo por nome..."
+                    class="w-full pl-9 pr-3 py-2.5 bg-white border border-stone-300 rounded-xl text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600 shadow-sm">
+            </div>
+
+            <!-- Seção 1: Insumos Permanentes -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="font-extrabold text-xs text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-boxes-stacked text-emerald-700"></i> Insumos Permanentes
+                    </h3>
+                    <span class="text-[11px] font-bold text-stone-400 font-mono" id="cont-perm-painel">0 itens</span>
+                </div>
+                <div id="lista-permanente-painel" class="space-y-2.5">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- Seção 2: Insumos Variáveis -->
+            <div class="space-y-2 pt-2">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="font-extrabold text-xs text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-tag text-teal-700"></i> Insumos Variáveis
+                    </h3>
+                    <span class="text-[11px] font-bold text-stone-400 font-mono" id="cont-var-painel">0 itens</span>
+                </div>
+                <div id="lista-variavel-painel" class="space-y-2.5">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════
+             2. ABA: INSUMOS PERMANENTES
+             ═══════════════════════════════════════════════════ -->
+        <div id="tela-permanente" class="hidden space-y-3 fade-in">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-extrabold text-sm text-stone-900">Lista Permanente</h3>
+                    <p class="text-[11px] text-stone-500">Itens contínuos com monitoramento de nível</p>
+                </div>
+                <button onclick="nav('novo')" class="px-3 py-1.5 hero-gradient text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
+                    <i class="fas fa-plus"></i> Novo Item
+                </button>
+            </div>
+            <div id="lista-permanente-sozinha" class="space-y-2.5">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════
+             3. ABA: INSUMOS VARIÁVEIS
+             ═══════════════════════════════════════════════════ -->
+        <div id="tela-variavel" class="hidden space-y-3 fade-in">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-extrabold text-sm text-stone-900">Lista Variável</h3>
+                    <p class="text-[11px] text-stone-500">Insumos sazonais e de demanda pontual</p>
+                </div>
+                <button onclick="nav('novo')" class="px-3 py-1.5 hero-gradient text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
+                    <i class="fas fa-plus"></i> Novo Item
+                </button>
+            </div>
+            <div id="lista-variavel-sozinha" class="space-y-2.5">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════
+             4. ABA: TAREFAS & MANEJO OPERACIONAL
+             ═══════════════════════════════════════════════════ -->
+        <div id="tela-tarefas" class="hidden space-y-4 fade-in">
+            
+            <!-- Sub-menu de Tarefas -->
+            <div class="flex items-center justify-center p-1 bg-stone-200/80 rounded-xl text-xs font-extrabold">
+                <button onclick="mostrarSubTab('sub-pendentes')" id="btn-sub-pendentes" class="flex-1 py-1.5 px-3 rounded-lg text-stone-900 bg-white shadow-sm transition">
+                    <i class="fas fa-clock text-amber-600"></i> A Fazer
+                </button>
+                <button onclick="mostrarSubTab('sub-nova')" id="btn-sub-nova" class="flex-1 py-1.5 px-3 rounded-lg text-stone-600 transition">
+                    <i class="fas fa-plus text-emerald-600"></i> Nova Tarefa
+                </button>
+                <button onclick="mostrarSubTab('sub-historico')" id="btn-sub-historico" class="flex-1 py-1.5 px-3 rounded-lg text-stone-600 transition">
+                    <i class="fas fa-check-double text-teal-600"></i> Concluídas
+                </button>
+            </div>
+
+            <!-- 1. Sub-aba: Tarefas Pendentes -->
+            <div id="sub-pendentes" class="space-y-2.5">
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs font-extrabold text-stone-700 uppercase">Atividades Pendentes</span>
+                    <span class="text-[11px] font-bold text-stone-400 font-mono" id="cont-tarefas-pendentes">0 tarefas</span>
+                </div>
+                <div id="lista-tarefas-pendentes" class="space-y-2.5">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- 2. Sub-aba: Criar Nova Tarefa -->
+            <div id="sub-nova" class="hidden agro-card p-5 border border-stone-200 space-y-3.5 shadow-sm">
+                <div class="flex items-center gap-2 pb-2 border-b border-stone-100">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-black">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-sm text-stone-900">Cadastrar Nova Atividade</h4>
+                        <p class="text-[11px] text-stone-500">Manejo, manutenção e rotina da fazenda</p>
+                    </div>
+                </div>
+
+                <form id="form-atividade" class="space-y-3" onsubmit="salvarAtividade(event)">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">O que precisa ser feito? <span class="text-rose-500">*</span></label>
+                        <input type="text" id="titulo-atividade" required placeholder="Ex: Vacinação do lote A, conserto de cerca no pasto 3..."
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Detalhes e Orientações (Opcional)</label>
+                        <textarea id="desc-atividade" rows="2" placeholder="Observações para a equipe ou instrução de execução..."
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-600"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Grau de Prioridade <span class="text-rose-500">*</span></label>
+                        <select id="prioridade-atividade" required
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                            <option value="urgente">🔴 URGENTE - Fazer Imediatamente</option>
+                            <option value="importante">🟠 IMPORTANTE - Fazer Hoje</option>
+                            <option value="normal" selected>🔵 NORMAL - Rotina Operacional</option>
+                            <option value="esperar">⚪ PODE ESPERAR - Quando Sobrar Tempo</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i> Salvar Atividade no Checklist
+                    </button>
+                </form>
+            </div>
+
+            <!-- 3. Sub-aba: Histórico de Concluídas -->
+            <div id="sub-historico" class="hidden space-y-2.5">
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs font-extrabold text-stone-700 uppercase">Histórico de Concluídas</span>
+                    <span class="text-[11px] font-bold text-stone-400 font-mono" id="cont-tarefas-historico">0 concluídas</span>
+                </div>
+                <div id="lista-tarefas-historico" class="space-y-2.5">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════
+             5. ABA: CADASTRAR NOVO INSUMO
+             ═══════════════════════════════════════════════════ -->
+        <div id="tela-novo" class="hidden space-y-4 fade-in">
+            <div class="agro-card p-5 border border-stone-200 space-y-4 shadow-sm">
+                <div class="flex items-center gap-2.5 pb-2 border-b border-stone-100">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-black">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-sm text-stone-900">Cadastrar Novo Insumo</h4>
+                        <p class="text-[11px] text-stone-500">Adicionar item ao controle de estoque da fazenda</p>
+                    </div>
+                </div>
+
+                <form id="form-insumo" class="space-y-3.5" onsubmit="salvarInsumo(event)">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Nome do Insumo <span class="text-rose-500">*</span></label>
+                        <input type="text" id="novo-nome-insumo" required placeholder="Ex: Sal Mineral, Ração Lactação, Brinco Amarelo..."
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Categoria do Insumo <span class="text-rose-500">*</span></label>
+                        <select id="novo-categoria-insumo" required
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-600">
+                            <option value="permanente" selected>📋 Permanente (Monitoramento contínuo de estoque)</option>
+                            <option value="variavel">📦 Variável (Uso pontual / sazonais)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Quantidade Inicial em Estoque</label>
+                        <input type="number" id="novo-qtd-insumo" min="0" value="0"
+                            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-black text-stone-800 font-mono focus:outline-none focus:border-emerald-600">
+                    </div>
+
+                    <button type="submit" class="w-full py-3 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i> Salvar Insumo no Estoque
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODAL DE CONCLUSÃO DE TAREFA
+         ═══════════════════════════════════════════════════════ -->
+    <div id="modal-concluir-tarefa" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-4 shadow-2xl fade-in border border-stone-200">
+            <div class="text-center space-y-1.5">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl mx-auto shadow-inner">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="font-extrabold text-base text-stone-900">Concluir Atividade</h3>
+                <p class="text-xs text-stone-600 font-bold" id="modal-tarefa-titulo">--</p>
+            </div>
+
+            <input type="hidden" id="modal-tarefa-id">
+
+            <div>
+                <label class="block text-[11px] font-bold text-stone-700 mb-1">Observações da Conclusão (Opcional)</label>
+                <textarea id="modal-tarefa-obs" rows="3" placeholder="Ex: Concluído pelo vaqueiro José com 4 mourões trocados..."
+                    class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none focus:border-emerald-600"></textarea>
+            </div>
+
+            <div class="flex gap-2 pt-1">
+                <button onclick="document.getElementById('modal-concluir-tarefa').classList.add('hidden')" class="w-1/3 py-2.5 bg-stone-100 text-stone-700 font-bold text-xs rounded-xl">
+                    Cancelar
+                </button>
+                <button onclick="confirmarConclusaoTarefa()" class="w-2/3 py-2.5 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md transition active:scale-98 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-check"></i> Finalizar Tarefa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV)
+         ═══════════════════════════════════════════════════════ -->
+    <nav class="bottom-nav-blur fixed bottom-0 left-0 right-0 z-40 px-3 py-2 border-t border-stone-200 shadow-lg">
+        <div class="max-w-md mx-auto flex items-center justify-around text-center">
+            
+            <a href="index.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
+                <i class="fas fa-home text-base"></i>
+                <span class="text-[10px] font-bold">Home</span>
+            </a>
+
+            <a href="leite_colaborativo.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
+                <i class="fas fa-fill-drip text-base"></i>
+                <span class="text-[10px] font-bold">Leite</span>
+            </a>
+
+            <a href="venda_ovos.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
+                <i class="fas fa-egg text-base"></i>
+                <span class="text-[10px] font-bold">Ovos</span>
+            </a>
+
+            <a href="checklist.html" class="flex flex-col items-center gap-1 text-emerald-900 font-extrabold transition py-1">
+                <div class="w-8 h-8 rounded-xl hero-gradient text-white flex items-center justify-center shadow-md -mt-3">
+                    <i class="fas fa-clipboard-check text-sm"></i>
+                </div>
+                <span class="text-[10px] font-extrabold text-emerald-900">Checklist</span>
+            </a>
+
+            <a href="despesas.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
+                <i class="fas fa-receipt text-base"></i>
+                <span class="text-[10px] font-bold">Despesas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FIREBASE & LÓGICA JAVASCRIPT
+         ═══════════════════════════════════════════════════════ -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, onSnapshot, getDocs, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, signInWithEmailAndPassword, signInAnonymously, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Configuração do Firebase dedicada ao Checklist/Insumos
+        const firebaseConfigChecklist = {
+            apiKey: "AIzaSyCvF8SoA2YQrrNOmRFI_IOEiXpRu0ZYu6w",
+            authDomain: "controle-insumos-fazenda.firebaseapp.com",
+            projectId: "controle-insumos-fazenda",
+            storageBucket: "controle-insumos-fazenda.firebasestorage.app",
+            messagingSenderId: "458933835087",
+            appId: "1:458933835087:web:f7762203b30550cfcfa13a"
+        };
+
+        const app = initializeApp(firebaseConfigChecklist);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        window.insumosLista = [];
+        window.atividadesLista = [];
+
+        function showToast(msg, type = "info") {
+            const colors = { success: "#064e3b", error: "#dc2626", info: "#0f766e" };
+            Toastify({
+                text: msg,
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                style: { background: colors[type] || "#064e3b", borderRadius: "12px", fontWeight: "600", fontSize: "12px" }
+            }).showToast();
+        }
+
+        // --- AUTHENTICATION ---
+        window.fazerLoginGoogle = () => {
+            provider.setCustomParameters({ prompt: 'select_account' });
+            signInWithPopup(auth, provider).then(() => {
+                showToast("Login com Google realizado!", "success");
+            }).catch(err => {
+                console.error("Erro Google:", err);
+                const el = document.getElementById('login-error');
+                if (el) { el.innerText = err.message; el.classList.remove('hidden'); }
+                showToast("Erro: " + err.message, "error");
+            });
+        };
+
+        window.fazerLoginEmail = (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-senha').value;
+            signInWithEmailAndPassword(auth, email, pass).then(() => {
+                showToast("Login efetuado com sucesso!", "success");
+            }).catch(err => {
+                const el = document.getElementById('login-error');
+                if (el) { el.innerText = err.message; el.classList.remove('hidden'); }
+                showToast("Erro no login: " + err.message, "error");
+            });
+        };
+
+        window.fazerLoginAnonimo = () => {
+            signInAnonymously(auth).then(() => {
+                showToast("Acesso direto ativado!", "success");
+            }).catch(err => {
+                showToast("Erro: " + err.message, "error");
+            });
+        };
+
+        window.fazerLogout = () => {
+            if (confirm("Deseja sair da sua conta?")) {
+                signOut(auth).then(() => {
+                    showToast("Desconectado.", "info");
+                });
+            }
+        };
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('tela-login').classList.add('hidden');
+                if (user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
+                iniciarSincronizacaoRealtime();
+            } else {
+                document.getElementById('tela-login').classList.remove('hidden');
+            }
+        });
+
+        // --- NAVEGAÇÃO DE TELAS ---
+        window.nav = (tela) => {
+            ['painel', 'permanente', 'variavel', 'tarefas', 'novo'].forEach(t => {
+                const el = document.getElementById('tela-' + t);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('tab-nav-' + t);
+                if (btn) {
+                    btn.classList.remove('bg-white', 'text-stone-900', 'shadow-sm');
+                    btn.classList.add('text-white/80');
+                }
+            });
+
+            const targetTela = document.getElementById('tela-' + tela);
+            if (targetTela) targetTela.classList.remove('hidden');
+
+            const targetBtn = document.getElementById('tab-nav-' + tela);
+            if (targetBtn) {
+                targetBtn.classList.add('bg-white', 'text-stone-900', 'shadow-sm');
+                targetBtn.classList.remove('text-white/80');
+            }
+
+            if (tela === 'tarefas') mostrarSubTab('sub-pendentes');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.mostrarSubTab = (sub) => {
+            ['sub-pendentes', 'sub-nova', 'sub-historico'].forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('btn-' + s);
+                if (btn) {
+                    btn.classList.remove('bg-white', 'text-stone-900', 'shadow-sm');
+                    btn.classList.add('text-stone-600');
+                }
+            });
+
+            const target = document.getElementById(sub);
+            if (target) target.classList.remove('hidden');
+            const targetBtn = document.getElementById('btn-' + sub);
+            if (targetBtn) {
+                targetBtn.classList.add('bg-white', 'text-stone-900', 'shadow-sm');
+                targetBtn.classList.remove('text-stone-600');
+            }
+        };
+
+        // --- REALTIME SYNC (FIRESTORE) ---
+        let unsubs = [];
+        function iniciarSincronizacaoRealtime() {
+            // 1. Insumos
+            const unsubInsumos = onSnapshot(collection(db, "insumos"), (snapshot) => {
+                window.insumosLista = [];
+                snapshot.forEach(d => {
+                    window.insumosLista.push({ id: d.id, ...d.data() });
+                });
+                renderizarListasInsumos();
+            }, (err) => console.error("Erro insumos:", err));
+
+            // 2. Atividades
+            const unsubAtividades = onSnapshot(collection(db, "atividades"), (snapshot) => {
+                window.atividadesLista = [];
+                snapshot.forEach(d => {
+                    window.atividadesLista.push({ id: d.id, ...d.data() });
+                });
+                renderizarTarefas();
+            }, (err) => console.error("Erro atividades:", err));
+
+            unsubs = [unsubInsumos, unsubAtividades];
+        }
+
+        window.carregarTudo = (manual = false) => {
+            const icon = document.getElementById('icon-sync');
+            if (icon) icon.classList.add('fa-spin');
+            setTimeout(() => {
+                renderizarListasInsumos();
+                renderizarTarefas();
+                if (icon) icon.classList.remove('fa-spin');
+                if (manual) showToast("Dados sincronizados com o servidor!", "success");
+            }, 600);
+        };
+
+        // --- STATUS DE INSUMO ---
+        function calcularStatusInsumo(q) {
+            if (q <= 2) return 'critico';
+            if (q <= 5) return 'alerta';
+            return 'ok';
+        }
+
+        function formatarDataHora(ts) {
+            if (!ts) return '--';
+            if (ts.toDate) return ts.toDate().toLocaleString('pt-BR');
+            return new Date(ts).toLocaleString('pt-BR');
+        }
+
+        // --- RENDERIZAÇÃO DE INSUMOS ---
+        window.renderizarListasInsumos = () => {
+            const busca = (document.getElementById('busca-insumo').value || '').toUpperCase().trim();
+            
+            const contPainelPerm = document.getElementById('lista-permanente-painel');
+            const contPainelVar = document.getElementById('lista-variavel-painel');
+            const contSozinhaPerm = document.getElementById('lista-permanente-sozinha');
+            const contSozinhaVar = document.getElementById('lista-variavel-sozinha');
+
+            if (contPainelPerm) contPainelPerm.innerHTML = '';
+            if (contPainelVar) contPainelVar.innerHTML = '';
+            if (contSozinhaPerm) contSozinhaPerm.innerHTML = '';
+            if (contSozinhaVar) contSozinhaVar.innerHTML = '';
+
+            let criticosQtd = 0, alertasQtd = 0, okQtd = 0;
+            let permQtd = 0, varQtd = 0;
+
+            let itens = [...window.insumosLista];
+            // Ordenar por nome
+            itens.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+            if (busca) {
+                itens = itens.filter(i => (i.nome || '').toUpperCase().includes(busca));
+            }
+
+            itens.forEach(item => {
+                const isPerm = item.categoria === 'permanente';
+                const qtd = item.quantidade || 0;
+                const status = calcularStatusInsumo(qtd);
+
+                if (isPerm) {
+                    permQtd++;
+                    if (status === 'critico') criticosQtd++;
+                    else if (status === 'alerta') alertasQtd++;
+                    else okQtd++;
+                } else {
+                    varQtd++;
+                }
+
+                // Elemento visual do Card
+                const card = criarCardInsumo(item, isPerm, status);
+
+                if (isPerm) {
+                    if (contPainelPerm) contPainelPerm.appendChild(card.cloneNode(true));
+                    if (contSozinhaPerm) contSozinhaPerm.appendChild(card);
+                } else {
+                    if (contPainelVar) contPainelVar.appendChild(card.cloneNode(true));
+                    if (contSozinhaVar) contSozinhaVar.appendChild(card);
+                }
+            });
+
+            // Atualiza Contadores
+            document.getElementById('kpi-qtd-critico').innerText = criticosQtd;
+            document.getElementById('kpi-qtd-alerta').innerText = alertasQtd;
+            document.getElementById('kpi-qtd-ok').innerText = okQtd;
+            document.getElementById('cont-perm-painel').innerText = `${permQtd} itens`;
+            document.getElementById('cont-var-painel').innerText = `${varQtd} itens`;
+
+            if (permQtd === 0 && contPainelPerm) {
+                contPainelPerm.innerHTML = '<p class="text-xs text-stone-400 italic p-3 text-center">Nenhum insumo permanente cadastrado.</p>';
+            }
+            if (varQtd === 0 && contPainelVar) {
+                contPainelVar.innerHTML = '<p class="text-xs text-stone-400 italic p-3 text-center">Nenhum insumo variável cadastrado.</p>';
+            }
+        };
+
+        function criarCardInsumo(item, isPerm, status) {
+            const card = document.createElement('div');
+            let borderStyle = 'border-stone-200';
+            let badgeStatus = '';
+
+            if (isPerm) {
+                if (status === 'critico') {
+                    borderStyle = 'border-l-4 border-rose-500 bg-rose-50/20';
+                    badgeStatus = '<span class="text-[9px] bg-rose-100 text-rose-800 font-extrabold px-1.5 py-0.5 rounded">CRÍTICO</span>';
+                } else if (status === 'alerta') {
+                    borderStyle = 'border-l-4 border-amber-500 bg-amber-50/20';
+                    badgeStatus = '<span class="text-[9px] bg-amber-100 text-amber-800 font-extrabold px-1.5 py-0.5 rounded">ALERTA</span>';
+                } else {
+                    borderStyle = 'border-l-4 border-emerald-500 bg-emerald-50/20';
+                    badgeStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded">OK</span>';
+                }
+            }
+
+            const dtTexto = formatarDataHora(item.ultimaAlteracao);
+
+            card.className = `agro-card p-3.5 border ${borderStyle} flex items-center justify-between gap-3`;
+            card.innerHTML = `
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <strong class="text-xs font-black text-stone-900 truncate block">${item.nome}</strong>
+                        ${badgeStatus}
+                    </div>
+                    <span class="text-[10px] text-stone-400 block mt-0.5 font-mono">
+                        <i class="far fa-clock"></i> ${dtTexto}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200">
+                    <button onclick="alterarQtdInsumo('${item.id}', ${item.quantidade || 0}, -1)"
+                        class="w-8 h-8 rounded-lg bg-white active:bg-stone-200 text-stone-800 font-black text-base flex items-center justify-center shadow-sm transition">
+                        -
+                    </button>
+                    <span class="w-8 text-center font-black font-mono text-sm text-stone-900">${item.quantidade || 0}</span>
+                    <button onclick="alterarQtdInsumo('${item.id}', ${item.quantidade || 0}, 1)"
+                        class="w-8 h-8 rounded-lg bg-white active:bg-stone-200 text-stone-800 font-black text-base flex items-center justify-center shadow-sm transition">
+                        +
+                    </button>
+                    <button onclick="excluirInsumo('${item.id}', '${item.nome}')" title="Excluir"
+                        class="w-7 h-7 rounded-lg text-rose-500 hover:bg-rose-50 flex items-center justify-center text-xs ml-1 transition">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        window.alterarQtdInsumo = async (id, atual, delta) => {
+            const nova = Math.max(0, atual + delta);
+            try {
+                await updateDoc(doc(db, "insumos", id), {
+                    quantidade: nova,
+                    ultimaAlteracao: serverTimestamp()
+                });
+            } catch (err) {
+                showToast("Erro ao atualizar: " + err.message, "error");
+            }
+        };
+
+        window.excluirInsumo = async (id, nome) => {
+            if (!confirm(`Excluir permanentemente o insumo "${nome}"?`)) return;
+            try {
+                await deleteDoc(doc(db, "insumos", id));
+                showToast("Insumo excluído.", "info");
+            } catch (err) {
+                showToast("Erro: " + err.message, "error");
+            }
+        };
+
+        window.salvarInsumo = async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('novo-nome-insumo').value.trim();
+            const cat = document.getElementById('novo-categoria-insumo').value;
+            const qtd = parseInt(document.getElementById('novo-qtd-insumo').value) || 0;
+
+            if (!nome) return;
+
+            try {
+                await addDoc(collection(db, "insumos"), {
+                    nome: nome,
+                    categoria: cat,
+                    quantidade: qtd,
+                    ultimaAlteracao: serverTimestamp()
+                });
+                document.getElementById('form-insumo').reset();
+                showToast(`Insumo "${nome}" cadastrado com sucesso!`, "success");
+                nav('painel');
+            } catch (err) {
+                showToast("Erro ao cadastrar: " + err.message, "error");
+            }
+        };
+
+        // --- ATIVIDADES OPERACIONAIS ---
+        window.salvarAtividade = async (e) => {
+            e.preventDefault();
+            const tit = document.getElementById('titulo-atividade').value.trim();
+            const desc = document.getElementById('desc-atividade').value.trim();
+            const pri = document.getElementById('prioridade-atividade').value;
+
+            if (!tit) return;
+
+            try {
+                await addDoc(collection(db, "atividades"), {
+                    titulo: tit,
+                    descricao: desc,
+                    prioridade: pri,
+                    status: 'pendente',
+                    dataCriacao: serverTimestamp(),
+                    usuario: auth.currentUser ? (auth.currentUser.email || 'Usuário') : 'Anônimo'
+                });
+                document.getElementById('form-atividade').reset();
+                showToast("Atividade cadastrada!", "success");
+                mostrarSubTab('sub-pendentes');
+            } catch (err) {
+                showToast("Erro: " + err.message, "error");
+            }
+        };
+
+        window.renderizarTarefas = () => {
+            const contPend = document.getElementById('lista-tarefas-pendentes');
+            const contHist = document.getElementById('lista-tarefas-historico');
+            if (contPend) contPend.innerHTML = '';
+            if (contHist) contHist.innerHTML = '';
+
+            let pendentes = window.atividadesLista.filter(a => a.status === 'pendente');
+            let concluidas = window.atividadesLista.filter(a => a.status === 'concluida');
+
+            // Ordenar pendentes por data
+            pendentes.sort((a, b) => {
+                let dA = a.dataCriacao && a.dataCriacao.toDate ? a.dataCriacao.toDate() : new Date(0);
+                let dB = b.dataCriacao && b.dataCriacao.toDate ? b.dataCriacao.toDate() : new Date(0);
+                return dB - dA;
+            });
+
+            // Ordenar concluídas
+            concluidas.sort((a, b) => {
+                let dA = a.dataConclusao && a.dataConclusao.toDate ? a.dataConclusao.toDate() : new Date(0);
+                let dB = b.dataConclusao && b.dataConclusao.toDate ? b.dataConclusao.toDate() : new Date(0);
+                return dB - dA;
+            });
+
+            document.getElementById('cont-tarefas-pendentes').innerText = `${pendentes.length} tarefas`;
+            document.getElementById('cont-tarefas-historico').innerText = `${concluidas.length} concluídas`;
+
+            if (pendentes.length === 0 && contPend) {
+                contPend.innerHTML = '<p class="text-xs text-stone-400 italic p-6 text-center">Nenhuma atividade pendente no momento! Tudo em dia na fazenda.</p>';
+            } else if (contPend) {
+                pendentes.forEach(a => contPend.appendChild(criarCardTarefa(a, false)));
+            }
+
+            if (concluidas.length === 0 && contHist) {
+                contHist.innerHTML = '<p class="text-xs text-stone-400 italic p-6 text-center">Nenhuma atividade concluída recentemente.</p>';
+            } else if (contHist) {
+                concluidas.slice(0, 25).forEach(a => contHist.appendChild(criarCardTarefa(a, true)));
+            }
+        };
+
+        function criarCardTarefa(data, isHistorico) {
+            const card = document.createElement('div');
+            
+            const mapPri = {
+                urgente: { border: 'border-l-4 border-rose-600 bg-rose-50/30', badge: 'bg-rose-600 text-white', label: 'URGENTE' },
+                importante: { border: 'border-l-4 border-amber-500 bg-amber-50/30', badge: 'bg-amber-500 text-white', label: 'IMPORTANTE' },
+                normal: { border: 'border-l-4 border-sky-500 bg-sky-50/30', badge: 'bg-sky-500 text-white', label: 'NORMAL' },
+                esperar: { border: 'border-l-4 border-stone-400 bg-stone-50', badge: 'bg-stone-400 text-white', label: 'PODE ESPERAR' }
+            };
+
+            const cfg = mapPri[data.prioridade] || mapPri.normal;
+            const dataRef = isHistorico ? data.dataConclusao : data.dataCriacao;
+            const dtTexto = formatarDataHora(dataRef);
+
+            card.className = `agro-card p-4 border ${cfg.border} space-y-2`;
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-2">
+                    <h4 class="font-extrabold text-xs text-stone-900 leading-snug">${data.titulo}</h4>
+                    <span class="text-[9px] ${cfg.badge} font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider flex-shrink-0">${cfg.label}</span>
+                </div>
+
+                ${data.descricao ? `<p class="text-xs text-stone-600">${data.descricao}</p>` : ''}
+
+                <div class="flex items-center justify-between pt-1 border-t border-stone-100 text-[10px] text-stone-400 font-mono">
+                    <span>${isHistorico ? '✅ Concluído em: ' : '📅 Criado em: '}${dtTexto}</span>
+                    
+                    ${!isHistorico ? `
+                        <button onclick="abrirModalConcluirTarefa('${data.id}', '${data.titulo}')"
+                            class="px-2.5 py-1 hero-gradient text-white rounded-lg font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1">
+                            <i class="fas fa-check"></i> Concluir
+                        </button>
+                    ` : ''}
+                </div>
+
+                ${data.observacoes ? `
+                    <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-[11px] text-emerald-900 mt-1">
+                        <strong>Obs:</strong> ${data.observacoes}
+                    </div>
+                ` : ''}
+            `;
+            return card;
+        }
+
+        window.abrirModalConcluirTarefa = (id, titulo) => {
+            document.getElementById('modal-tarefa-id').value = id;
+            document.getElementById('modal-tarefa-titulo').innerText = titulo;
+            document.getElementById('modal-tarefa-obs').value = '';
+            document.getElementById('modal-concluir-tarefa').classList.remove('hidden');
+        };
+
+        window.confirmarConclusaoTarefa = async () => {
+            const id = document.getElementById('modal-tarefa-id').value;
+            const obs = document.getElementById('modal-tarefa-obs').value.trim();
+
+            if (!id) return;
+
+            try {
+                await updateDoc(doc(db, "atividades", id), {
+                    status: 'concluida',
+                    observacoes: obs,
+                    dataConclusao: serverTimestamp()
+                });
+                document.getElementById('modal-concluir-tarefa').classList.add('hidden');
+                showToast("Atividade concluída com sucesso!", "success");
+            } catch (err) {
+                showToast("Erro: " + err.message, "error");
+            }
+        };
+    </script>
+</body>
+</html>
