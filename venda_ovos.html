@@ -493,8 +493,8 @@
              ═══════════════════════════════════════════════════════ -->
         <div id="tela-fidelidade" class="hidden space-y-4 fade-in">
             
-            <!-- Banner de Regras de Fidelidade -->
-            <div class="agro-card p-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white space-y-2 shadow-md">
+            <!-- Banner de Regras de Fidelidade por Embalagem -->
+            <div class="agro-card p-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white space-y-2.5 shadow-md">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">
@@ -502,16 +502,32 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-sm">Programa Fidelidade Caipira</h3>
-                            <p class="text-[11px] text-amber-100">Recompense seus melhores compradores de ovos</p>
+                            <p class="text-[11px] text-amber-100">Fidelidade independente por tipo de embalagem</p>
                         </div>
                     </div>
-                    <button onclick="abrirConfigMetaFidelidade()" class="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-bold text-white flex items-center gap-1 transition">
-                        <i class="fas fa-gear"></i> Meta: <span id="lbl-meta-atual" class="font-mono">10</span>
+                    <button onclick="abrirConfigMetaFidelidade()" class="px-2.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-xs font-bold text-white flex items-center gap-1.5 transition active:scale-95">
+                        <i class="fas fa-sliders"></i> <span>Ajustar Metas</span>
                     </button>
                 </div>
-                <p class="text-xs text-amber-50 font-medium">
-                    A cada <strong id="lbl-meta-texto" class="font-mono">10</strong> cartelas/embalagens compradas, o cliente ganha <strong>1 Brinde Especial</strong>! Ao entregar o brinde, a pontuação atual zera e recomeça o ciclo, ficando arquivado no histórico.
-                </p>
+                
+                <!-- Grid de Metas Ativas -->
+                <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                    <div class="bg-black/15 backdrop-blur-sm rounded-xl p-2 border border-white/10">
+                        <span class="text-[10px] text-amber-100 font-bold uppercase block">Cartela 30</span>
+                        <span class="text-sm font-black font-mono text-white" id="lbl-meta-30-card">30</span>
+                        <span class="text-[9px] text-amber-200 block">para 1 brinde</span>
+                    </div>
+                    <div class="bg-black/15 backdrop-blur-sm rounded-xl p-2 border border-white/10">
+                        <span class="text-[10px] text-amber-100 font-bold uppercase block">Dúzia 12</span>
+                        <span class="text-sm font-black font-mono text-white" id="lbl-meta-12-card">12</span>
+                        <span class="text-[9px] text-amber-200 block">para 1 brinde</span>
+                    </div>
+                    <div class="bg-black/15 backdrop-blur-sm rounded-xl p-2 border border-white/10">
+                        <span class="text-[10px] text-amber-100 font-bold uppercase block">Dezena 10</span>
+                        <span class="text-sm font-black font-mono text-white" id="lbl-meta-10-card">10</span>
+                        <span class="text-[9px] text-amber-200 block">para 1 brinde</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Busca de Clientes -->
@@ -592,16 +608,21 @@
                 <p class="text-xs text-stone-600">
                     Cliente: <strong id="modal-brinde-cliente" class="text-stone-900">--</strong>
                 </p>
+                <div>
+                    <span id="modal-brinde-tipo-badge" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">--</span>
+                </div>
             </div>
 
-            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5 text-xs text-stone-700">
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-xs text-stone-700">
                 <p class="font-bold text-amber-900 flex items-center gap-1.5">
                     <i class="fas fa-check-circle text-amber-600"></i> Meta de Compras Atingida!
                 </p>
                 <p class="text-[11px]">
-                    Ao confirmar a entrega, o contador atual do cliente será <strong>zerado</strong> para iniciar o próximo ciclo de compras, e este brinde ficará arquivado com a data de hoje.
+                    Ao confirmar, o saldo desta categoria será <strong>descontado da meta</strong> para reiniciar o ciclo, e o brinde ficará gravado no histórico perpétuo do cliente.
                 </p>
             </div>
+
+            <input type="hidden" id="modal-brinde-tipo">
 
             <div>
                 <label class="block text-[11px] font-bold text-stone-700 mb-1">Descrição do Brinde Entregue</label>
@@ -662,6 +683,111 @@
                 <div id="hist-lista-brindes" class="space-y-2">
                     <!-- Preenchido via JS -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Configurar Metas de Fidelidade por Embalagem -->
+    <div id="modal-config-metas" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-4 shadow-2xl fade-in border-amber-300">
+            <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-base font-black">
+                        <i class="fas fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-stone-900">Metas de Fidelidade</h3>
+                        <p class="text-[11px] text-stone-500">Configurar regras por embalagem</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-config-metas').classList.add('hidden')" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-stone-600">
+                Defina quantas unidades de cada tipo de embalagem o cliente precisa comprar para ganhar 1 brinde:
+            </p>
+
+            <div class="space-y-3">
+                <!-- Meta 30 -->
+                <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-black text-stone-800 block">Cartela com 30 Ovos</span>
+                        <span class="text-[10px] text-stone-400">Padrão: 30 cartelas</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" min="1" id="cfg-meta-30" value="30" class="w-16 bg-white border border-stone-300 rounded-lg p-1.5 text-xs font-black text-center text-amber-900 font-mono">
+                        <span class="text-[11px] font-bold text-stone-500">unid.</span>
+                    </div>
+                </div>
+
+                <!-- Meta 12 -->
+                <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-black text-stone-800 block">Dúzia (12 Ovos)</span>
+                        <span class="text-[10px] text-stone-400">Padrão: 12 dúzias</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" min="1" id="cfg-meta-12" value="12" class="w-16 bg-white border border-stone-300 rounded-lg p-1.5 text-xs font-black text-center text-amber-900 font-mono">
+                        <span class="text-[11px] font-bold text-stone-500">unid.</span>
+                    </div>
+                </div>
+
+                <!-- Meta 10 -->
+                <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-black text-stone-800 block">Dezena (10 Ovos)</span>
+                        <span class="text-[10px] text-stone-400">Padrão: 10 dezenas</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" min="1" id="cfg-meta-10" value="10" class="w-16 bg-white border border-stone-300 rounded-lg p-1.5 text-xs font-black text-center text-amber-900 font-mono">
+                        <span class="text-[11px] font-bold text-stone-500">unid.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="document.getElementById('modal-config-metas').classList.add('hidden')" class="w-1/3 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-xl">
+                    Cancelar
+                </button>
+                <button onclick="salvarConfigMetasFidelidade()" class="w-2/3 py-2.5 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-check"></i> Salvar Metas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Ajustar Saldo Manual de Fidelidade -->
+    <div id="modal-ajustar-saldo-manual" class="hidden fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="agro-card p-5 max-w-sm w-full space-y-4 shadow-2xl fade-in">
+            <div class="flex items-center justify-between pb-2 border-b border-stone-100">
+                <h3 class="font-extrabold text-sm text-stone-900">Ajustar Saldo de Fidelidade</h3>
+                <button onclick="document.getElementById('modal-ajustar-saldo-manual').classList.add('hidden')" class="w-8 h-8 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p class="text-xs text-stone-600">Cliente: <strong id="ajuste-saldo-cliente-nome" class="text-stone-900">--</strong></p>
+            <input type="hidden" id="ajuste-saldo-cliente-id">
+
+            <div class="space-y-2.5">
+                <div>
+                    <label class="block text-[11px] font-bold text-stone-600 mb-1">Saldo Atual: Cartela 30</label>
+                    <input type="number" min="0" id="ajuste-saldo-30" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2 text-xs font-bold text-stone-800">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-stone-600 mb-1">Saldo Atual: Dúzia 12</label>
+                    <input type="number" min="0" id="ajuste-saldo-12" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2 text-xs font-bold text-stone-800">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-stone-600 mb-1">Saldo Atual: Dezena 10</label>
+                    <input type="number" min="0" id="ajuste-saldo-10" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2 text-xs font-bold text-stone-800">
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="document.getElementById('modal-ajustar-saldo-manual').classList.add('hidden')" class="w-1/3 py-2.5 bg-stone-100 text-stone-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button onclick="salvarAjusteSaldoManual()" class="w-2/3 py-2.5 hero-gradient text-white font-extrabold text-xs rounded-xl shadow-md">Salvar Saldo</button>
             </div>
         </div>
     </div>
@@ -733,13 +859,14 @@
         const appId = firebaseConfig.projectId || "fazendawm-83f34";
         const PATH_VENDAS = `artifacts/${appId}/public/data/egg_sales`;
         const PATH_CLIENTES = `artifacts/${appId}/public/data/egg_customers`;
-        const PATH_CONFIG = `artifacts/${appId}/public/config_ovos`;
+        const PATH_CONFIG = `artifacts/${appId}/public/data/egg_config`;
 
         window.vendasOvos = [];
         window.clientesFidelidade = [];
-        window.metaFidelidade = 10;
+        window.metasFidelidade = { meta_30: 30, meta_12: 12, meta_10: 10 };
         let chartVendas = null;
         let clienteSelecionadoParaBrinde = null;
+        let tipoBrindeSelecionado = '30';
 
         function showToast(msg, type = "info") {
             const colors = { success: "#064e3b", error: "#dc2626", info: "#b45309" };
@@ -898,15 +1025,26 @@
             if (icon) icon.classList.add('fa-spin');
 
             try {
-                // 1. Carregar Configuração de Meta
+                // 1. Carregar Configuração de Metas por Embalagem
                 try {
                     const cfgDoc = await getDoc(doc(db, PATH_CONFIG, "geral"));
                     if (cfgDoc.exists()) {
-                        window.metaFidelidade = cfgDoc.data().meta || 10;
+                        const d = cfgDoc.data();
+                        window.metasFidelidade = {
+                            meta_30: d.meta_30 || d.meta || 30,
+                            meta_12: d.meta_12 || 12,
+                            meta_10: d.meta_10 || 10
+                        };
                     }
-                } catch(e){}
-                document.getElementById('lbl-meta-atual').innerText = window.metaFidelidade;
-                document.getElementById('lbl-meta-texto').innerText = window.metaFidelidade;
+                } catch(e) {
+                    console.log("Config load info:", e);
+                }
+                const el30 = document.getElementById('lbl-meta-30-card');
+                const el12 = document.getElementById('lbl-meta-12-card');
+                const el10 = document.getElementById('lbl-meta-10-card');
+                if (el30) el30.innerText = window.metasFidelidade.meta_30;
+                if (el12) el12.innerText = window.metasFidelidade.meta_12;
+                if (el10) el10.innerText = window.metasFidelidade.meta_10;
 
                 // 2. Carregar Vendas
                 const snapVendas = await getDocs(query(collection(db, PATH_VENDAS), orderBy("data_entrega", "desc")));
@@ -1244,7 +1382,7 @@
         };
 
         // ═══════════════════════════════════════════════════════
-        // SISTEMA DE FIDELIDADE & BRINDES COM REINÍCIO DE CICLO
+        // SISTEMA DE FIDELIDADE POR EMBALAGEM COM CICLOS INDEPENDENTES
         // ═══════════════════════════════════════════════════════
         window.renderizarClientesFidelidade = () => {
             const busca = (document.getElementById('busca-cliente-fidelidade').value || '').toUpperCase().trim();
@@ -1263,12 +1401,16 @@
                         whatsapp: v.whatsapp || '',
                         totalGasto: 0,
                         totalPedidos: 0,
-                        totalEmbalagens: 0
+                        comprados_30: 0,
+                        comprados_12: 0,
+                        comprados_10: 0
                     };
                 }
                 mapaClientes[chave].totalGasto += (v.valor_total || 0);
                 mapaClientes[chave].totalPedidos += 1;
-                mapaClientes[chave].totalEmbalagens += (v.total_embalagens || (v.qtd_cartela_30 || 0) + (v.qtd_duzia_12 || 0) + (v.qtd_dezena_10 || 0));
+                mapaClientes[chave].comprados_30 += (v.qtd_cartela_30 || 0);
+                mapaClientes[chave].comprados_12 += (v.qtd_duzia_12 || 0);
+                mapaClientes[chave].comprados_10 += (v.qtd_dezena_10 || 0);
                 if (v.whatsapp && !mapaClientes[chave].whatsapp) mapaClientes[chave].whatsapp = v.whatsapp;
             });
 
@@ -1277,117 +1419,243 @@
                 clientesArray = clientesArray.filter(c => c.nome.toUpperCase().includes(busca) || (c.whatsapp && c.whatsapp.includes(busca)));
             }
 
-            // Cruzar com os dados de brindes salvos no Firestore
-            let brindesProntosContador = 0;
+            if (clientesArray.length === 0) {
+                container.innerHTML = `
+                    <div class="agro-card p-8 text-center text-stone-400 space-y-2">
+                        <i class="fas fa-users text-3xl text-stone-300"></i>
+                        <p class="text-xs font-bold text-stone-600">Nenhum cliente cadastrado em vendas ainda.</p>
+                        <p class="text-[11px]">As fichas de fidelidade são criadas automaticamente conforme você registra os pedidos!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let brindesProntosTotal = 0;
 
             clientesArray.forEach(c => {
                 const clienteId = c.nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
                 const docFirestore = window.clientesFidelidade.find(x => x.id === clienteId);
 
                 const historicoBrindes = docFirestore && docFirestore.historico_brindes ? docFirestore.historico_brindes : [];
-                const brindesRecebidosQtd = historicoBrindes.length;
+                const brindesTotalQtd = historicoBrindes.length;
 
-                // Pontos Atuais = Total de Embalagens Compradas - (Brindes Ganhos * Meta)
-                // Se o usuário zerou manualmente ou acumulou:
-                let pontosAtuais = docFirestore && docFirestore.pontos_atuais !== undefined 
-                    ? docFirestore.pontos_atuais 
-                    : Math.max(0, c.totalEmbalagens - (brindesRecebidosQtd * window.metaFidelidade));
+                // Quantidade de brindes já entregues de cada categoria
+                const brindes_30 = historicoBrindes.filter(b => b.tipo === '30' || (!b.tipo && b.brinde && b.brinde.includes('30'))).length;
+                const brindes_12 = historicoBrindes.filter(b => b.tipo === '12' || (!b.tipo && b.brinde && b.brinde.includes('12'))).length;
+                const brindes_10 = historicoBrindes.filter(b => b.tipo === '10' || (!b.tipo && b.brinde && b.brinde.includes('10'))).length;
 
-                const meta = window.metaFidelidade;
-                const podeResgatar = pontosAtuais >= meta;
-                if (podeResgatar) brindesProntosContador++;
+                const meta30 = window.metasFidelidade.meta_30 || 30;
+                const meta12 = window.metasFidelidade.meta_12 || 12;
+                const meta10 = window.metasFidelidade.meta_10 || 10;
 
-                const pct = Math.min(100, Math.round((pontosAtuais / meta) * 100));
+                // Saldo atual de cada categoria
+                let saldo30 = (docFirestore && docFirestore.saldo_30 !== undefined)
+                    ? docFirestore.saldo_30
+                    : Math.max(0, c.comprados_30 - (brindes_30 * meta30));
 
-                const card = document.createElement('div');
-                card.className = `agro-card p-4 border ${podeResgatar ? 'border-amber-400 bg-amber-50/40 shadow-md ring-1 ring-amber-300' : 'border-stone-200'} space-y-3`;
+                let saldo12 = (docFirestore && docFirestore.saldo_12 !== undefined)
+                    ? docFirestore.saldo_12
+                    : Math.max(0, c.comprados_12 - (brindes_12 * meta12));
 
-                // Gera os selos de ovos da fidelidade
-                let selosHtml = '';
-                for (let i = 1; i <= meta; i++) {
-                    if (i <= pontosAtuais) {
-                        selosHtml += `<div class="stamp-circle bg-amber-500 text-white shadow-sm" title="Compra #${i}">🥚</div>`;
-                    } else {
-                        selosHtml += `<div class="stamp-circle bg-stone-100 text-stone-300 border border-stone-200" title="Meta #${i}">${i}</div>`;
+                let saldo10 = (docFirestore && docFirestore.saldo_10 !== undefined)
+                    ? docFirestore.saldo_10
+                    : Math.max(0, c.comprados_10 - (brindes_10 * meta10));
+
+                const pronto30 = saldo30 >= meta30;
+                const pronto12 = saldo12 >= meta12;
+                const pronto10 = saldo10 >= meta10;
+                const temBrindePronto = pronto30 || pronto12 || pronto10;
+
+                if (temBrindePronto) brindesProntosTotal++;
+
+                // Helper para gerar selinhos
+                function gerarSelosHtml(saldo, meta, icone = '🥚') {
+                    const maxSelos = Math.min(meta, 30);
+                    let html = '';
+                    for (let i = 1; i <= maxSelos; i++) {
+                        if (i <= saldo) {
+                            html += `<div class="stamp-circle bg-amber-500 text-white shadow-sm" title="Compra #${i}">${icone}</div>`;
+                        } else {
+                            html += `<div class="stamp-circle bg-stone-100 text-stone-300 border border-stone-200" title="Meta #${i}">${i}</div>`;
+                        }
                     }
+                    return html;
                 }
 
+                const pct30 = Math.min(100, Math.round((saldo30 / meta30) * 100));
+                const pct12 = Math.min(100, Math.round((saldo12 / meta12) * 100));
+                const pct10 = Math.min(100, Math.round((saldo10 / meta10) * 100));
+
+                const card = document.createElement('div');
+                card.className = `agro-card p-4 border ${temBrindePronto ? 'border-amber-400 bg-amber-50/30 shadow-md ring-1 ring-amber-300' : 'border-stone-200'} space-y-3.5`;
+
                 card.innerHTML = `
+                    <!-- Topo do Card: Nome e Totais -->
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-10 h-10 rounded-xl ${podeResgatar ? 'bg-amber-500 text-white' : 'bg-stone-100 text-stone-700'} flex items-center justify-center text-lg font-black shadow-inner">
+                            <div class="w-10 h-10 rounded-xl ${temBrindePronto ? 'bg-amber-500 text-white' : 'bg-stone-100 text-stone-700'} flex items-center justify-center text-lg font-black shadow-inner">
                                 <i class="fas fa-user-check"></i>
                             </div>
                             <div>
                                 <h4 class="font-black text-sm text-stone-900">${c.nome}</h4>
                                 <div class="flex items-center gap-2 text-stone-400 text-[11px]">
-                                    <span>${c.totalPedidos} compras</span>
+                                    <span>${c.totalPedidos} pedido(s)</span>
                                     <span>•</span>
                                     <span class="font-mono text-emerald-800 font-bold">${formatBRL(c.totalGasto)}</span>
+                                    ${c.whatsapp ? `<span>•</span><span><i class="fab fa-whatsapp text-emerald-600"></i> ${c.whatsapp}</span>` : ''}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="text-right">
-                            ${podeResgatar 
-                                ? '<span class="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse"><i class="fas fa-gift"></i> Brinde Pronto</span>' 
-                                : `<span class="text-xs font-black text-stone-700 font-mono">${pontosAtuais}/${meta}</span>`}
+                        <div>
+                            ${temBrindePronto 
+                                ? '<span class="text-[10px] bg-amber-500 text-white px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse flex items-center gap-1"><i class="fas fa-gift"></i> Brinde Pronto</span>' 
+                                : '<span class="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-bold">Em andamento</span>'}
                         </div>
                     </div>
 
-                    <!-- Cartão de Selos Visuais -->
-                    <div class="space-y-1.5 p-2.5 bg-white rounded-xl border border-stone-200">
-                        <div class="flex items-center justify-between text-[11px] font-bold text-stone-600">
-                            <span>Cartão Fidelidade (${pontosAtuais} de ${meta} cartelas)</span>
-                            <span class="text-amber-800">${pct}%</span>
+                    <!-- Grid de Programas de Fidelidade por Embalagem -->
+                    <div class="space-y-2.5">
+
+                        <!-- 1. Cartela de 30 Ovos -->
+                        <div class="p-2.5 bg-white rounded-xl border ${pronto30 ? 'border-amber-400 ring-1 ring-amber-300 bg-amber-50/50' : 'border-stone-200'} space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-extrabold text-stone-800 flex items-center gap-1.5">
+                                    <span class="w-5 h-5 rounded-md bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-black">30</span>
+                                    Cartela com 30 Ovos
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-black ${pronto30 ? 'text-amber-800 font-bold' : 'text-stone-700'}">${saldo30}/${meta30}</span>
+                                    <span class="text-[10px] text-stone-400 font-bold">(${pct30}%)</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: ${pct30}%"></div>
+                            </div>
+                            <div class="flex flex-wrap gap-1 items-center justify-start pt-1">
+                                ${gerarSelosHtml(saldo30, meta30, '🥚')}
+                            </div>
+                            ${pronto30 ? `
+                                <div class="pt-1 flex justify-end">
+                                    <button onclick="abrirModalBrinde('${c.nome}', '30')" class="px-3 py-1.5 amber-gradient text-white rounded-lg font-extrabold text-xs shadow-sm active:scale-95 flex items-center gap-1.5">
+                                        <i class="fas fa-gift"></i> Entregar Brinde (Cartela 30)
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
-                        <div class="flex flex-wrap gap-1.5 items-center justify-start pt-1">
-                            ${selosHtml}
+
+                        <!-- 2. Dúzia (12 Ovos) -->
+                        <div class="p-2.5 bg-white rounded-xl border ${pronto12 ? 'border-amber-400 ring-1 ring-amber-300 bg-amber-50/50' : 'border-stone-200'} space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-extrabold text-stone-800 flex items-center gap-1.5">
+                                    <span class="w-5 h-5 rounded-md bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-black">12</span>
+                                    Dúzia (12 Ovos)
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-black ${pronto12 ? 'text-amber-800 font-bold' : 'text-stone-700'}">${saldo12}/${meta12}</span>
+                                    <span class="text-[10px] text-stone-400 font-bold">(${pct12}%)</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: ${pct12}%"></div>
+                            </div>
+                            <div class="flex flex-wrap gap-1 items-center justify-start pt-1">
+                                ${gerarSelosHtml(saldo12, meta12, '🥚')}
+                            </div>
+                            ${pronto12 ? `
+                                <div class="pt-1 flex justify-end">
+                                    <button onclick="abrirModalBrinde('${c.nome}', '12')" class="px-3 py-1.5 amber-gradient text-white rounded-lg font-extrabold text-xs shadow-sm active:scale-95 flex items-center gap-1.5">
+                                        <i class="fas fa-gift"></i> Entregar Brinde (Dúzia 12)
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
+
+                        <!-- 3. Dezena (10 Ovos) -->
+                        <div class="p-2.5 bg-white rounded-xl border ${pronto10 ? 'border-amber-400 ring-1 ring-amber-300 bg-amber-50/50' : 'border-stone-200'} space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-extrabold text-stone-800 flex items-center gap-1.5">
+                                    <span class="w-5 h-5 rounded-md bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-black">10</span>
+                                    Dezena (10 Ovos)
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-black ${pronto10 ? 'text-amber-800 font-bold' : 'text-stone-700'}">${saldo10}/${meta10}</span>
+                                    <span class="text-[10px] text-stone-400 font-bold">(${pct10}%)</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: ${pct10}%"></div>
+                            </div>
+                            <div class="flex flex-wrap gap-1 items-center justify-start pt-1">
+                                ${gerarSelosHtml(saldo10, meta10, '🥚')}
+                            </div>
+                            ${pronto10 ? `
+                                <div class="pt-1 flex justify-end">
+                                    <button onclick="abrirModalBrinde('${c.nome}', '10')" class="px-3 py-1.5 amber-gradient text-white rounded-lg font-extrabold text-xs shadow-sm active:scale-95 flex items-center gap-1.5">
+                                        <i class="fas fa-gift"></i> Entregar Brinde (Dezena 10)
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+
                     </div>
 
-                    <!-- Ações de Fidelidade -->
-                    <div class="flex items-center justify-between gap-2 pt-1">
-                        <button onclick="abrirHistoricoCliente('${c.nome}', '${c.whatsapp}', ${c.totalGasto}, ${c.totalPedidos}, ${brindesRecebidosQtd})"
+                    <!-- Rodapé do Card: Ações -->
+                    <div class="flex items-center justify-between pt-1 border-t border-stone-100 text-xs">
+                        <button onclick="abrirHistoricoCliente('${c.nome}', '${c.whatsapp}', ${c.totalGasto}, ${c.totalPedidos}, ${brindesTotalQtd})"
                             class="text-[11px] text-stone-500 hover:text-stone-800 font-bold flex items-center gap-1 transition">
-                            <i class="fas fa-history"></i> Ver Histórico (${brindesRecebidosQtd} brindes ganhos)
+                            <i class="fas fa-history text-amber-700"></i> Histórico (${brindesTotalQtd} brindes)
                         </button>
 
-                        ${podeResgatar ? `
-                            <button onclick="abrirModalBrinde('${c.nome}')"
-                                class="px-3.5 py-1.5 amber-gradient text-white rounded-xl font-extrabold text-xs shadow-md transition active:scale-95 flex items-center gap-1.5">
-                                <i class="fas fa-gift"></i> Entregar Brinde
-                            </button>
-                        ` : `
-                            <button onclick="ajustarPontosManual('${c.nome}', ${pontosAtuais})" class="text-[11px] text-stone-400 hover:text-stone-600 font-semibold underline">
-                                Ajustar Saldo
-                            </button>
-                        `}
+                        <button onclick="abrirModalAjusteManual('${c.nome}', ${saldo30}, ${saldo12}, ${saldo10})" class="text-[11px] text-stone-400 hover:text-stone-700 font-medium underline">
+                            Ajustar Saldos
+                        </button>
                     </div>
                 `;
                 container.appendChild(card);
             });
 
             const badgeBrindes = document.getElementById('badge-brindes-prontos');
-            if (brindesProntosContador > 0) {
-                badgeBrindes.innerText = brindesProntosContador;
-                badgeBrindes.classList.remove('hidden');
-            } else {
-                badgeBrindes.classList.add('hidden');
+            if (badgeBrindes) {
+                if (brindesProntosTotal > 0) {
+                    badgeBrindes.innerText = brindesProntosTotal;
+                    badgeBrindes.classList.remove('hidden');
+                } else {
+                    badgeBrindes.classList.add('hidden');
+                }
             }
         };
 
-        // Abrir Modal de Entrega de Brinde
-        window.abrirModalBrinde = (nomeCliente) => {
+        // Abrir Modal de Entrega de Brinde por Embalagem
+        window.abrirModalBrinde = (nomeCliente, tipoEmbalagem = '30') => {
             clienteSelecionadoParaBrinde = nomeCliente;
+            tipoBrindeSelecionado = tipoEmbalagem;
+
             document.getElementById('modal-brinde-cliente').innerText = nomeCliente;
+            document.getElementById('modal-brinde-tipo').value = tipoEmbalagem;
+
+            const labelBadge = document.getElementById('modal-brinde-tipo-badge');
+            const inputDesc = document.getElementById('modal-brinde-desc');
+
+            if (tipoEmbalagem === '30') {
+                labelBadge.innerText = '🥚 Fidelidade Cartela 30 Ovos';
+                inputDesc.value = '1 Cartela Grátis de 30 Ovos Caipiras';
+            } else if (tipoEmbalagem === '12') {
+                labelBadge.innerText = '🥚 Fidelidade Dúzia 12 Ovos';
+                inputDesc.value = '1 Dúzia Grátis (12 Ovos Caipiras)';
+            } else {
+                labelBadge.innerText = '🥚 Fidelidade Dezena 10 Ovos';
+                inputDesc.value = '1 Embalagem Grátis de 10 Ovos Caipiras';
+            }
+
             document.getElementById('modal-entregar-brinde').classList.remove('hidden');
         };
 
         window.confirmarEntregaBrinde = async () => {
-            if (!clienteSelecionadoParaBrinde) return;
+            if (!clienteSelecionadoParaBrinde || !tipoBrindeSelecionado) return;
             const nome = clienteSelecionadoParaBrinde;
-            const desc = document.getElementById('modal-brinde-desc').value.trim() || '1 Cartela de Ovos Caipiras';
+            const tipo = tipoBrindeSelecionado;
+            const desc = document.getElementById('modal-brinde-desc').value.trim() || `1 Brinde de Ovos (${tipo} unid.)`;
             const clienteId = nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
 
             try {
@@ -1395,32 +1663,50 @@
                 const docSnap = await getDoc(docRef);
 
                 let historicoBrindes = [];
-                let pontosAtuais = 0;
+                let saldo30 = undefined, saldo12 = undefined, saldo10 = undefined;
 
                 if (docSnap.exists()) {
                     const d = docSnap.data();
                     historicoBrindes = d.historico_brindes || [];
-                    pontosAtuais = d.pontos_atuais || 0;
+                    saldo30 = d.saldo_30;
+                    saldo12 = d.saldo_12;
+                    saldo10 = d.saldo_10;
                 }
 
-                // Subtrai a meta ou zera a contagem para reiniciar o ciclo
-                const novosPontos = Math.max(0, pontosAtuais - window.metaFidelidade);
+                const meta = window.metasFidelidade['meta_' + tipo] || (tipo === '30' ? 30 : tipo === '12' ? 12 : 10);
+
+                // Desconta meta do saldo específico
+                if (tipo === '30') {
+                    const atual = saldo30 !== undefined ? saldo30 : meta;
+                    saldo30 = Math.max(0, atual - meta);
+                } else if (tipo === '12') {
+                    const atual = saldo12 !== undefined ? saldo12 : meta;
+                    saldo12 = Math.max(0, atual - meta);
+                } else if (tipo === '10') {
+                    const atual = saldo10 !== undefined ? saldo10 : meta;
+                    saldo10 = Math.max(0, atual - meta);
+                }
 
                 historicoBrindes.push({
+                    tipo: tipo,
                     data: new Date().toISOString().split('T')[0],
                     brinde: desc,
-                    ciclo: historicoBrindes.length + 1
+                    ciclo: historicoBrindes.filter(b => b.tipo === tipo).length + 1
                 });
 
-                await setDoc(docRef, {
+                const updateData = {
                     nome: nome,
-                    pontos_atuais: novosPontos,
                     historico_brindes: historicoBrindes,
                     updated_at: new Date()
-                }, { merge: true });
+                };
+                if (saldo30 !== undefined) updateData.saldo_30 = saldo30;
+                if (saldo12 !== undefined) updateData.saldo_12 = saldo12;
+                if (saldo10 !== undefined) updateData.saldo_10 = saldo10;
+
+                await setDoc(docRef, updateData, { merge: true });
 
                 document.getElementById('modal-entregar-brinde').classList.add('hidden');
-                showToast(`🎉 Brinde entregue com sucesso para ${nome}! Ciclo reiniciado.`, "success");
+                showToast(`🎉 Brinde (${desc}) entregue com sucesso para ${nome}!`, "success");
                 carregarOvosCompleto();
             } catch (e) {
                 showToast("Erro: " + e.message, "error");
@@ -1442,16 +1728,21 @@
 
             listaBrindes.innerHTML = '';
             if (docSnap.exists() && docSnap.data().historico_brindes && docSnap.data().historico_brindes.length > 0) {
-                docSnap.data().historico_brindes.reverse().forEach((b, idx) => {
+                const brindes = [...docSnap.data().historico_brindes].reverse();
+                brindes.forEach((b, idx) => {
+                    const rotuloTipo = b.tipo === '30' ? 'Cartela 30' : b.tipo === '12' ? 'Dúzia 12' : b.tipo === '10' ? 'Dezena 10' : 'Ovos';
                     listaBrindes.innerHTML += `
                         <div class="p-2.5 bg-amber-50/60 rounded-xl border border-amber-200 flex items-center justify-between text-xs">
-                            <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs">
-                                    #${b.ciclo || (idx + 1)}
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center font-black text-xs">
+                                    ${b.tipo || '🎁'}
                                 </div>
                                 <div>
-                                    <strong class="text-stone-800">${b.brinde}</strong>
-                                    <span class="block text-[10px] text-stone-500 font-mono">Entregue em: ${formatarDataBr(b.data)}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <strong class="text-stone-800">${b.brinde}</strong>
+                                        <span class="text-[9px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded">${rotuloTipo}</span>
+                                    </div>
+                                    <span class="block text-[10px] text-stone-500 font-mono">Entregue em: ${formatarDataBr(b.data)} • Ciclo #${b.ciclo || (brindes.length - idx)}</span>
                                 </div>
                             </div>
                             <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">Entregue</span>
@@ -1465,38 +1756,72 @@
             document.getElementById('modal-historico-brindes-cliente').classList.remove('hidden');
         };
 
-        window.ajustarPontosManual = async (nome, pontosAtuais) => {
-            const novo = prompt(`Ajustar saldo de cartelas acumuladas para ${nome}:`, pontosAtuais);
-            if (novo === null) return;
-            const val = parseInt(novo) || 0;
+        window.abrirModalAjusteManual = (nome, s30, s12, s10) => {
+            document.getElementById('ajuste-saldo-cliente-nome').innerText = nome;
+            document.getElementById('ajuste-saldo-cliente-id').value = nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+            document.getElementById('ajuste-saldo-30').value = s30;
+            document.getElementById('ajuste-saldo-12').value = s12;
+            document.getElementById('ajuste-saldo-10').value = s10;
+            document.getElementById('modal-ajustar-saldo-manual').classList.remove('hidden');
+        };
 
-            const clienteId = nome.toUpperCase().trim().replace(/[^A-Z0-9]/g, '_');
+        window.salvarAjusteSaldoManual = async () => {
+            const clienteId = document.getElementById('ajuste-saldo-cliente-id').value;
+            const nome = document.getElementById('ajuste-saldo-cliente-nome').innerText;
+            const s30 = parseInt(document.getElementById('ajuste-saldo-30').value) || 0;
+            const s12 = parseInt(document.getElementById('ajuste-saldo-12').value) || 0;
+            const s10 = parseInt(document.getElementById('ajuste-saldo-10').value) || 0;
+
             try {
                 await setDoc(doc(db, PATH_CLIENTES, clienteId), {
                     nome: nome,
-                    pontos_atuais: val,
+                    saldo_30: s30,
+                    saldo_12: s12,
+                    saldo_10: s10,
                     updated_at: new Date()
                 }, { merge: true });
-                showToast("Saldo de fidelidade ajustado!", "info");
+
+                document.getElementById('modal-ajustar-saldo-manual').classList.add('hidden');
+                showToast("Saldos de fidelidade atualizados!", "info");
                 carregarOvosCompleto();
             } catch (e) {
-                showToast(e.message, "error");
+                showToast("Erro: " + e.message, "error");
             }
         };
 
-        window.abrirConfigMetaFidelidade = async () => {
-            const novaMeta = prompt("Digite a nova meta de cartelas para ganhar 1 brinde (ex: 10):", window.metaFidelidade);
-            if (!novaMeta) return;
-            const val = parseInt(novaMeta) || 10;
+        window.abrirConfigMetaFidelidade = () => {
+            document.getElementById('cfg-meta-30').value = window.metasFidelidade.meta_30 || 30;
+            document.getElementById('cfg-meta-12').value = window.metasFidelidade.meta_12 || 12;
+            document.getElementById('cfg-meta-10').value = window.metasFidelidade.meta_10 || 10;
+            document.getElementById('modal-config-metas').classList.remove('hidden');
+        };
+
+        window.salvarConfigMetasFidelidade = async () => {
+            const m30 = parseInt(document.getElementById('cfg-meta-30').value) || 30;
+            const m12 = parseInt(document.getElementById('cfg-meta-12').value) || 12;
+            const m10 = parseInt(document.getElementById('cfg-meta-10').value) || 10;
+
             try {
-                await setDoc(doc(db, PATH_CONFIG, "geral"), { meta: val }, { merge: true });
-                window.metaFidelidade = val;
-                document.getElementById('lbl-meta-atual').innerText = val;
-                document.getElementById('lbl-meta-texto').innerText = val;
-                showToast(`Meta de fidelidade atualizada para ${val} cartelas!`, "success");
+                await setDoc(doc(db, PATH_CONFIG, "geral"), {
+                    meta_30: m30,
+                    meta_12: m12,
+                    meta_10: m10,
+                    updated_at: new Date()
+                }, { merge: true });
+
+                window.metasFidelidade = { meta_30: m30, meta_12: m12, meta_10: m10 };
+                const el30 = document.getElementById('lbl-meta-30-card');
+                const el12 = document.getElementById('lbl-meta-12-card');
+                const el10 = document.getElementById('lbl-meta-10-card');
+                if (el30) el30.innerText = m30;
+                if (el12) el12.innerText = m12;
+                if (el10) el10.innerText = m10;
+
+                document.getElementById('modal-config-metas').classList.add('hidden');
+                showToast("Metas de fidelidade atualizadas com sucesso!", "success");
                 renderizarClientesFidelidade();
             } catch (e) {
-                showToast("Erro: " + e.message, "error");
+                showToast("Erro ao salvar metas: " + e.message, "error");
             }
         };
 
