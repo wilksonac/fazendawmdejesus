@@ -782,44 +782,35 @@
 
                 registros.sort((a, b) => b.Data - a.Data);
 
-                const hojeStr = new Date().toISOString().split('T')[0];
-                const mesAtual = new Date().getMonth();
-                const anoAtual = new Date().getFullYear();
+                const agora = new Date();
+                const hojeAno = agora.getFullYear();
+                const hojeMes = agora.getMonth();
+                const hojeDia = agora.getDate();
 
                 let leiteHoje = 0;
                 let leiteMes = 0;
                 let diasComProducaoMes = 0;
 
+                // Encontra registro estritamente da data de hoje (fuso local)
                 const registroHoje = registros.find(r => {
-                    const rStr = r.Data.toISOString().split('T')[0];
-                    return rStr === hojeStr;
+                    return r.Data.getFullYear() === hojeAno &&
+                           r.Data.getMonth() === hojeMes &&
+                           r.Data.getDate() === hojeDia;
                 });
 
                 if (registroHoje) {
-                    leiteHoje = registroHoje.Total || (registroHoje.Manha + registroHoje.Tarde);
-                } else if (registros[0]) {
-                    leiteHoje = registros[0].Total || (registros[0].Manha + registros[0].Tarde);
+                    leiteHoje = Number(registroHoje.Total !== undefined ? registroHoje.Total : (registroHoje.Manha + registroHoje.Tarde)) || 0;
+                } else {
+                    leiteHoje = 0; // Se não registrou nada hoje, é exatamente 0.00
                 }
 
                 registros.forEach(r => {
-                    if (r.Data.getMonth() === mesAtual && r.Data.getFullYear() === anoAtual) {
-                        const tot = r.Total || (r.Manha + r.Tarde);
+                    if (r.Data.getMonth() === hojeMes && r.Data.getFullYear() === hojeAno) {
+                        const tot = Number(r.Total !== undefined ? r.Total : (r.Manha + r.Tarde)) || 0;
                         leiteMes += tot;
-                        diasComProducaoMes++;
+                        if (tot > 0) diasComProducaoMes++;
                     }
                 });
-
-                // Se o mês atual ainda não tem coletas, busca o acumulado do mês mais recente
-                if (leiteMes === 0 && registros.length > 0) {
-                    const ultMes = registros[0].Data.getMonth();
-                    const ultAno = registros[0].Data.getFullYear();
-                    registros.forEach(r => {
-                        if (r.Data.getMonth() === ultMes && r.Data.getFullYear() === ultAno) {
-                            leiteMes += (r.Total || (r.Manha + r.Tarde));
-                            diasComProducaoMes++;
-                        }
-                    });
-                }
 
                 const mediaMes = diasComProducaoMes > 0 ? (leiteMes / diasComProducaoMes) : 0;
 
