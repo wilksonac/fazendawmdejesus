@@ -1,6 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <circle cx="256" cy="256" r="256" fill="#3b82f6"/>
-  <path d="M340 192l-20-80h-128l-20 80h168z" fill="#f8fafc"/>
-  <path d="M172 192l10 240c0 26.5 21.5 48 48 48h52c26.5 0 48-21.5 48-48l10-240H172z" fill="white"/>
-  <rect x="172" y="250" width="168" height="40" fill="#bfdbfe"/>
+  <defs>
+    <linearGradient id="agroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="60%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Fundo com cantos arredondados -->
+  <rect width="512" height="512" rx="128" fill="url(#agroGrad)"/>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="12"/>
+  
+  <!-- Espiga de Trigo / Símbolo Agro da Home (wheat-awn) -->
+  <g fill="url(#goldGrad)">
+    <!-- Haste central -->
+    <path d="M256 60 C256 50, 256 400, 256 420" stroke="#fde68a" stroke-width="16" stroke-linecap="round"/>
+    
+    <!-- Grão do Topo -->
+    <path d="M256 48 C240 85 240 120 256 145 C272 120 272 85 256 48 Z"/>
+    
+    <!-- Pares de Grãos -->
+    <!-- Par 1 -->
+    <path d="M252 130 C205 110 160 140 140 185 C185 190 230 165 252 130 Z"/>
+    <path d="M260 130 C307 110 352 140 372 185 C327 190 282 165 260 130 Z"/>
+    
+    <!-- Par 2 -->
+    <path d="M252 205 C195 185 150 215 130 260 C175 265 220 240 252 205 Z"/>
+    <path d="M260 205 C317 185 362 215 382 260 C337 265 292 240 260 205 Z"/>
+    
+    <!-- Par 3 -->
+    <path d="M252 280 C200 260 160 290 140 335 C185 340 225 315 252 280 Z"/>
+    <path d="M260 280 C312 260 352 290 372 335 C327 340 287 315 260 280 Z"/>
+  </g>
+  
+  <!-- Texto WM em Branco/Dourado -->
+  <text x="256" y="465" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="74" fill="#ffffff" text-anchor="middle" letter-spacing="4">WM</text>
 </svg>
