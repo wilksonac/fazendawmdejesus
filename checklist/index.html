@@ -62,6 +62,9 @@
             -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid rgba(231, 229, 228, 0.8);
         }
+        .safe-bottom {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
         .fade-in {
             animation: fadeIn 0.25s ease-out forwards;
         }
@@ -72,7 +75,7 @@
     </style>
 </head>
 
-<body class="min-h-full flex flex-col bg-stone-100 text-stone-800 antialiased select-none pb-36">
+<body class="min-h-screen flex flex-col bg-stone-100 text-stone-800 antialiased select-none pb-28">
 
     <!-- ═══════════════════════════════════════════════════════
          TELA DE AUTENTICAÇÃO / LOGIN
@@ -167,7 +170,7 @@
     <!-- ═══════════════════════════════════════════════════════
          CONTEÚDO PRINCIPAL
          ═══════════════════════════════════════════════════════ -->
-    <main class="max-w-4xl w-full mx-auto p-4 space-y-4 flex-1">
+    <main class="max-w-4xl w-full mx-auto p-4 space-y-4 flex-1 safe-bottom pb-28">
 
         <!-- ═══════════════════════════════════════════════════
              1. ABA: PAINEL GERAL (TODOS OS INSUMOS)
@@ -425,36 +428,43 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
-         BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV)
+         BARRA DE NAVEGAÇÃO INFERIOR FIXA (BOTTOM NAV BAR)
          ═══════════════════════════════════════════════════════ -->
-    <nav class="bottom-nav-blur fixed bottom-0 left-0 right-0 z-40 px-3 py-2 border-t border-stone-200 shadow-lg">
-        <div class="max-w-md mx-auto flex items-center justify-around text-center">
-            
-            <a href="index.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
-                <i class="fas fa-home text-base"></i>
-                <span class="text-[10px] font-bold">Home</span>
-            </a>
-
-            <a href="leite_colaborativo.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
-                <i class="fas fa-fill-drip text-base"></i>
-                <span class="text-[10px] font-bold">Leite</span>
-            </a>
-
-            <a href="venda_ovos.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
-                <i class="fas fa-egg text-base"></i>
-                <span class="text-[10px] font-bold">Ovos</span>
-            </a>
-
-            <a href="checklist.html" class="flex flex-col items-center gap-1 text-emerald-900 font-extrabold transition py-1">
-                <div class="w-8 h-8 rounded-xl hero-gradient text-white flex items-center justify-center shadow-md -mt-3">
-                    <i class="fas fa-clipboard-check text-sm"></i>
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-lg px-2 py-1.5 safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-house"></i>
                 </div>
-                <span class="text-[10px] font-extrabold text-emerald-900">Checklist</span>
+                <span class="text-[10px] mt-1">Início</span>
             </a>
 
-            <a href="despesas.html" class="flex flex-col items-center gap-1 text-stone-400 hover:text-emerald-800 transition py-1">
-                <i class="fas fa-receipt text-base"></i>
-                <span class="text-[10px] font-bold">Despesas</span>
+            <a href="leite_colaborativo.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="text-[10px] mt-1">Leite</span>
+            </a>
+
+            <a href="venda_ovos.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-egg"></i>
+                </div>
+                <span class="text-[10px] mt-1">Ovos</span>
+            </a>
+
+            <a href="checklist.html" class="flex flex-col items-center justify-center w-14 py-1 text-emerald-800 font-bold transition">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-base shadow-sm">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <span class="text-[10px] mt-1">Checklist</span>
+            </a>
+
+            <a href="despesas.html" class="flex flex-col items-center justify-center w-14 py-1 text-stone-500 hover:text-emerald-800 font-medium transition">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <span class="text-[10px] mt-1">Despesas</span>
             </a>
         </div>
     </nav>
