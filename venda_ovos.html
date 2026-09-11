@@ -1194,25 +1194,47 @@
                         </div>
                     </div>
 
-                    <!-- Badges de Status Interativos (1 toque para alternar) -->
-                    <div class="flex flex-wrap gap-2 pt-1 border-t border-stone-100 text-xs">
-                        <button onclick="alternarStatusEntrega('${v.id}', '${v.status_entrega}')"
-                            class="px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${isEntregue ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
-                            <i class="fas ${isEntregue ? 'fa-circle-check text-emerald-700' : 'fa-hourglass-half text-amber-700'}"></i>
-                            <span>${isEntregue ? 'Entregue' : 'Encomendado'}</span>
-                        </button>
+                    <!-- Ações Rápidas do Card de Encomenda -->
+                    <div class="pt-2 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <!-- Botões Rápidos de Status -->
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            ${(!isEntregue || !isPago) ? `
+                                <button onclick="marcarEntregueEPago('${v.id}', '${v.forma_pagamento || 'PIX'}')"
+                                    class="px-3 py-1.5 hero-gradient text-white rounded-xl font-extrabold text-xs shadow-sm hover:brightness-110 active:scale-95 flex items-center gap-1.5 transition"
+                                    title="Marcar como Pago e Entregue em 1 clique">
+                                    <i class="fas fa-check-double"></i>
+                                    <span>Marcar Pago & Entregue</span>
+                                </button>
+                            ` : `
+                                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl font-bold text-xs flex items-center gap-1">
+                                    <i class="fas fa-circle-check text-emerald-700"></i>
+                                    <span>Concluído (Entregue & Pago)</span>
+                                </span>
+                            `}
 
-                        <button onclick="alternarStatusPagamento('${v.id}', '${v.status_pagamento}')"
-                            class="px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${isPago ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
-                            <i class="fas ${isPago ? 'fa-money-bill-wave text-emerald-700' : 'fa-circle-xmark text-rose-600'}"></i>
-                            <span>${isPago ? 'Pago (' + (v.forma_pagamento || 'PIX') + ')' : 'Pendente (Não Pago)'}</span>
-                        </button>
+                            <!-- Alternar Entrega -->
+                            <button onclick="alternarStatusEntrega('${v.id}', '${v.status_entrega}')"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition ${isEntregue ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'}"
+                                title="Alternar status de entrega">
+                                <i class="fas ${isEntregue ? 'fa-check text-emerald-600' : 'fa-truck-fast text-amber-700'}"></i>
+                                <span>${isEntregue ? 'Entregue' : 'Marcar Entregue'}</span>
+                            </button>
 
-                        <div class="ml-auto flex items-center gap-1">
-                            <button onclick="editarPedido('${v.id}')" class="w-7 h-7 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200 flex items-center justify-center text-xs" title="Editar Pedido">
+                            <!-- Alternar Pagamento -->
+                            <button onclick="alternarStatusPagamento('${v.id}', '${v.status_pagamento}')"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition ${isPago ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'}"
+                                title="Alternar status de pagamento">
+                                <i class="fas ${isPago ? 'fa-money-bill text-emerald-600' : 'fa-hand-holding-dollar text-rose-600'}"></i>
+                                <span>${isPago ? 'Pago (' + (v.forma_pagamento || 'PIX') + ')' : 'Marcar Pago'}</span>
+                            </button>
+                        </div>
+
+                        <!-- Botões de Ação Auxiliar: Editar (Lápis) e Excluir (Lixeira) -->
+                        <div class="flex items-center justify-end gap-1.5 self-end sm:self-center">
+                            <button onclick="editarPedido('${v.id}')" class="w-8 h-8 rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200 active:bg-stone-300 flex items-center justify-center text-xs shadow-sm transition" title="Editar Pedido Completo (Lápis)">
                                 <i class="fas fa-pen"></i>
                             </button>
-                            <button onclick="excluirPedido('${v.id}')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center text-xs" title="Excluir">
+                            <button onclick="excluirPedido('${v.id}')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 active:bg-rose-200 flex items-center justify-center text-xs shadow-sm transition" title="Excluir Encomenda">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1222,12 +1244,32 @@
             });
         };
 
-        // Alternar Status
+        // Marcar Pago & Entregue com 1 Toque
+        window.marcarEntregueEPago = async (id, formaAtual = 'PIX') => {
+            try {
+                const hojeStr = new Date().toISOString().split('T')[0];
+                await setDoc(doc(db, PATH_VENDAS, id), {
+                    status_entrega: 'ENTREGUE',
+                    status_pagamento: 'PAGO',
+                    forma_pagamento: formaAtual || 'PIX',
+                    data_pagamento: hojeStr,
+                    data_entrega_efetiva: hojeStr
+                }, { merge: true });
+
+                showToast("✓ Pedido marcado como Entregue e Pago! Pontos creditados na Fidelidade.", "success");
+                carregarOvosCompleto();
+            } catch (e) {
+                console.error("Erro ao marcar entregue e pago:", e);
+                showToast("Erro ao atualizar status: " + e.message, "error");
+            }
+        };
+
+        // Alternar Status Individuais
         window.alternarStatusEntrega = async (id, statusAtual) => {
             const novo = statusAtual === 'ENTREGUE' ? 'ENCOMENDADO' : 'ENTREGUE';
             try {
                 await setDoc(doc(db, PATH_VENDAS, id), { status_entrega: novo }, { merge: true });
-                showToast(`Status atualizado para: ${novo}`, "info");
+                showToast(`Status de entrega atualizado para: ${novo}`, "info");
                 carregarOvosCompleto();
             } catch (e) {
                 showToast("Erro: " + e.message, "error");
@@ -1242,7 +1284,7 @@
                     forma_pagamento: novo === 'PAGO' ? 'PIX' : null,
                     data_pagamento: novo === 'PAGO' ? new Date().toISOString().split('T')[0] : null
                 }, { merge: true });
-                showToast(`Pagamento marcado como: ${novo}`, "info");
+                showToast(`Status de pagamento atualizado para: ${novo}`, "info");
                 carregarOvosCompleto();
             } catch (e) {
                 showToast("Erro: " + e.message, "error");
