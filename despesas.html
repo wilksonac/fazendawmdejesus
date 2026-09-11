@@ -198,14 +198,14 @@
         <!-- Barra de Abas / Segmentos de Navegação -->
         <div class="max-w-4xl mx-auto px-3 pb-2 pt-1">
             <div class="grid grid-cols-4 gap-1.5 p-1 bg-stone-100 rounded-xl text-xs font-semibold">
-                <button id="tab-nav-resumo" onclick="nav('resumo')" class="tab-btn active py-2 rounded-lg text-center transition flex items-center justify-center gap-1.5">
+                <button id="tab-nav-novo" onclick="nav('novo')" class="tab-btn active py-2 rounded-lg text-center transition flex items-center justify-center gap-1.5">
+                    <i class="fas fa-plus-circle text-[11px]"></i> <span>Lançar</span>
+                </button>
+                <button id="tab-nav-resumo" onclick="nav('resumo')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
                     <i class="fas fa-chart-pie text-[11px]"></i> <span>Resumo</span>
                 </button>
                 <button id="tab-nav-despesas" onclick="nav('despesas')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
                     <i class="fas fa-list-check text-[11px]"></i> <span>Extrato</span>
-                </button>
-                <button id="tab-nav-novo" onclick="nav('novo')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5">
-                    <i class="fas fa-plus-circle text-[11px]"></i> <span>Lançar</span>
                 </button>
                 <button id="tab-nav-conciliacao" onclick="nav('conciliacao')" class="tab-btn py-2 rounded-lg text-center text-stone-600 hover:text-stone-900 transition flex items-center justify-center gap-1.5 relative">
                     <i class="fas fa-building-columns text-[11px]"></i> <span>Banco</span>
@@ -223,7 +223,7 @@
         <!-- ═══════════════════════════════════════════════════
              ABA 1: RESUMO & KPIS FINANCEIROS
              ═══════════════════════════════════════════════════ -->
-        <section id="tela-resumo" class="space-y-4 fade-in">
+        <section id="tela-resumo" class="hidden space-y-4 fade-in">
             <!-- Barra de Seleção de Período Rápido -->
             <div class="agro-card p-3 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -418,7 +418,7 @@
         <!-- ═══════════════════════════════════════════════════
              ABA 3: LANÇAR / EDITAR DESPESA (FORMULÁRIO ÁGIL)
              ═══════════════════════════════════════════════════ -->
-        <section id="tela-novo" class="hidden space-y-4 fade-in">
+        <section id="tela-novo" class="space-y-4 fade-in">
             <div class="agro-card p-4 sm:p-5 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-stone-100">
                     <div class="flex items-center gap-2">
@@ -692,6 +692,14 @@
                 popularCategoriasForm();
                 popularFiltrosCategorias();
                 carregarDados();
+
+                // Define como padrão a aba de Lançar Nova Despesa
+                const hash = window.location.hash.replace('#', '');
+                if (hash && ['resumo', 'despesas', 'novo', 'conciliacao'].includes(hash)) {
+                    window.nav(hash);
+                } else {
+                    window.nav('novo');
+                }
             } else {
                 const loginScreen = document.getElementById('tela-login');
                 if (loginScreen) loginScreen.classList.remove('hidden');
