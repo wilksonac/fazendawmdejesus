@@ -241,54 +241,59 @@
              ═══════════════════════════════════════════════════════ -->
         <div id="tela-encomendas" class="space-y-3.5 fade-in">
             
-            <!-- Resumo / Cockpit de Encomendas -->
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                <!-- Total de Ovos Encomendados (Destaque Principal) -->
-                <div class="col-span-2 sm:col-span-1 agro-card p-3 border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100/70 flex flex-col justify-between shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1">
-                            <i class="fas fa-egg text-amber-600"></i> Total de Ovos
+            <!-- Resumo / Cockpit de Encomendas Otimizado -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Card 1: Total de Ovos Encomendados & Valor a Receber -->
+                <div class="agro-card p-3 border-amber-300 bg-gradient-to-r from-amber-50/90 via-amber-50/40 to-emerald-50/40 flex items-center justify-between shadow-sm">
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1">
+                                <i class="fas fa-egg text-amber-600"></i> Total de Ovos
+                            </span>
+                            <span class="text-[9px] font-extrabold text-amber-800 bg-amber-200/80 px-1.5 py-0.5 rounded-full" id="kpi-total-embalagens">0 emb.</span>
+                        </div>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <span class="text-xl sm:text-2xl font-black text-amber-950 font-mono" id="kpi-total-ovos-geral">0</span>
+                            <span class="text-xs text-amber-800 font-bold font-mono">ovos</span>
+                        </div>
+                    </div>
+                    <div class="text-right border-l border-amber-200/70 pl-3">
+                        <span class="text-[10px] font-black uppercase text-emerald-800 tracking-wider flex items-center justify-end gap-1">
+                            <i class="fas fa-hand-holding-dollar text-emerald-600"></i> A Receber
                         </span>
-                        <span class="text-[9px] font-extrabold text-amber-800 bg-amber-200/80 px-1.5 py-0.5 rounded-full" id="kpi-total-embalagens">0 emb.</span>
-                    </div>
-                    <div class="flex items-baseline justify-between mt-1">
-                        <span class="text-xl sm:text-2xl font-black text-amber-950 font-mono" id="kpi-total-ovos-geral">0</span>
-                        <span class="text-[10px] text-amber-800 font-bold font-mono">ovos</span>
+                        <div class="mt-0.5">
+                            <span class="text-base sm:text-lg font-black text-emerald-900 font-mono" id="kpi-valor-pendente">R$ 0,00</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Cartelas 30 -->
-                <div class="agro-card p-3 border-amber-200 bg-amber-50/40 flex flex-col justify-between">
-                    <span class="text-[10px] font-extrabold uppercase text-amber-800 tracking-wider">Cartelas (30)</span>
-                    <div class="flex items-baseline justify-between mt-1">
-                        <span class="text-xl font-black text-amber-950 font-mono" id="kpi-cartelas-30">0</span>
-                        <span class="text-[10px] text-amber-700 font-bold font-mono" id="kpi-ovos-30">0 ovos</span>
+                <!-- Card 2: Distribuição Unificada por Embalagem (30, 12 e 10) -->
+                <div class="agro-card p-2.5 border-stone-200 bg-white flex items-center justify-between shadow-sm divide-x divide-stone-100">
+                    <!-- Cartelas (30) -->
+                    <div class="flex-1 text-center px-1">
+                        <span class="text-[9px] font-extrabold uppercase text-amber-800 tracking-wider block">Cartelas (30)</span>
+                        <div class="flex flex-col items-center justify-center mt-0.5">
+                            <span class="text-base sm:text-lg font-black text-amber-950 font-mono" id="kpi-cartelas-30">0</span>
+                            <span class="text-[9px] text-amber-700 font-bold font-mono" id="kpi-ovos-30">0 ovos</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Dúzias (12) -->
-                <div class="agro-card p-3 border-stone-200 flex flex-col justify-between">
-                    <span class="text-[10px] font-extrabold uppercase text-stone-500 tracking-wider">Dúzias (12)</span>
-                    <div class="flex items-baseline justify-between mt-1">
-                        <span class="text-xl font-black text-stone-800 font-mono" id="kpi-duzias-12">0</span>
-                        <span class="text-[10px] text-stone-500 font-bold font-mono" id="kpi-ovos-12">0 ovos</span>
+                    <!-- Dúzias (12) -->
+                    <div class="flex-1 text-center px-1">
+                        <span class="text-[9px] font-extrabold uppercase text-stone-600 tracking-wider block">Dúzias (12)</span>
+                        <div class="flex flex-col items-center justify-center mt-0.5">
+                            <span class="text-base sm:text-lg font-black text-stone-800 font-mono" id="kpi-duzias-12">0</span>
+                            <span class="text-[9px] text-stone-500 font-bold font-mono" id="kpi-ovos-12">0 ovos</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Dezenas (10) -->
-                <div class="agro-card p-3 border-stone-200 flex flex-col justify-between">
-                    <span class="text-[10px] font-extrabold uppercase text-stone-500 tracking-wider">Dezenas (10)</span>
-                    <div class="flex items-baseline justify-between mt-1">
-                        <span class="text-xl font-black text-stone-800 font-mono" id="kpi-dezenas-10">0</span>
-                        <span class="text-[10px] text-stone-500 font-bold font-mono" id="kpi-ovos-10">0 ovos</span>
-                    </div>
-                </div>
-
-                <!-- Total a Receber -->
-                <div class="col-span-2 sm:col-span-1 agro-card p-3 border-emerald-200 bg-emerald-50/50 flex flex-col justify-between">
-                    <span class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider">A Receber</span>
-                    <div class="mt-1">
-                        <span class="text-base sm:text-lg font-black text-emerald-900 font-mono" id="kpi-valor-pendente">R$ 0,00</span>
+                    <!-- Dezenas (10) -->
+                    <div class="flex-1 text-center px-1">
+                        <span class="text-[9px] font-extrabold uppercase text-stone-600 tracking-wider block">Dezenas (10)</span>
+                        <div class="flex flex-col items-center justify-center mt-0.5">
+                            <span class="text-base sm:text-lg font-black text-stone-800 font-mono" id="kpi-dezenas-10">0</span>
+                            <span class="text-[9px] text-stone-500 font-bold font-mono" id="kpi-ovos-10">0 ovos</span>
+                        </div>
                     </div>
                 </div>
             </div>
