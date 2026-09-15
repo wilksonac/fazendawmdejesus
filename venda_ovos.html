@@ -279,6 +279,80 @@
                 </div>
             </div>
 
+            <!-- Banner Inteligente de Separação por Remessa -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Bloco 1: Entregas Imediatas (Esta Semana + Pendências) -->
+                <div class="agro-card p-3 border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50/80 to-white flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-truck-ramp-box text-amber-600"></i> Entregar Agora (Esta Semana)
+                        </span>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                            <span class="text-base font-black text-stone-900 font-mono" id="kpi-remessa-atual-cartelas">0 cartelas</span>
+                            <span class="text-xs text-stone-500" id="kpi-remessa-atual-pedidos">(0 pedidos)</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black font-mono text-emerald-900 block" id="kpi-remessa-atual-valor">R$ 0,00</span>
+                        <span class="text-[9px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-full" id="lbl-data-remessa-atual">Dom, --</span>
+                    </div>
+                </div>
+
+                <!-- Bloco 2: Agendadas para o Próximo Domingo -->
+                <div class="agro-card p-3 border-l-4 border-l-sky-500 bg-gradient-to-r from-sky-50/80 to-white flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-sky-900 tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-calendar-plus text-sky-600"></i> Próximo Fim de Semana
+                        </span>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                            <span class="text-base font-black text-stone-900 font-mono" id="kpi-remessa-prox-cartelas">0 cartelas</span>
+                            <span class="text-xs text-stone-500" id="kpi-remessa-prox-pedidos">(0 pedidos)</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black font-mono text-stone-700 block" id="kpi-remessa-prox-valor">R$ 0,00</span>
+                        <span class="text-[9px] font-bold text-sky-800 bg-sky-100/80 px-2 py-0.5 rounded-full" id="lbl-data-remessa-prox">Dom, --</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pílulas Rápidas de Navegação Temporal / Remessas -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-bold">
+                <button type="button" onclick="selecionarFiltroRemessa('ATUAL')" id="btn-filtro-remessa-ATUAL"
+                    class="filtro-remessa-btn active px-3 py-2 rounded-xl border border-amber-400 bg-amber-500 text-white shadow-sm flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    <i class="fas fa-truck-ramp-box"></i>
+                    <span>🚚 Entregar Agora</span>
+                    <span class="px-1.5 py-0.2 bg-white/25 text-white rounded-full text-[10px]" id="badge-filtro-atual">0</span>
+                </button>
+
+                <button type="button" onclick="selecionarFiltroRemessa('PROXIMO')" id="btn-filtro-remessa-PROXIMO"
+                    class="filtro-remessa-btn px-3 py-2 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    <i class="fas fa-calendar-plus text-sky-600"></i>
+                    <span>🗓️ Próximo Fim de Semana</span>
+                    <span class="px-1.5 py-0.2 bg-stone-100 text-stone-700 rounded-full text-[10px]" id="badge-filtro-proximo">0</span>
+                </button>
+
+                <button type="button" onclick="selecionarFiltroRemessa('ATRASADO')" id="btn-filtro-remessa-ATRASADO"
+                    class="filtro-remessa-btn hidden px-3 py-2 rounded-xl border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    <i class="fas fa-triangle-exclamation text-rose-600"></i>
+                    <span>⚠️ Pendências Anteriores</span>
+                    <span class="px-1.5 py-0.2 bg-rose-200 text-rose-900 rounded-full text-[10px]" id="badge-filtro-atrasado">0</span>
+                </button>
+
+                <button type="button" onclick="selecionarFiltroRemessa('TODAS')" id="btn-filtro-remessa-TODAS"
+                    class="filtro-remessa-btn px-3 py-2 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    <i class="fas fa-boxes-stacked text-stone-500"></i>
+                    <span>Todas</span>
+                    <span class="px-1.5 py-0.2 bg-stone-100 text-stone-700 rounded-full text-[10px]" id="badge-filtro-todas">0</span>
+                </button>
+
+                <button type="button" onclick="selecionarFiltroRemessa('CONCLUIDAS')" id="btn-filtro-remessa-CONCLUIDAS"
+                    class="filtro-remessa-btn px-3 py-2 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    <i class="fas fa-circle-check text-emerald-600"></i>
+                    <span>Entregues</span>
+                </button>
+            </div>
+
             <!-- Filtros Rápidos da Lista de Encomendas -->
             <div class="agro-card p-3 border border-stone-200 flex flex-col sm:flex-row gap-2 justify-between sm:items-center">
                 <div class="relative flex-1">
@@ -304,8 +378,8 @@
                 </div>
             </div>
 
-            <!-- Lista de Cards de Encomendas -->
-            <div id="lista-encomendas-cards" class="space-y-2.5">
+            <!-- Lista de Cards de Encomendas com Seções Visuais -->
+            <div id="lista-encomendas-cards" class="space-y-3">
                 <!-- Renderizado via JS -->
             </div>
 
@@ -377,13 +451,13 @@
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-1">Data de Entrega Prevista</label>
                         <div class="flex gap-2 mb-1.5">
-                            <button type="button" onclick="definirDataEntrega('sabado')" class="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[11px] font-bold text-amber-900 transition">
-                                <i class="fas fa-calendar-day"></i> Próx. Sábado
+                            <button type="button" onclick="definirDataEntrega('domingo_atual')" id="btn-data-dom-atual" class="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[11px] font-bold text-amber-900 transition">
+                                <i class="fas fa-calendar-day"></i> <span id="txt-btn-dom-atual">Deste Domingo</span>
                             </button>
-                            <button type="button" onclick="definirDataEntrega('domingo')" class="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[11px] font-bold text-amber-900 transition">
-                                <i class="fas fa-calendar-day"></i> Próx. Domingo
+                            <button type="button" onclick="definirDataEntrega('proximo_domingo')" id="btn-data-dom-prox" class="flex-1 py-1.5 px-2 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg text-[11px] font-bold text-sky-900 transition">
+                                <i class="fas fa-calendar-plus"></i> <span id="txt-btn-dom-prox">Próximo Domingo</span>
                             </button>
-                            <button type="button" onclick="definirDataEntrega('hoje')" class="flex-1 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition">
+                            <button type="button" onclick="definirDataEntrega('hoje')" class="w-16 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-[11px] font-bold text-stone-700 transition">
                                 Hoje
                             </button>
                         </div>
@@ -976,24 +1050,103 @@
             if (tela === 'fidelidade') renderizarClientesFidelidade();
         };
 
-        // Helpers de Data
-        window.definirDataEntrega = (tipo) => {
+        // Helpers de Ciclo Semanal e Datas (Domingo a Domingo)
+        function obterDomingosCiclo() {
             const hoje = new Date();
+            const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, 2..6 = Terça..Sábado
+            let domAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+            if (diaSemana === 0) {
+                // Hoje é domingo (remessa deste fim de semana)
+            } else if (diaSemana === 1) {
+                // Segunda-feira (entregas da remessa de ontem ainda ativas)
+                domAtual.setDate(hoje.getDate() - 1);
+            } else {
+                // Terça a Sábado: a remessa chega no próximo domingo
+                domAtual.setDate(hoje.getDate() + (7 - diaSemana));
+            }
+
+            let domProx = new Date(domAtual);
+            domProx.setDate(domAtual.getDate() + 7);
+
+            const formatISO = (d) => {
+                const ano = d.getFullYear();
+                const mes = String(d.getMonth() + 1).padStart(2, '0');
+                const dia = String(d.getDate()).padStart(2, '0');
+                return `${ano}-${mes}-${dia}`;
+            };
+
+            const strDomAtual = formatISO(domAtual);
+            const strDomProx = formatISO(domProx);
+
+            return {
+                domAtual,
+                domProx,
+                strDomAtual,
+                strDomProx,
+                fmtDomAtual: formatarDataBr(strDomAtual),
+                fmtDomProx: formatarDataBr(strDomProx)
+            };
+        }
+
+        function classificarPedidoRemessa(v, ciclo) {
+            if (v.status_entrega === 'ENTREGUE') return 'CONCLUIDAS';
+            if (!v.data_entrega) return 'ATUAL';
+            if (v.data_entrega < ciclo.strDomAtual) return 'ATRASADO';
+            if (v.data_entrega <= ciclo.strDomAtual) return 'ATUAL';
+            return 'PROXIMO';
+        }
+
+        window.filtroRemessaAtivo = 'ATUAL';
+
+        window.selecionarFiltroRemessa = (tipo) => {
+            window.filtroRemessaAtivo = tipo;
+
+            const tipos = ['ATUAL', 'PROXIMO', 'ATRASADO', 'TODAS', 'CONCLUIDAS'];
+            tipos.forEach(t => {
+                const btn = document.getElementById(`btn-filtro-remessa-${t}`);
+                if (!btn) return;
+                if (t === tipo) {
+                    btn.classList.add('active', 'border-amber-400', 'bg-amber-500', 'text-white');
+                    btn.classList.remove('border-stone-200', 'bg-white', 'text-stone-700', 'bg-rose-50', 'text-rose-800');
+                } else {
+                    btn.classList.remove('active', 'border-amber-400', 'bg-amber-500', 'text-white');
+                    if (t === 'ATRASADO') {
+                        btn.classList.add('border-rose-300', 'bg-rose-50', 'text-rose-800');
+                    } else {
+                        btn.classList.add('border-stone-200', 'bg-white', 'text-stone-700');
+                    }
+                }
+            });
+
+            // Sincroniza select de status se for CONCLUIDAS ou se sair dele
+            const fEntrega = document.getElementById('filtro-status-entrega');
+            if (fEntrega) {
+                if (tipo === 'CONCLUIDAS') {
+                    fEntrega.value = 'ENTREGUE';
+                } else if (fEntrega.value === 'ENTREGUE' && tipo !== 'TODAS') {
+                    fEntrega.value = 'ENCOMENDADO';
+                }
+            }
+
+            aplicarFiltrosEncomendas();
+        };
+
+        window.definirDataEntrega = (tipo) => {
+            const ciclo = obterDomingosCiclo();
             const input = document.getElementById('pedido-data-entrega');
-            if (tipo === 'hoje') {
-                input.value = hoje.toISOString().split('T')[0];
-            } else if (tipo === 'sabado') {
-                const diaSemana = hoje.getDay(); // 0 = Domingo, 6 = Sábado
-                const diff = (6 - diaSemana + 7) % 7 || 7;
-                const proxSabado = new Date(hoje);
-                proxSabado.setDate(hoje.getDate() + diff);
-                input.value = proxSabado.toISOString().split('T')[0];
-            } else if (tipo === 'domingo') {
-                const diaSemana = hoje.getDay();
-                const diff = (7 - diaSemana) % 7 || 7;
-                const proxDomingo = new Date(hoje);
-                proxDomingo.setDate(hoje.getDate() + diff);
-                input.value = proxDomingo.toISOString().split('T')[0];
+            if (!input) return;
+
+            if (tipo === 'domingo_atual' || tipo === 'domingo') {
+                input.value = ciclo.strDomAtual;
+            } else if (tipo === 'proximo_domingo') {
+                input.value = ciclo.strDomProx;
+            } else if (tipo === 'hoje') {
+                const hoje = new Date();
+                const ano = hoje.getFullYear();
+                const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+                const dia = String(hoje.getDate()).padStart(2, '0');
+                input.value = `${ano}-${mes}-${dia}`;
             }
         };
 
@@ -1092,8 +1245,22 @@
             }
         };
 
-        // KPIs de Encomendas
+        // KPIs de Encomendas & Agrupamento por Remessas
         function atualizarKPIsEncomendas() {
+            const ciclo = obterDomingosCiclo();
+
+            // Atualiza rótulos de datas no banner inteligente
+            const lblAtual = document.getElementById('lbl-data-remessa-atual');
+            const lblProx = document.getElementById('lbl-data-remessa-prox');
+            if (lblAtual) lblAtual.innerText = `Dom, ${ciclo.fmtDomAtual}`;
+            if (lblProx) lblProx.innerText = `Dom, ${ciclo.fmtDomProx}`;
+
+            // Atualiza botões rápidos de data no formulário
+            const txtBtnDomAtual = document.getElementById('txt-btn-dom-atual');
+            const txtBtnDomProx = document.getElementById('txt-btn-dom-prox');
+            if (txtBtnDomAtual) txtBtnDomAtual.innerText = `Este Dom (${ciclo.fmtDomAtual})`;
+            if (txtBtnDomProx) txtBtnDomProx.innerText = `Próx. Dom (${ciclo.fmtDomProx})`;
+
             const pendentes = window.vendasOvos.filter(v => v.status_entrega === 'ENCOMENDADO');
 
             let cartelas30 = 0;
@@ -1101,15 +1268,40 @@
             let dezenas10 = 0;
             let aReceber = 0;
 
+            let cntAtual = 0, cartelasAtual = 0, valorAtual = 0;
+            let cntProx = 0, cartelasProx = 0, valorProx = 0;
+            let cntAtrasado = 0, cartelasAtrasado = 0, valorAtrasado = 0;
+
             pendentes.forEach(v => {
-                cartelas30 += (v.qtd_cartela_30 || 0);
-                duzias12 += (v.qtd_duzia_12 || 0);
-                dezenas10 += (v.qtd_dezena_10 || 0);
+                const c30 = (v.qtd_cartela_30 || 0);
+                const d12 = (v.qtd_duzia_12 || 0);
+                const d10 = (v.qtd_dezena_10 || 0);
+                const val = (v.valor_total || 0);
+
+                cartelas30 += c30;
+                duzias12 += d12;
+                dezenas10 += d10;
                 if (v.status_pagamento !== 'PAGO') {
-                    aReceber += (v.valor_total || 0);
+                    aReceber += val;
+                }
+
+                const cat = classificarPedidoRemessa(v, ciclo);
+                if (cat === 'ATUAL') {
+                    cntAtual++;
+                    cartelasAtual += c30;
+                    valorAtual += val;
+                } else if (cat === 'PROXIMO') {
+                    cntProx++;
+                    cartelasProx += c30;
+                    valorProx += val;
+                } else if (cat === 'ATRASADO') {
+                    cntAtrasado++;
+                    cartelasAtrasado += c30;
+                    valorAtrasado += val;
                 }
             });
 
+            // KPIs do Topo (Totalizador Geral de Pendências)
             document.getElementById('kpi-cartelas-30').innerText = cartelas30;
             document.getElementById('kpi-ovos-30').innerText = (cartelas30 * 30) + ' ovos';
 
@@ -1121,20 +1313,63 @@
 
             document.getElementById('kpi-valor-pendente').innerText = formatBRL(aReceber);
 
+            // Banner Inteligente (Entregar Agora = Atual + Atrasados se houver)
+            const cartelasImediatas = cartelasAtual + cartelasAtrasado;
+            const pedidosImediatos = cntAtual + cntAtrasado;
+            const valorImediato = valorAtual + valorAtrasado;
+
+            const elRemAtualCartelas = document.getElementById('kpi-remessa-atual-cartelas');
+            const elRemAtualPedidos = document.getElementById('kpi-remessa-atual-pedidos');
+            const elRemAtualValor = document.getElementById('kpi-remessa-atual-valor');
+            if (elRemAtualCartelas) elRemAtualCartelas.innerText = `${cartelasImediatas} cartelas`;
+            if (elRemAtualPedidos) elRemAtualPedidos.innerText = `(${pedidosImediatos} pedidos)`;
+            if (elRemAtualValor) elRemAtualValor.innerText = formatBRL(valorImediato);
+
+            const elRemProxCartelas = document.getElementById('kpi-remessa-prox-cartelas');
+            const elRemProxPedidos = document.getElementById('kpi-remessa-prox-pedidos');
+            const elRemProxValor = document.getElementById('kpi-remessa-prox-valor');
+            if (elRemProxCartelas) elRemProxCartelas.innerText = `${cartelasProx} cartelas`;
+            if (elRemProxPedidos) elRemProxPedidos.innerText = `(${cntProx} pedidos)`;
+            if (elRemProxValor) elRemProxValor.innerText = formatBRL(valorProx);
+
+            // Badges das Pílulas de Navegação
+            const bAtual = document.getElementById('badge-filtro-atual');
+            const bProx = document.getElementById('badge-filtro-proximo');
+            const bAtrasado = document.getElementById('badge-filtro-atrasado');
+            const bTodas = document.getElementById('badge-filtro-todas');
+            const btnAtrasado = document.getElementById('btn-filtro-remessa-ATRASADO');
+
+            if (bAtual) bAtual.innerText = cntAtual + cntAtrasado;
+            if (bProx) bProx.innerText = cntProx;
+            if (bTodas) bTodas.innerText = pendentes.length;
+
+            if (bAtrasado && btnAtrasado) {
+                bAtrasado.innerText = cntAtrasado;
+                if (cntAtrasado > 0) {
+                    btnAtrasado.classList.remove('hidden');
+                } else {
+                    btnAtrasado.classList.add('hidden');
+                }
+            }
+
             const badgeEnc = document.getElementById('badge-total-encomendas');
-            if (pendentes.length > 0) {
-                badgeEnc.innerText = pendentes.length;
-                badgeEnc.classList.remove('hidden');
-            } else {
-                badgeEnc.classList.add('hidden');
+            if (badgeEnc) {
+                if (pendentes.length > 0) {
+                    badgeEnc.innerText = pendentes.length;
+                    badgeEnc.classList.remove('hidden');
+                } else {
+                    badgeEnc.classList.add('hidden');
+                }
             }
         }
 
-        // Renderização da Lista de Encomendas
+        // Renderização da Lista de Encomendas com Separação Visual por Remessa
         window.aplicarFiltrosEncomendas = () => {
+            const ciclo = obterDomingosCiclo();
             const busca = document.getElementById('filtro-busca-encomendas').value.toUpperCase().trim();
             const fEntrega = document.getElementById('filtro-status-entrega').value;
             const fPagamento = document.getElementById('filtro-status-pagamento').value;
+            const fRemessa = window.filtroRemessaAtivo || 'ATUAL';
 
             const listaContainer = document.getElementById('lista-encomendas-cards');
             listaContainer.innerHTML = '';
@@ -1148,7 +1383,22 @@
                 }
                 if (fEntrega !== 'ALL' && v.status_entrega !== fEntrega) return false;
                 if (fPagamento !== 'ALL' && v.status_pagamento !== fPagamento) return false;
-                return true;
+
+                // Filtro por Remessa Selecionada na Pílula
+                const cat = classificarPedidoRemessa(v, ciclo);
+                if (fRemessa === 'ATUAL') {
+                    if (v.status_entrega === 'ENTREGUE') return false;
+                    return cat === 'ATUAL' || cat === 'ATRASADO';
+                } else if (fRemessa === 'PROXIMO') {
+                    if (v.status_entrega === 'ENTREGUE') return false;
+                    return cat === 'PROXIMO';
+                } else if (fRemessa === 'ATRASADO') {
+                    if (v.status_entrega === 'ENTREGUE') return false;
+                    return cat === 'ATRASADO';
+                } else if (fRemessa === 'CONCLUIDAS') {
+                    return v.status_entrega === 'ENTREGUE';
+                }
+                return true; // TODAS
             });
 
             if (filtradas.length === 0) {
@@ -1162,8 +1412,29 @@
                 const card = document.createElement('div');
                 const isEntregue = v.status_entrega === 'ENTREGUE';
                 const isPago = v.status_pagamento === 'PAGO';
+                const cat = classificarPedidoRemessa(v, ciclo);
+                const dataFmt = formatarDataBr(v.data_entrega);
 
-                card.className = `agro-card p-3.5 border ${isEntregue ? 'border-stone-200 bg-white' : 'border-amber-200 bg-amber-50/20'} space-y-2.5`;
+                // Configura estilo e badge visual conforme a remessa
+                let bordaCard = 'border-stone-200 bg-white';
+                let badgeRemessa = '';
+
+                if (isEntregue) {
+                    bordaCard = 'border-stone-200 bg-white';
+                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1"><i class="fas fa-check"></i> Entregue (${dataFmt})</span>`;
+                } else if (cat === 'ATRASADO') {
+                    bordaCard = 'border-l-4 border-l-rose-500 border-rose-200 bg-rose-50/20';
+                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-triangle-exclamation text-rose-600"></i> ⚠️ Remessa Anterior (${dataFmt})</span>`;
+                } else if (cat === 'PROXIMO') {
+                    bordaCard = 'border-l-4 border-l-sky-500 border-sky-200 bg-sky-50/20';
+                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-900 border border-sky-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-calendar-plus text-sky-600"></i> 🗓️ Próx. Remessa (${dataFmt})</span>`;
+                } else {
+                    // ATUAL
+                    bordaCard = 'border-l-4 border-l-amber-500 border-amber-200 bg-amber-50/20';
+                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-truck-ramp-box text-amber-700"></i> 🚚 Esta Semana (${dataFmt})</span>`;
+                }
+
+                card.className = `agro-card p-3.5 border ${bordaCard} space-y-2.5`;
 
                 // Montar texto dos itens
                 let itensArr = [];
@@ -1171,8 +1442,6 @@
                 if (v.qtd_duzia_12 > 0) itensArr.push(`<strong>${v.qtd_duzia_12}x</strong> Dúzia 12`);
                 if (v.qtd_dezena_10 > 0) itensArr.push(`<strong>${v.qtd_dezena_10}x</strong> Dezena 10`);
                 const itensStr = itensArr.join(' + ') || 'Sem itens informados';
-
-                const dataFmt = formatarDataBr(v.data_entrega);
 
                 card.innerHTML = `
                     <div class="flex items-start justify-between gap-2">
@@ -1188,9 +1457,9 @@
                             ${v.obs ? `<p class="text-[11px] text-stone-400 italic">"${v.obs}"</p>` : ''}
                         </div>
 
-                        <div class="text-right">
+                        <div class="text-right flex flex-col items-end">
                             <span class="text-base font-black text-stone-900 font-mono">${formatBRL(v.valor_total)}</span>
-                            <span class="block text-[10px] text-stone-400 font-mono mt-0.5">Entrega: ${dataFmt}</span>
+                            <div class="mt-1">${badgeRemessa}</div>
                         </div>
                     </div>
 
@@ -1528,7 +1797,7 @@
             document.getElementById('titulo-form-pedido').innerText = 'Registrar Nova Encomenda / Venda';
             document.getElementById('btn-salvar-pedido-texto').innerText = 'Salvar Encomenda de Ovos';
             document.getElementById('box-forma-pagamento').classList.add('hidden');
-            definirDataEntrega('sabado');
+            definirDataEntrega('domingo_atual');
             calcularTotalPedido();
         };
 
