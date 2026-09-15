@@ -339,40 +339,26 @@
                 </div>
             </div>
 
-            <!-- Pílulas Rápidas de Navegação Temporal / Remessas -->
+            <!-- Pílulas Rápidas de Navegação / Status -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-bold">
-                <button type="button" onclick="selecionarFiltroRemessa('ATUAL')" id="btn-filtro-remessa-ATUAL"
-                    class="filtro-remessa-btn active px-3 py-2 rounded-xl border border-amber-400 bg-amber-500 text-white shadow-sm flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
-                    <i class="fas fa-truck-ramp-box"></i>
-                    <span>🚚 Entregar Agora</span>
-                    <span class="px-1.5 py-0.2 bg-white/25 text-white rounded-full text-[10px]" id="badge-filtro-atual">0</span>
-                </button>
-
-                <button type="button" onclick="selecionarFiltroRemessa('PROXIMO')" id="btn-filtro-remessa-PROXIMO"
-                    class="filtro-remessa-btn px-3 py-2 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
-                    <i class="fas fa-calendar-plus text-sky-600"></i>
-                    <span>🗓️ Próximo Fim de Semana</span>
-                    <span class="px-1.5 py-0.2 bg-stone-100 text-stone-700 rounded-full text-[10px]" id="badge-filtro-proximo">0</span>
-                </button>
-
-                <button type="button" onclick="selecionarFiltroRemessa('ATRASADO')" id="btn-filtro-remessa-ATRASADO"
-                    class="filtro-remessa-btn hidden px-3 py-2 rounded-xl border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
-                    <i class="fas fa-triangle-exclamation text-rose-600"></i>
-                    <span>⚠️ Pendências Anteriores</span>
-                    <span class="px-1.5 py-0.2 bg-rose-200 text-rose-900 rounded-full text-[10px]" id="badge-filtro-atrasado">0</span>
-                </button>
-
                 <button type="button" onclick="selecionarFiltroRemessa('TODAS')" id="btn-filtro-remessa-TODAS"
-                    class="filtro-remessa-btn px-3 py-2 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    class="filtro-remessa-btn px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95 shadow-sm">
                     <i class="fas fa-boxes-stacked text-stone-500"></i>
-                    <span>Todas</span>
+                    <span>Todas as Encomendas</span>
                     <span class="px-1.5 py-0.2 bg-stone-100 text-stone-700 rounded-full text-[10px]" id="badge-filtro-todas">0</span>
                 </button>
 
                 <button type="button" onclick="selecionarFiltroRemessa('CONCLUIDAS')" id="btn-filtro-remessa-CONCLUIDAS"
-                    class="filtro-remessa-btn px-3 py-2 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95">
+                    class="filtro-remessa-btn px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95 shadow-sm">
                     <i class="fas fa-circle-check text-emerald-600"></i>
                     <span>Entregues</span>
+                </button>
+
+                <button type="button" onclick="selecionarFiltroRemessa('ATRASADO')" id="btn-filtro-remessa-ATRASADO"
+                    class="filtro-remessa-btn hidden px-3 py-1.5 rounded-xl border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 flex items-center gap-1.5 whitespace-nowrap transition active:scale-95 shadow-sm">
+                    <i class="fas fa-triangle-exclamation text-rose-600"></i>
+                    <span>⚠️ Pendências Anteriores</span>
+                    <span class="px-1.5 py-0.2 bg-rose-200 text-rose-900 rounded-full text-[10px]" id="badge-filtro-atrasado">0</span>
                 </button>
             </div>
 
@@ -1127,15 +1113,23 @@
         window.selecionarFiltroRemessa = (tipo) => {
             window.filtroRemessaAtivo = tipo;
 
-            const tipos = ['ATUAL', 'PROXIMO', 'ATRASADO', 'TODAS', 'CONCLUIDAS'];
+            const tipos = ['TODAS', 'CONCLUIDAS', 'ATRASADO'];
             tipos.forEach(t => {
                 const btn = document.getElementById(`btn-filtro-remessa-${t}`);
                 if (!btn) return;
                 if (t === tipo) {
-                    btn.classList.add('active', 'border-amber-400', 'bg-amber-500', 'text-white');
-                    btn.classList.remove('border-stone-200', 'bg-white', 'text-stone-700', 'bg-rose-50', 'text-rose-800');
+                    if (t === 'CONCLUIDAS') {
+                        btn.classList.add('active', 'border-emerald-500', 'bg-emerald-600', 'text-white');
+                        btn.classList.remove('border-stone-200', 'bg-white', 'text-stone-700');
+                    } else if (t === 'ATRASADO') {
+                        btn.classList.add('active', 'border-rose-500', 'bg-rose-600', 'text-white');
+                        btn.classList.remove('border-rose-300', 'bg-rose-50', 'text-rose-800');
+                    } else {
+                        btn.classList.add('active', 'border-stone-400', 'bg-stone-800', 'text-white');
+                        btn.classList.remove('border-stone-200', 'bg-white', 'text-stone-700');
+                    }
                 } else {
-                    btn.classList.remove('active', 'border-amber-400', 'bg-amber-500', 'text-white');
+                    btn.classList.remove('active', 'border-amber-400', 'bg-amber-500', 'border-emerald-500', 'bg-emerald-600', 'border-rose-500', 'bg-rose-600', 'border-stone-400', 'bg-stone-800', 'text-white');
                     if (t === 'ATRASADO') {
                         btn.classList.add('border-rose-300', 'bg-rose-50', 'text-rose-800');
                     } else {
