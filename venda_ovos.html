@@ -242,7 +242,21 @@
         <div id="tela-encomendas" class="space-y-3.5 fade-in">
             
             <!-- Resumo / Cockpit de Encomendas -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                <!-- Total de Ovos Encomendados (Destaque Principal) -->
+                <div class="col-span-2 sm:col-span-1 agro-card p-3 border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100/70 flex flex-col justify-between shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1">
+                            <i class="fas fa-egg text-amber-600"></i> Total de Ovos
+                        </span>
+                        <span class="text-[9px] font-extrabold text-amber-800 bg-amber-200/80 px-1.5 py-0.5 rounded-full" id="kpi-total-embalagens">0 emb.</span>
+                    </div>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-xl sm:text-2xl font-black text-amber-950 font-mono" id="kpi-total-ovos-geral">0</span>
+                        <span class="text-[10px] text-amber-800 font-bold font-mono">ovos</span>
+                    </div>
+                </div>
+
                 <!-- Cartelas 30 -->
                 <div class="agro-card p-3 border-amber-200 bg-amber-50/40 flex flex-col justify-between">
                     <span class="text-[10px] font-extrabold uppercase text-amber-800 tracking-wider">Cartelas (30)</span>
@@ -271,7 +285,7 @@
                 </div>
 
                 <!-- Total a Receber -->
-                <div class="agro-card p-3 border-emerald-200 bg-emerald-50/50 flex flex-col justify-between">
+                <div class="col-span-2 sm:col-span-1 agro-card p-3 border-emerald-200 bg-emerald-50/50 flex flex-col justify-between">
                     <span class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider">A Receber</span>
                     <div class="mt-1">
                         <span class="text-base sm:text-lg font-black text-emerald-900 font-mono" id="kpi-valor-pendente">R$ 0,00</span>
@@ -1302,6 +1316,14 @@
             });
 
             // KPIs do Topo (Totalizador Geral de Pendências)
+            const totalOvosGeral = (cartelas30 * 30) + (duzias12 * 12) + (dezenas10 * 10);
+            const totalEmbalagensGeral = cartelas30 + duzias12 + dezenas10;
+
+            const elTotalOvosGeral = document.getElementById('kpi-total-ovos-geral');
+            const elTotalEmbalagens = document.getElementById('kpi-total-embalagens');
+            if (elTotalOvosGeral) elTotalOvosGeral.innerText = totalOvosGeral.toLocaleString('pt-BR');
+            if (elTotalEmbalagens) elTotalEmbalagens.innerText = `${totalEmbalagensGeral} emb.`;
+
             document.getElementById('kpi-cartelas-30').innerText = cartelas30;
             document.getElementById('kpi-ovos-30').innerText = (cartelas30 * 30) + ' ovos';
 
