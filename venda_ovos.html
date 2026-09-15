@@ -298,10 +298,12 @@
                 </div>
             </div>
 
-            <!-- Banner Inteligente de Separação por Remessa -->
+            <!-- Banner Inteligente de Separação por Remessa (Cards Clicáveis para Filtrar) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <!-- Bloco 1: Entregas Imediatas (Esta Semana + Pendências) -->
-                <div class="agro-card p-3 border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50/80 to-white flex items-center justify-between">
+                <div id="card-remessa-banner-atual" onclick="selecionarFiltroRemessa('ATUAL')"
+                    class="agro-card p-3 border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50/80 to-white flex items-center justify-between cursor-pointer hover:shadow-md hover:border-amber-400 active:scale-[0.99] transition select-none ring-2 ring-amber-500"
+                    title="Toque para filtrar encomendas deste lote para entregar agora">
                     <div>
                         <span class="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
                             <i class="fas fa-truck-ramp-box text-amber-600"></i> Entregar Agora (Esta Semana)
@@ -318,7 +320,9 @@
                 </div>
 
                 <!-- Bloco 2: Agendadas para o Próximo Domingo -->
-                <div class="agro-card p-3 border-l-4 border-l-sky-500 bg-gradient-to-r from-sky-50/80 to-white flex items-center justify-between">
+                <div id="card-remessa-banner-proximo" onclick="selecionarFiltroRemessa('PROXIMO')"
+                    class="agro-card p-3 border-l-4 border-l-sky-500 bg-gradient-to-r from-sky-50/80 to-white flex items-center justify-between cursor-pointer hover:shadow-md hover:border-sky-400 active:scale-[0.99] transition select-none"
+                    title="Toque para filtrar encomendas agendadas para o próximo fim de semana">
                     <div>
                         <span class="text-[10px] font-black uppercase text-sky-900 tracking-wider flex items-center gap-1.5">
                             <i class="fas fa-calendar-plus text-sky-600"></i> Próximo Fim de Semana
@@ -1139,6 +1143,24 @@
                     }
                 }
             });
+
+            // Atualiza destaque visual dos Cards de Banner (Entregar Agora vs Próximo Fim de Semana)
+            const cardBannerAtual = document.getElementById('card-remessa-banner-atual');
+            const cardBannerProx = document.getElementById('card-remessa-banner-proximo');
+            if (cardBannerAtual) {
+                if (tipo === 'ATUAL') {
+                    cardBannerAtual.classList.add('ring-2', 'ring-amber-500', 'shadow-md');
+                } else {
+                    cardBannerAtual.classList.remove('ring-2', 'ring-amber-500', 'shadow-md');
+                }
+            }
+            if (cardBannerProx) {
+                if (tipo === 'PROXIMO') {
+                    cardBannerProx.classList.add('ring-2', 'ring-sky-500', 'shadow-md');
+                } else {
+                    cardBannerProx.classList.remove('ring-2', 'ring-sky-500', 'shadow-md');
+                }
+            }
 
             // Sincroniza select de status se for CONCLUIDAS ou se sair dele
             const fEntrega = document.getElementById('filtro-status-entrega');
