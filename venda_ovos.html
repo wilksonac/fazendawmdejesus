@@ -1067,21 +1067,13 @@
         // Helpers de Ciclo Semanal e Datas (Domingo a Domingo)
         function obterDomingosCiclo() {
             const hoje = new Date();
-            const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, 2..6 = Terça..Sábado
-            let domAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+            const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = Sábado
+            
+            // O lote de ovos que está na cidade para entrega foi trazido no último domingo (ou hoje se hoje for domingo)
+            let domLoteAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - diaSemana);
 
-            if (diaSemana === 0) {
-                // Hoje é domingo (remessa deste fim de semana)
-            } else if (diaSemana === 1) {
-                // Segunda-feira (entregas da remessa de ontem ainda ativas)
-                domAtual.setDate(hoje.getDate() - 1);
-            } else {
-                // Terça a Sábado: a remessa chega no próximo domingo
-                domAtual.setDate(hoje.getDate() + (7 - diaSemana));
-            }
-
-            let domProx = new Date(domAtual);
-            domProx.setDate(domAtual.getDate() + 7);
+            // O próximo lote de ovos que chegará da fazenda no próximo fim de semana
+            let domProx = new Date(domLoteAtual.getFullYear(), domLoteAtual.getMonth(), domLoteAtual.getDate() + 7);
 
             const formatISO = (d) => {
                 const ano = d.getFullYear();
@@ -1090,11 +1082,13 @@
                 return `${ano}-${mes}-${dia}`;
             };
 
-            const strDomAtual = formatISO(domAtual);
-            const strDomProx = formatISO(domProx);
+            const strDomAtual = formatISO(domLoteAtual); // Ex: "2026-09-13" (Lote trazido no último domingo)
+            const strDomProx = formatISO(domProx);       // Ex: "2026-09-20" (Próxima remessa do próximo fim de semana)
 
             return {
-                domAtual,
+                hoje,
+                diaSemana,
+                domLoteAtual,
                 domProx,
                 strDomAtual,
                 strDomProx,
@@ -1106,9 +1100,17 @@
         function classificarPedidoRemessa(v, ciclo) {
             if (v.status_entrega === 'ENTREGUE') return 'CONCLUIDAS';
             if (!v.data_entrega) return 'ATUAL';
-            if (v.data_entrega < ciclo.strDomAtual) return 'ATRASADO';
-            if (v.data_entrega <= ciclo.strDomAtual) return 'ATUAL';
-            return 'PROXIMO';
+            
+            // Se agendado para o próximo domingo ou datas futuras (>= domProx) -> Próxima Semana (Azul)
+            if (v.data_entrega >= ciclo.strDomProx) {
+                return 'PROXIMO';
+            }
+            // Se agendado para domingos anteriores ao lote atual (< domLoteAtual) -> Remessa Anterior Atrasada (Vermelho)
+            if (v.data_entrega < ciclo.strDomAtual) {
+                return 'ATRASADO';
+            }
+            // Pertence ao lote trazido no último domingo (>= domLoteAtual e < domProx) -> Lote em Entrega / Esta Semana
+            return 'ATUAL';
         }
 
         window.filtroRemessaAtivo = 'ATUAL';
@@ -1151,10 +1153,10 @@
             const input = document.getElementById('pedido-data-entrega');
             if (!input) return;
 
-            if (tipo === 'domingo_atual' || tipo === 'domingo') {
-                input.value = ciclo.strDomAtual;
-            } else if (tipo === 'proximo_domingo') {
+            if (tipo === 'proximo_domingo' || tipo === 'proximo') {
                 input.value = ciclo.strDomProx;
+            } else if (tipo === 'domingo_atual' || tipo === 'domingo') {
+                input.value = ciclo.strDomAtual;
             } else if (tipo === 'hoje') {
                 const hoje = new Date();
                 const ano = hoje.getFullYear();
@@ -1266,14 +1268,14 @@
             // Atualiza rótulos de datas no banner inteligente
             const lblAtual = document.getElementById('lbl-data-remessa-atual');
             const lblProx = document.getElementById('lbl-data-remessa-prox');
-            if (lblAtual) lblAtual.innerText = `Dom, ${ciclo.fmtDomAtual}`;
-            if (lblProx) lblProx.innerText = `Dom, ${ciclo.fmtDomProx}`;
+            if (lblAtual) lblAtual.innerText = `Trazidos: Dom, ${ciclo.fmtDomAtual}`;
+            if (lblProx) lblProx.innerText = `Chegam: Dom, ${ciclo.fmtDomProx}`;
 
             // Atualiza botões rápidos de data no formulário
             const txtBtnDomAtual = document.getElementById('txt-btn-dom-atual');
             const txtBtnDomProx = document.getElementById('txt-btn-dom-prox');
-            if (txtBtnDomAtual) txtBtnDomAtual.innerText = `Este Dom (${ciclo.fmtDomAtual})`;
-            if (txtBtnDomProx) txtBtnDomProx.innerText = `Próx. Dom (${ciclo.fmtDomProx})`;
+            if (txtBtnDomAtual) txtBtnDomAtual.innerText = `Lote Trazido (${ciclo.fmtDomAtual})`;
+            if (txtBtnDomProx) txtBtnDomProx.innerText = `Próx. Domingo (${ciclo.fmtDomProx})`;
 
             const pendentes = window.vendasOvos.filter(v => v.status_entrega === 'ENCOMENDADO');
 
@@ -1449,11 +1451,11 @@
                     badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-triangle-exclamation text-rose-600"></i> ⚠️ Remessa Anterior (${dataFmt})</span>`;
                 } else if (cat === 'PROXIMO') {
                     bordaCard = 'border-l-4 border-l-sky-500 border-sky-200 bg-sky-50/20';
-                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-900 border border-sky-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-calendar-plus text-sky-600"></i> 🗓️ Próx. Remessa (${dataFmt})</span>`;
+                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-900 border border-sky-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-calendar-plus text-sky-600"></i> 🗓️ Próxima Semana (${dataFmt})</span>`;
                 } else {
-                    // ATUAL
+                    // ATUAL (Lote trazido neste último fim de semana)
                     bordaCard = 'border-l-4 border-l-amber-500 border-amber-200 bg-amber-50/20';
-                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-truck-ramp-box text-amber-700"></i> 🚚 Esta Semana (${dataFmt})</span>`;
+                    badgeRemessa = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1 shadow-sm"><i class="fas fa-truck-ramp-box text-amber-700"></i> 🚚 Lote em Entrega (${dataFmt})</span>`;
                 }
 
                 card.className = `agro-card p-3.5 border ${bordaCard} space-y-2.5`;
@@ -1819,7 +1821,7 @@
             document.getElementById('titulo-form-pedido').innerText = 'Registrar Nova Encomenda / Venda';
             document.getElementById('btn-salvar-pedido-texto').innerText = 'Salvar Encomenda de Ovos';
             document.getElementById('box-forma-pagamento').classList.add('hidden');
-            definirDataEntrega('domingo_atual');
+            definirDataEntrega('proximo_domingo');
             calcularTotalPedido();
         };
 
