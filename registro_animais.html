@@ -163,6 +163,9 @@
             <button onclick="nav('lista')" id="tab-nav-lista" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
                 <i class="fas fa-cow text-[11px]"></i> Animais
             </button>
+            <button onclick="nav('saidas')" id="tab-nav-saidas" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
+                <i class="fas fa-arrow-right-from-bracket text-[11px]"></i> Saídas & Baixas
+            </button>
             <button onclick="nav('diario')" id="tab-nav-diario" class="tab-subnav px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition active:scale-95 flex items-center gap-1.5">
                 <i class="fas fa-book-medical text-[11px]"></i> Diário & Vacinas
             </button>
@@ -470,6 +473,122 @@
                         </tbody>
                     </table>
                     <div id="sem-resultados" class="hidden p-8 text-center text-stone-400 text-xs">Nenhum animal encontrado.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             ABA: SAÍDAS & HISTÓRICO DE BAIXAS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tela-saidas" class="hidden space-y-4 fade-in">
+            <!-- Métricas / KPIs de Saídas -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="agro-card p-3.5 bg-gradient-to-br from-rose-50/70 to-rose-100/40 border border-rose-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-rose-800 tracking-wider">Mortes</span>
+                        <p class="text-2xl font-black text-rose-700 font-mono" id="kpi-saidas-mortes">0</p>
+                        <p class="text-[10px] text-rose-600/80 font-medium">Doenças / Causas Naturais</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg shadow-inner">
+                        <i class="fas fa-skull-crossbones"></i>
+                    </div>
+                </div>
+
+                <div class="agro-card p-3.5 bg-gradient-to-br from-amber-50/70 to-amber-100/40 border border-amber-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-amber-800 tracking-wider">Vendas</span>
+                        <p class="text-2xl font-black text-amber-700 font-mono" id="kpi-saidas-vendas">0</p>
+                        <p class="text-[10px] text-amber-600/80 font-medium">Comercializados</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg shadow-inner">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                </div>
+
+                <div class="agro-card p-3.5 bg-gradient-to-br from-stone-50 to-stone-100/60 border border-stone-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-stone-700 tracking-wider">Extravios / Abates</span>
+                        <p class="text-2xl font-black text-stone-800 font-mono" id="kpi-saidas-outros">0</p>
+                        <p class="text-[10px] text-stone-500 font-medium">Roubos / Consumo / Outros</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-stone-200 text-stone-700 flex items-center justify-center text-lg shadow-inner">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                </div>
+
+                <div class="agro-card p-3.5 bg-gradient-to-br from-stone-100 to-stone-200/50 border border-stone-300 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-stone-700 tracking-wider">Total Baixas</span>
+                        <p class="text-2xl font-black text-stone-900 font-mono" id="kpi-saidas-total">0</p>
+                        <p class="text-[10px] text-stone-500 font-medium">Histórico Geral</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-stone-300 text-stone-800 flex items-center justify-center text-lg shadow-inner">
+                        <i class="fas fa-boxes-packing"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de Busca de Baixas -->
+            <div class="agro-card p-3.5 border border-stone-200 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-extrabold text-xs text-stone-800 flex items-center gap-1.5">
+                        <i class="fas fa-filter text-stone-600"></i> Filtrar Histórico de Baixas
+                    </h3>
+                    <span id="lbl-resultado-saidas" class="text-xs font-extrabold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-xl border border-stone-200">
+                        Carregando...
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-stone-400 text-xs"></i>
+                        <input type="text" id="filtro-saidas-busca" onkeyup="aplicarFiltrosSaidas()" placeholder="Buscar Brinco, Obs ou Motivo..."
+                            class="w-full pl-8 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold text-stone-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <select id="filtro-saidas-motivo" onchange="aplicarFiltrosSaidas()"
+                            class="w-full py-2 px-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Motivo: Todos</option>
+                            <option value="MORTO">🔴 Mortes / Doenças</option>
+                            <option value="VENDIDO">🟡 Vendas</option>
+                            <option value="ROUBO">🛡️ Roubo / Extravio</option>
+                            <option value="ABATE">🍖 Abate / Consumo</option>
+                            <option value="TRANSFERENCIA">🔄 Transferência</option>
+                            <option value="OUTRO">⚪ Outro Motivo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filtro-saidas-ano" onchange="aplicarFiltrosSaidas()"
+                            class="w-full py-2 px-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold text-stone-700 focus:outline-none focus:border-emerald-500">
+                            <option value="ALL">Período: Todos os anos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listagem de Baixas: Mobile Cards & Desktop Table -->
+            <div id="mobile-saidas-list" class="md:hidden space-y-2.5">
+                <!-- Renderizado via JS -->
+            </div>
+
+            <div class="hidden md:block agro-card overflow-hidden border border-stone-200">
+                <div class="overflow-x-auto max-h-[580px] overflow-y-auto">
+                    <table class="w-full text-left text-xs text-stone-600">
+                        <thead class="text-[11px] text-stone-500 uppercase bg-stone-100/80 sticky top-0 border-b border-stone-200">
+                            <tr>
+                                <th class="px-5 py-3 font-bold">Brinco / ID</th>
+                                <th class="px-5 py-3 text-center font-bold">Sexo</th>
+                                <th class="px-5 py-3 font-bold">Motivo da Saída</th>
+                                <th class="px-5 py-3 font-bold">Data da Baixa</th>
+                                <th class="px-5 py-3 font-bold">Observações / Detalhes</th>
+                                <th class="px-5 py-3 text-center font-bold">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-saidas" class="divide-y divide-stone-100 font-mono text-xs">
+                            <!-- Renderizado via JS -->
+                        </tbody>
+                    </table>
+                    <div id="sem-resultados-saidas" class="hidden p-8 text-center text-stone-400 text-xs">Nenhum registro de saída encontrado.</div>
                 </div>
             </div>
         </div>
@@ -802,19 +921,21 @@
             <div>
                 <label class="block text-[11px] font-bold text-stone-600 mb-1">Motivo da Saída</label>
                 <select id="input-motivo-excluir" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none">
-                    <option value="VENDIDO">Vendido</option>
-                    <option value="MORTO">Morte Natural / Doença</option>
-                    <option value="ROUBO">Roubo / Extravio</option>
-                    <option value="OUTRO">Outro Motivo</option>
+                    <option value="MORTO">🔴 Morte Natural / Doença / Acidente</option>
+                    <option value="VENDIDO">🟡 Venda Comercial / Descarte</option>
+                    <option value="ROUBO">🛡️ Roubo / Extravio / Desaparecido</option>
+                    <option value="ABATE">🍖 Abate / Consumo</option>
+                    <option value="TRANSFERENCIA">🔄 Transferência</option>
+                    <option value="OUTRO">⚪ Outro Motivo</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-stone-600 mb-1">Data da Saída</label>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Data da Saída / Ocorrência</label>
                 <input type="date" id="input-data-excluir" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-bold text-stone-800 focus:outline-none">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-stone-600 mb-1">Observações</label>
-                <input type="text" id="input-obs-excluir" placeholder="Ex: Vendido para vizinho" class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none">
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Observações / Causa / Detalhes</label>
+                <input type="text" id="input-obs-excluir" placeholder="Ex: Picada de cobra, vendido para Sr. José, etc." class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-medium text-stone-800 focus:outline-none">
             </div>
             <div class="space-y-2 pt-2">
                 <button onclick="confirmarExclusao()" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition">Confirmar Baixa do Animal</button>
@@ -1055,7 +1176,7 @@
 
         // Navegação de Abas
         window.nav = (tela) => {
-            ['dashboard', 'cadastro', 'lista', 'exportar', 'diario'].forEach(t => {
+            ['dashboard', 'cadastro', 'lista', 'saidas', 'exportar', 'diario'].forEach(t => {
                 const el = document.getElementById('tela-' + t);
                 if (el) el.classList.add('hidden');
                 const btn = document.getElementById('tab-nav-' + t);
@@ -1070,6 +1191,10 @@
 
             if (auth.currentUser) {
                 if (tela === 'dashboard' || tela === 'lista') carregarDados();
+                if (tela === 'saidas') {
+                    if (window.animaisBaixados) renderizarSaidas();
+                    else carregarDados();
+                }
                 if (tela === 'diario') carregarDiario();
             }
         };
@@ -1123,10 +1248,13 @@
 
                 const limpar = (str) => str ? str.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
-                window.todosAnimais = animais.filter(a => {
+                const isBaixa = (a) => {
                     const st = limpar(a.status_produtivo);
-                    return !st.includes('VENDIDO') && !st.includes('MORTO') && !st.includes('ROUBO') && !st.includes('OUTRO');
-                });
+                    return st.includes('VENDIDO') || st.includes('MORTO') || st.includes('ROUBO') || st.includes('ABATE') || st.includes('TRANSFERENCIA') || st.includes('OUTRO') || a.data_saida != null || a.status === 'Baixado' || a.status === 'Inativo';
+                };
+
+                window.animaisBaixados = animais.filter(isBaixa);
+                window.todosAnimais = animais.filter(a => !isBaixa(a));
 
                 // Alerta 1: Brincos Provisórios
                 const provisorios = window.todosAnimais.filter(a => a.classificacao === 'PROVISORIO');
@@ -1202,6 +1330,10 @@
 
                 if (!document.getElementById('tela-lista').classList.contains('hidden')) {
                     aplicarFiltros();
+                }
+
+                if (!document.getElementById('tela-saidas').classList.contains('hidden')) {
+                    renderizarSaidas();
                 }
 
                 if (manual) showToast("Dados do rebanho sincronizados!", "success");
@@ -1722,18 +1854,32 @@
             document.getElementById('lbl-id-excluir').innerText = id;
             document.getElementById('input-id-excluir').value = id;
             document.getElementById('input-data-excluir').value = new Date().toISOString().split('T')[0];
+            document.getElementById('input-obs-excluir').value = '';
+            document.getElementById('input-motivo-excluir').value = 'MORTO';
             document.getElementById('modal-excluir').classList.remove('hidden');
         };
 
         window.confirmarExclusao = async () => {
             const id = document.getElementById('input-id-excluir').value;
             const mot = document.getElementById('input-motivo-excluir').value;
-            const data = document.getElementById('input-data-excluir').value;
-            const obs = document.getElementById('input-obs-excluir').value;
+            const data = document.getElementById('input-data-excluir').value || new Date().toISOString().split('T')[0];
+            const obs = document.getElementById('input-obs-excluir').value.trim();
 
             try {
-                await setDoc(doc(db, PATH_ANIMAIS, id), { status_produtivo: mot, data_saida: data, obs_saida: obs }, { merge: true });
-                await addDoc(collection(db, PATH_HISTORICO), { animal_id: id, evento: "BAIXA - " + mot, data, obs, created_at: new Date() });
+                await setDoc(doc(db, PATH_ANIMAIS, id), {
+                    status_produtivo: mot,
+                    status: 'Baixado',
+                    data_saida: data,
+                    obs_saida: obs
+                }, { merge: true });
+
+                await addDoc(collection(db, PATH_HISTORICO), {
+                    animal_id: id,
+                    evento: "BAIXA - " + mot,
+                    data: data,
+                    obs: obs || `Baixa registrada (${mot})`,
+                    created_at: new Date()
+                });
 
                 document.getElementById('modal-excluir').classList.add('hidden');
                 showToast("Baixa registrada com sucesso!", "success");
@@ -1741,6 +1887,237 @@
             } catch (e) {
                 showToast(e.message, "error");
             }
+        };
+
+        window.reativarAnimal = async (id) => {
+            if (!confirm(`Deseja REATIVAR o animal ${id} de volta ao rebanho ativo?\nEle voltará a aparecer na listagem principal.`)) return;
+
+            try {
+                await setDoc(doc(db, PATH_ANIMAIS, id), {
+                    status_produtivo: 'ATIVO',
+                    status: 'Ativo',
+                    data_saida: null,
+                    motivo_saida: null,
+                    obs_saida: null
+                }, { merge: true });
+
+                await addDoc(collection(db, PATH_HISTORICO), {
+                    animal_id: id,
+                    evento: "REATIVAÇÃO NO REBANHO",
+                    data: new Date().toISOString().split('T')[0],
+                    obs: "Animal retornado ao rebanho ativo.",
+                    created_at: new Date()
+                });
+
+                showToast(`Animal ${id} reativado com sucesso!`, "success");
+                carregarDados();
+            } catch (e) {
+                showToast("Erro ao reativar: " + e.message, "error");
+            }
+        };
+
+        // --- GESTÃO DE SAÍDAS E BAIXAS ---
+        window.renderizarSaidas = () => {
+            const saidas = window.animaisBaixados || [];
+
+            let mortes = 0;
+            let vendas = 0;
+            let outros = 0;
+            const anosDisponiveis = new Set();
+
+            saidas.forEach(a => {
+                const mot = (a.status_produtivo || '').toUpperCase();
+                if (mot.includes('MORTO')) mortes++;
+                else if (mot.includes('VENDIDO')) vendas++;
+                else outros++;
+
+                const dt = a.data_saida || a.data_evento || a.nascimento;
+                if (dt) {
+                    const ano = dt.split('-')[0];
+                    if (ano && ano.length === 4) anosDisponiveis.add(ano);
+                }
+            });
+
+            const elMortes = document.getElementById('kpi-saidas-mortes');
+            const elVendas = document.getElementById('kpi-saidas-vendas');
+            const elOutros = document.getElementById('kpi-saidas-outros');
+            const elTotal = document.getElementById('kpi-saidas-total');
+
+            if (elMortes) elMortes.innerText = mortes;
+            if (elVendas) elVendas.innerText = vendas;
+            if (elOutros) elOutros.innerText = outros;
+            if (elTotal) elTotal.innerText = saidas.length;
+
+            // Atualiza select de anos
+            const selectAno = document.getElementById('filtro-saidas-ano');
+            if (selectAno) {
+                const valorAtual = selectAno.value;
+                selectAno.innerHTML = '<option value="ALL">Período: Todos os anos</option>';
+                Array.from(anosDisponiveis).sort((a, b) => b.localeCompare(a)).forEach(ano => {
+                    selectAno.innerHTML += `<option value="${ano}">Ano ${ano}</option>`;
+                });
+                if (anosDisponiveis.has(valorAtual)) selectAno.value = valorAtual;
+            }
+
+            aplicarFiltrosSaidas();
+        };
+
+        window.aplicarFiltrosSaidas = () => {
+            const inputBusca = document.getElementById('filtro-saidas-busca');
+            const termo = inputBusca ? inputBusca.value.toUpperCase().trim() : '';
+            const fMotivo = document.getElementById('filtro-saidas-motivo') ? document.getElementById('filtro-saidas-motivo').value : 'ALL';
+            const fAno = document.getElementById('filtro-saidas-ano') ? document.getElementById('filtro-saidas-ano').value : 'ALL';
+            const limpar = (str) => str ? str.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+            const tbody = document.getElementById('tbody-saidas');
+            const mobileList = document.getElementById('mobile-saidas-list');
+            if (!tbody || !mobileList) return;
+
+            tbody.innerHTML = '';
+            mobileList.innerHTML = '';
+
+            const lista = (window.animaisBaixados || []).filter(a => {
+                const mot = limpar(a.status_produtivo || '');
+                const dt = a.data_saida || a.data_evento || '';
+                const obs = limpar(a.obs_saida || a.obs || '');
+
+                if (termo) {
+                    const matchId = a.id && a.id.toUpperCase().includes(termo);
+                    const matchObs = obs.includes(termo);
+                    const matchMot = mot.includes(termo);
+                    const matchBrincoAnt = a.brinco_anterior && a.brinco_anterior.toUpperCase().includes(termo);
+                    if (!matchId && !matchObs && !matchMot && !matchBrincoAnt) return false;
+                }
+
+                if (fMotivo !== 'ALL') {
+                    if (fMotivo === 'MORTO' && !mot.includes('MORTO')) return false;
+                    if (fMotivo === 'VENDIDO' && !mot.includes('VENDIDO')) return false;
+                    if (fMotivo === 'ROUBO' && !mot.includes('ROUBO')) return false;
+                    if (fMotivo === 'ABATE' && !mot.includes('ABATE')) return false;
+                    if (fMotivo === 'TRANSFERENCIA' && !mot.includes('TRANSFER')) return false;
+                    if (fMotivo === 'OUTRO' && (mot.includes('MORTO') || mot.includes('VENDIDO') || mot.includes('ROUBO') || mot.includes('ABATE') || mot.includes('TRANSFER'))) return false;
+                }
+
+                if (fAno !== 'ALL' && dt) {
+                    if (!dt.startsWith(fAno)) return false;
+                }
+
+                return true;
+            });
+
+            const lblRes = document.getElementById('lbl-resultado-saidas');
+            if (lblRes) lblRes.innerText = `${lista.length} baixas`;
+
+            const semRes = document.getElementById('sem-resultados-saidas');
+            if (lista.length === 0) {
+                if (semRes) semRes.classList.remove('hidden');
+                mobileList.innerHTML = '<p class="text-center py-6 text-xs text-stone-400">Nenhuma baixa encontrada com os filtros selecionados.</p>';
+                return;
+            } else {
+                if (semRes) semRes.classList.add('hidden');
+            }
+
+            lista.sort((a, b) => {
+                const dtA = a.data_saida || a.data_evento || '';
+                const dtB = b.data_saida || b.data_evento || '';
+                return dtB.localeCompare(dtA);
+            }).forEach(a => {
+                const mot = (a.status_produtivo || 'OUTRO').toUpperCase();
+                let badgeClass = 'text-stone-700 bg-stone-100 border-stone-300';
+                let badgeIcon = 'fa-circle-info';
+                let badgeText = mot;
+
+                if (mot.includes('MORTO')) {
+                    badgeClass = 'text-rose-700 bg-rose-50 border-rose-200';
+                    badgeIcon = 'fa-skull-crossbones';
+                    badgeText = 'MORTE / DOENÇA';
+                } else if (mot.includes('VENDIDO')) {
+                    badgeClass = 'text-amber-700 bg-amber-50 border-amber-200';
+                    badgeIcon = 'fa-handshake';
+                    badgeText = 'VENDIDO';
+                } else if (mot.includes('ROUBO')) {
+                    badgeClass = 'text-stone-700 bg-stone-100 border-stone-300';
+                    badgeIcon = 'fa-shield-halved';
+                    badgeText = 'ROUBO / EXTRAVIO';
+                } else if (mot.includes('ABATE')) {
+                    badgeClass = 'text-orange-700 bg-orange-50 border-orange-200';
+                    badgeIcon = 'fa-utensils';
+                    badgeText = 'ABATE';
+                } else if (mot.includes('TRANSFER')) {
+                    badgeClass = 'text-sky-700 bg-sky-50 border-sky-200';
+                    badgeIcon = 'fa-arrow-right-arrow-left';
+                    badgeText = 'TRANSFERÊNCIA';
+                }
+
+                const dataRef = formatarDataBr(a.data_saida || a.data_evento);
+                const obsExibir = a.obs_saida || a.obs || '-';
+
+                // 1. Tabela Desktop
+                tbody.innerHTML += `
+                    <tr class="hover:bg-rose-50/20 transition border-b border-stone-100">
+                        <td class="px-5 py-3 font-bold text-stone-900 whitespace-nowrap">
+                            ${a.id} ${a.brinco_anterior ? `<span class="text-[9px] bg-stone-100 text-stone-600 px-1 py-0.5 rounded font-mono">(ant: ${a.brinco_anterior})</span>` : ''}
+                        </td>
+                        <td class="px-5 py-3 text-center">${a.tipo === 'MACHO' ? '<i class="fas fa-mars text-sky-600 text-base"></i>' : '<i class="fas fa-venus text-rose-500 text-base"></i>'}</td>
+                        <td class="px-5 py-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeClass} inline-flex items-center gap-1"><i class="fas ${badgeIcon}"></i> ${badgeText}</span></td>
+                        <td class="px-5 py-3 font-mono text-stone-500 font-bold">${dataRef}</td>
+                        <td class="px-5 py-3 text-stone-600 font-sans max-w-[220px] truncate" title="${obsExibir}">${obsExibir}</td>
+                        <td class="px-5 py-3 text-center">
+                            <div class="flex items-center justify-center gap-1.5 font-sans">
+                                <button onclick="abrirDossie('${a.id}')" title="Ver Histórico/Dossiê" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 flex items-center justify-center border border-sky-200 transition active:scale-95">
+                                    <i class="fas fa-clipboard-user text-xs"></i>
+                                </button>
+                                <button onclick="reativarAnimal('${a.id}')" title="Reativar no Rebanho" class="px-2 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center gap-1 border border-emerald-200 transition active:scale-95">
+                                    <i class="fas fa-arrow-rotate-left"></i> Reativar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                // 2. Card Mobile
+                const card = document.createElement('div');
+                card.className = "agro-card p-3 border border-stone-200 space-y-2";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center text-xs font-black font-mono">
+                                <i class="fas fa-cow"></i>
+                            </div>
+                            <div>
+                                <div class="font-extrabold text-sm text-stone-900 font-mono leading-none">
+                                    ${a.id} ${a.brinco_anterior ? `<span class="text-[9px] text-stone-400 font-mono font-normal">(${a.brinco_anterior})</span>` : ''}
+                                </div>
+                                <span class="text-[10px] text-stone-400 font-medium">${a.tipo || 'ANIMAL'} • Mãe: ${a.id_mae || 'N/D'}</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeClass} inline-flex items-center gap-1">
+                            <i class="fas ${badgeIcon}"></i> ${badgeText}
+                        </span>
+                    </div>
+
+                    <div class="bg-stone-50 p-2 rounded-lg text-xs space-y-1 text-stone-600">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-stone-400 font-medium"><i class="fas fa-calendar-day text-[10px]"></i> Data da Baixa:</span>
+                            <span class="font-mono font-bold text-stone-700">${dataRef}</span>
+                        </div>
+                        ${obsExibir !== '-' ? `
+                        <div class="text-[11px] pt-1 border-t border-stone-200/60">
+                            <span class="text-stone-400 font-medium">Obs:</span> <span class="font-medium text-stone-700">${obsExibir}</span>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-stone-100">
+                        <button onclick="abrirDossie('${a.id}')" class="py-2 bg-sky-50 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1 border border-sky-100 active:scale-95">
+                            <i class="fas fa-clipboard-user text-[11px]"></i> Ver Dossiê
+                        </button>
+                        <button onclick="reativarAnimal('${a.id}')" class="py-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1 border border-emerald-100 active:scale-95">
+                            <i class="fas fa-arrow-rotate-left text-[11px]"></i> Reativar
+                        </button>
+                    </div>
+                `;
+                mobileList.appendChild(card);
+            });
         };
 
         window.confirmarExclusaoDefinitiva = async () => {
